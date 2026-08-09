@@ -1,0 +1,53 @@
+# Core
+Django==5.2
+djangorestframework==3.16.1
+gunicorn==23.0.0
+whitenoise>=6.8
+
+# Database
+psycopg2-binary==2.9.10
+
+# Authentication & JWT
+dj-rest-auth==7.0.1
+djangorestframework-simplejwt==5.4.0
+jwcrypto==1.5.6
+
+# Security & Encryption
+cryptography>=44.0
+sentry-sdk==2.19.2
+
+# Storage & Files
+django-storages==1.14.4
+boto3==1.38.0
+pillow==11.1.0
+
+# CORS
+django-cors-headers==4.6.0
+
+# Task Queue
+celery==5.6.2
+redis==5.2.1
+
+# API Documentation
+drf-yasg==1.21.8
+
+# Communication
+sendgrid==6.11.0
+twilio==9.6.3
+django-phonenumber-field==8.0.0
+phonenumbers==8.13.52
+
+# AI
+openai==1.84.0
+google-generativeai==0.8.4
+
+# Payments
+stripe==11.5.0
+
+# Utilities
+python-dotenv~=1.0.1
+email-validator==2.2.0
+asgiref~=3.8.1
+
+# Admin
+django-grappelli==4.0.1

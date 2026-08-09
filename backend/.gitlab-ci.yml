@@ -1,0 +1,11 @@
+include:
+  - project: cranky4.89/ci-jobs
+    file: common.yml
+    ref: v0.0.1
+    inputs:
+      branch: "main"
+      helm_version: "0.2.73"
+      helm_values: "./.charts/prod/values.yaml"
+      ns: "mmc8534412"
+      service_name: "backend"
+      agent_name: "backend-prod-agent"

@@ -1,0 +1,139 @@
+# Default values for prod.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: registry.gitlab.com/mmc8534412/backend
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest"
+
+imageCredentials:
+  registry: https://registry.gitlab.com
+#  only for values-local
+#  username:
+#  password:
+#  email:
+
+fullnameOverride: "mmc8534412-backend"
+nameOverride: ""
+appVersion: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: { }
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+envs:
+  - name: DEBUG
+    value: "False"
+  - name: GUNICORN_HOST
+    value: "0.0.0.0"
+  - name: GUNICORN_PORT
+    value: "7004"
+  - name: GUNICORN_TIMEOUT
+    value: "120"
+  - name: GUNICORN_WORKERS
+    value: "2"
+  - name: GUNICORN_MAX_REQUESTS
+    value: "1000"
+  - name: GUNICORN_MAX_REQUESTS_JITTER
+    value: "100"
+  - name: PYTHONPATH
+    value: "/application"
+
+podAnnotations: { }
+
+podSecurityContext: { }
+#   fsGroup: 2000
+
+securityContext: { }
+# python fix
+#   capabilities:
+#     drop:
+#     - ALL
+#   readOnlyRootFilesystem: true
+#   runAsNonRoot: true
+#   runAsUser: 1000
+#   allowPrivilegeEscalation: false
+
+services:
+  - type: ClusterIP
+    name: "main"
+    ports:
+      - name: "http"
+        port: 7004
+        targetPort: http
+        protocol: TCP
+
+gateways:
+  - name: gateway-3
+    enabled: true
+    hosts:
+      - host: "mmc8534412-api.latoai.com"
+        service:
+          # service name prefixed with project name
+          nameSuffix: main
+          port: 7004
+        httpsRedirect: true
+        sectionNameHTTP: mmc8534412-api-latoai-com-http
+        sectionNameHTTPS: mmc8534412-api-latoai-com-https
+
+resources: { }
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+# requests:
+#   cpu: 100m
+#   memory: 128Mi
+
+readinessProbe:
+  enabled: false
+  httpGet:
+    path: /
+    port: http
+livenessProbe:
+  enabled: false
+  httpGet:
+    path: /
+    port: http
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: { }
+
+tolerations: [ ]
+
+affinity: { }
+
+cronJobs: [ ]
+
+initContainers: [ ]
+#  - name: migrator
+#    command:
+#      - "sh"
+#      - "-c"
+#      - "python manage.py showmigrations && python manage.py migrate --noinput -v 3"
+
+vault:
+  enabled: true
+  inject: true
+  role: "backend"
+  secrets:
+    - name: vlt
+      path: mmc8534412/backend

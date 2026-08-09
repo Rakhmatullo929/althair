@@ -60,7 +60,7 @@ Copy `.env.example` to `.env.local` for local configuration. Never commit the re
 | `LEAD_WEBHOOK_URL`             | Server only | Validated early-access destination      |
 | `LEAD_WEBHOOK_SECRET`          | Server only | Optional `x-lead-webhook-secret` header |
 
-Without `LEAD_WEBHOOK_URL`, the API returns a structured `DEMO_MODE` error and does not claim to store the lead. In development it logs only a sanitized summary. The server route includes schema validation, normalization, a honeypot, minimum-fill-time protection, and basic in-memory IP throttling. Replace the webhook request in `src/app/api/early-access/route.ts` with a Django API call when the backend is ready; the form and shared schema can remain unchanged. Use durable, infrastructure-level rate limiting before a large public launch.
+Set `LEAD_WEBHOOK_URL` to `http://localhost:8000/api/v1/public/early-access/` locally and set `LEAD_WEBHOOK_SECRET` to the same server-only value as the backend's `EARLY_ACCESS_WEBHOOK_SECRET`. Without the URL, the API returns `DEMO_MODE` and does not claim storage. The browser never receives the shared secret; the Django endpoint adds durable cache/Redis throttling, replay detection, and storage behind the existing Next.js validation and honeypot checks.
 
 ## Brand and visual system
 

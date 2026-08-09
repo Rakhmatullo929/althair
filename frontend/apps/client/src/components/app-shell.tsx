@@ -7,10 +7,14 @@ import {
   Building2,
   ChevronRight,
   GitBranch,
+  Inbox,
+  KanbanSquare,
   LayoutDashboard,
+  ListTodo,
   LogOut,
   Radio,
   Settings2,
+  UserRoundSearch,
   Users,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -22,6 +26,10 @@ import { ErrorState, PageSkeleton } from "./ui";
 
 const navItems = [
   ["overview", "/app", LayoutDashboard],
+  ["inbox", "/app/inbox", Inbox],
+  ["contacts", "/app/contacts", UserRoundSearch],
+  ["leads", "/app/leads", KanbanSquare],
+  ["tasks", "/app/tasks", ListTodo],
   ["company", "/app/settings/company", Building2],
   ["branches", "/app/settings/branches", GitBranch],
   ["team", "/app/settings/team", Users],
@@ -91,7 +99,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
     );
 
-  const segments = pathname.split("/").filter(Boolean).slice(2);
+  const currentNavItem = navItems.find(([, href]) =>
+    href === "/app" ? /\/app\/?$/.test(pathname) : pathname.includes(href),
+  );
   const roleLabel = t(`roles.${workspace.membership.role}`);
   const changeLocale = (nextLocale: string) => {
     const rest = pathname.split("/").slice(2).join("/");
@@ -203,12 +213,12 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="content-wrap">
           <nav className="breadcrumbs" aria-label={t("navigation.breadcrumbs")}>
             <Link href="/app">{t("navigation.overview")}</Link>
-            {segments.slice(1).map((segment) => (
-              <span key={segment}>
+            {currentNavItem && currentNavItem[0] !== "overview" ? (
+              <span>
                 <ChevronRight aria-hidden="true" />
-                {segment.replaceAll("-", " ")}
+                {t(`navigation.${currentNavItem[0]}`)}
               </span>
-            ))}
+            ) : null}
           </nav>
           <main id="main-content">{children}</main>
         </div>

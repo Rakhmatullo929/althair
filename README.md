@@ -1,8 +1,8 @@
 # AI Front Office workspace
 
-This repository contains three preserved parts of the product: the public localized Landing, the
-localized customer portal, and a tenant-safe Django modular monolith. The legacy MMC vertical is
-still isolated in the backend and remains covered by its regression tests.
+This repository contains the preserved public Landing, the localized customer portal with a real
+CRM workflow, and a tenant-safe Django modular monolith. The legacy MMC vertical is still isolated
+in the backend and remains covered by its regression tests.
 
 ## Local stack
 
@@ -37,6 +37,15 @@ It creates `owner@portal.test`, a lower-role member, active multi-organization d
 organization, branches, channel status records, and versioned AI Context. The password is never
 printed. `seed_dev_workspace` remains available for the preserved legacy development fixtures.
 
+CRM fixtures are separate and deterministic:
+
+```bash
+DEBUG=true ENABLE_CRM_TEST_CHANNEL=true python manage.py seed_crm
+```
+
+The internal development channel is disabled by default and can only be enabled server-side with
+`ENABLE_CRM_TEST_CHANNEL=true`. It never impersonates a real provider connection.
+
 ## Verification
 
 ```bash
@@ -46,6 +55,8 @@ python manage.py makemigrations --check
 python manage.py migrate --noinput
 python manage.py check
 python manage.py test
+coverage run --source=crm manage.py test crm
+coverage report
 python -m compileall -q .
 
 cd ../frontend
@@ -63,12 +74,14 @@ cd ..
 ```
 
 See [backend/docs/api/multitenant-api.md](backend/docs/api/multitenant-api.md),
+[backend/docs/api/crm-api.md](backend/docs/api/crm-api.md),
 [backend/docs/security/client-authentication.md](backend/docs/security/client-authentication.md),
-and [backend/docs/architecture/client-onboarding.md](backend/docs/architecture/client-onboarding.md).
+and [backend/docs/architecture/crm-core.md](backend/docs/architecture/crm-core.md).
 
 ## Current boundary
 
-This stage intentionally does not activate provider integrations, run OpenAI, generate system
-prompts, add a CRM inbox, booking, billing, or Super Admin, or deploy production infrastructure.
+This stage intentionally does not activate Instagram, Telegram, Gmail, WhatsApp, SMS, or Voice;
+run OpenAI; add booking, billing, or Super Admin; or deploy production infrastructure. CRM content
+is real organization-owned database data, not simulated AI, revenue, sales, or provider state.
 Password-reset and invitation email delivery use the development console lifecycle only until a
 reliable production mail provider is configured.

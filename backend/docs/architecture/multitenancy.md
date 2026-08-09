@@ -13,6 +13,12 @@ Inbound provider events resolve an active `ChannelConnection` using verified des
 data. Sender identity and message content never select a tenant. Unknown or inactive destinations
 fail closed. Provider message idempotency is scoped by organization and connection.
 
+CRM contacts, identities, conversations, messages, leads, pipelines, stages, tasks, tags, notes, and
+activity records all carry a non-null organization foreign key. Every object lookup is scoped by
+the selected tenant before its UUID is evaluated. Cross-tenant identifiers therefore return `404`
+and cannot be used to move an assignment, identity, conversation, lead, or task between tenants.
+The internal test channel follows the same model and is disabled unless a server-only flag is set.
+
 AI tools receive tenant-owned objects from server-side context. Model validation rejects related
 objects owned by another organization, and credentials remain encrypted/write-only.
 
@@ -22,7 +28,8 @@ request is independently resolved from `X-Organization-ID` and an active members
 is cleared before a switch is exposed. Organization status is enforced centrally so suspended and
 archived tenants cannot mutate any customer endpoint.
 
-See `client-onboarding.md` for the AI Context ownership/version model and complete role matrix.
+See `client-onboarding.md` for the AI Context ownership/version model and `crm-core.md` for CRM
+ownership, state transitions, idempotency, assignment, and the complete CRM role matrix.
 
 ## Legacy MMC vertical
 

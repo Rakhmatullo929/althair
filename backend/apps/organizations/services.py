@@ -44,6 +44,9 @@ def create_organization(*, creator, name: str, slug: str, **fields) -> Organizat
         default_language=organization.default_language,
         updated_by=creator,
     )
+    from crm.services import ensure_default_pipeline
+
+    ensure_default_pipeline(organization)
     return organization
 
 

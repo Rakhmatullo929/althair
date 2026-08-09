@@ -73,6 +73,13 @@ No OpenAI request or system-prompt generation occurs.
 - `POST public/early-access/` is the server-to-server Landing lead route.
 - `GET /health/live` and `GET /health/ready` are outside the versioned prefix.
 
+## CRM
+
+The organization-scoped CRM routes cover the Unified Inbox, contacts and channel identities,
+conversation messages and internal notes, assignments and handoff states, pipelines and leads,
+follow-up tasks, an immutable activity feed, and real overview counts. See `crm-api.md` for the
+complete method and route table. There are no OpenAI or external provider calls in this stage.
+
 ## Errors and isolation
 
 Missing/invalid tenant headers return stable `400` codes. Inactive or absent membership returns

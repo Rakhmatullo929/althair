@@ -3,7 +3,11 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   testDir: "./tests",
   outputDir: "../../test-results/landing",
-  fullyParallel: true,
+  // The hero's WebGL scene can starve four parallel browser contexts during a
+  // cold Next.js dev start. Keep the regression command deterministic locally
+  // and in CI without changing the Landing runtime.
+  fullyParallel: false,
+  workers: 1,
   timeout: 60_000,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,

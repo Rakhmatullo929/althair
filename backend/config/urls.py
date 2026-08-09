@@ -47,6 +47,7 @@ urlpatterns = [
         path('organizations/', include(('organizations.urls', 'organizations'), namespace='organizations')),
         path('channel-connections/', include(('channels.urls', 'channels'), namespace='channels')),
         path('assistant-context/', include(('assistant_context.urls', 'assistant_context'), namespace='assistant_context')),
+        path('', include(('crm.urls', 'crm'), namespace='crm')),
         path('public/', include(('early_access.urls', 'early_access'), namespace='early_access')),
         path('users/', include(('users.urls', 'users'), namespace='users')),
         path('intake/', include(('intake.urls', 'intake'), namespace='intake')),

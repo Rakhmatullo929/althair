@@ -213,3 +213,229 @@ export type Paginated<T> = {
   previous: string | null;
   results: T[];
 };
+
+export type ContactIdentityType =
+  | "phone"
+  | "email"
+  | "instagram"
+  | "telegram"
+  | "whatsapp"
+  | "web_chat"
+  | "external";
+
+export type ContactIdentity = {
+  id: string;
+  organization: string;
+  contact: string;
+  type: ContactIdentityType;
+  raw_value: string;
+  normalized_value: string;
+  external_user_id: string;
+  channel_connection: string | null;
+  is_primary: boolean;
+  is_verified: boolean;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ContactTag = {
+  id: string;
+  organization: string;
+  name: string;
+  color_token: string;
+  created_at: string;
+};
+
+export type Contact = {
+  id: string;
+  organization: string;
+  display_name: string;
+  first_name: string;
+  last_name: string;
+  company_name: string;
+  preferred_language: Locale;
+  timezone: string;
+  notes_summary: string;
+  status: "active" | "archived";
+  merged_into: string | null;
+  identities: ContactIdentity[];
+  tags: ContactTag[];
+  duplicate_suggestions: Array<{
+    id: string;
+    display_name: string;
+    company_name: string;
+  }>;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ContactNote = {
+  id: string;
+  contact: string;
+  author_membership: string;
+  author_name: string;
+  body: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ConversationStatus = "open" | "pending" | "resolved" | "closed";
+export type ConversationPriority = "low" | "normal" | "high" | "urgent";
+
+export type Conversation = {
+  id: string;
+  organization: string;
+  channel_connection: string;
+  channel_type: string;
+  channel_name: string;
+  channel_provider: string;
+  external_thread_id: string;
+  contact: string;
+  contact_name: string;
+  contact_status: "active" | "archived";
+  status: ConversationStatus;
+  priority: ConversationPriority;
+  assignment_state: "unassigned" | "assigned";
+  assigned_membership: string | null;
+  assigned_name: string | null;
+  automation_state: "manual" | "ai_paused" | "ai_available";
+  handoff_reason: string;
+  unread_count: number;
+  last_message_preview: string;
+  can_send: boolean;
+  last_message_at: string | null;
+  last_inbound_at: string | null;
+  last_outbound_at: string | null;
+  subject: string;
+  created_at: string;
+  updated_at: string;
+  resolved_at: string | null;
+};
+
+export type ConversationMessage = {
+  id: string;
+  conversation: string;
+  direction: "inbound" | "outbound" | "system";
+  sender_type: "customer" | "agent" | "system" | "future_ai";
+  sender_membership: string | null;
+  sender_name: string | null;
+  provider_message_id: string | null;
+  client_message_id: string | null;
+  content_type: "text" | "note" | "event";
+  body: string;
+  status: "queued" | "sent" | "delivered" | "failed" | "received";
+  error_code: string;
+  reply_to: string | null;
+  metadata: Record<string, unknown>;
+  occurred_at: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CursorPaginated<T> = {
+  next: string | null;
+  previous: string | null;
+  results: T[];
+};
+
+export type PipelineStage = {
+  id: string;
+  organization: string;
+  pipeline: string;
+  name: string;
+  position: number;
+  color_token: string;
+  stage_type: "open" | "won" | "lost";
+  is_active: boolean;
+};
+
+export type Pipeline = {
+  id: string;
+  organization: string;
+  name: string;
+  is_default: boolean;
+  is_active: boolean;
+  stages: PipelineStage[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type Lead = {
+  id: string;
+  organization: string;
+  contact: string;
+  contact_name: string;
+  source_conversation: string | null;
+  source_channel_type: string;
+  pipeline: string;
+  pipeline_name: string;
+  stage: string;
+  stage_name: string;
+  stage_type: "open" | "won" | "lost";
+  title: string;
+  description: string;
+  assigned_membership: string | null;
+  assigned_name: string | null;
+  estimated_value: string | null;
+  currency: string;
+  status: "open" | "won" | "lost" | "archived";
+  lost_reason: string;
+  next_follow_up_at: string | null;
+  created_at: string;
+  updated_at: string;
+  won_at: string | null;
+  lost_at: string | null;
+};
+
+export type FollowUpTask = {
+  id: string;
+  organization: string;
+  title: string;
+  due_at: string;
+  status: "open" | "completed" | "cancelled";
+  assigned_membership: string | null;
+  assigned_name: string | null;
+  related_contact: string | null;
+  contact_name: string | null;
+  related_lead: string | null;
+  lead_title: string | null;
+  related_conversation: string | null;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CrmActivity = {
+  id: string;
+  event_type: string;
+  actor_membership: string | null;
+  actor_name: string | null;
+  contact_id: string | null;
+  conversation_id: string | null;
+  lead_id: string | null;
+  task_id: string | null;
+  summary: string;
+  metadata: Record<string, unknown>;
+  created_at: string;
+};
+
+export type CrmOverview = {
+  open_conversations: number;
+  unread_conversations: number;
+  unassigned_conversations: number;
+  active_contacts: number;
+  open_leads: number;
+  leads_by_stage: Array<{
+    stage_id: string;
+    stage__name: string;
+    stage__color_token: string;
+    count: number;
+  }>;
+  overdue_follow_ups: number;
+  configured_channels: number;
+  onboarding_completion_percentage: number;
+  onboarding_completed_at: string | null;
+  ai_context_status: "draft" | "published";
+  ai_context_version: number;
+};

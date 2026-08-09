@@ -4,8 +4,10 @@ x-backend-environment: &backend-environment
   DEBUG: "true"
   SECRET_KEY: ${SECRET_KEY:-django-insecure-local-development-only}
   ALLOWED_HOSTS: localhost,127.0.0.1,api
-  CORS_ALLOWED_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
-  CSRF_TRUSTED_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
+  CORS_ALLOWED_ORIGINS: http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001
+  CSRF_TRUSTED_ORIGINS: http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001
+  CLIENT_APP_URL: http://localhost:3001
+  EMAIL_BACKEND: django.core.mail.backends.console.EmailBackend
   POSTGRES_NAME: ${POSTGRES_NAME:-aifo}
   POSTGRES_USER: ${POSTGRES_USER:-aifo}
   POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local-development-only}

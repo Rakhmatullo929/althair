@@ -7,7 +7,8 @@ import hashlib
 import hmac
 
 from rest_framework.authentication import BaseAuthentication
-from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.authentication import CSRFCheck
+from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
 from rest_framework.permissions import BasePermission
 
 logger = logging.getLogger(__name__)
@@ -27,6 +28,25 @@ class CookieJWTAuthentication(JWTAuthentication):
         if raw:
             return f"Bearer {raw}".encode()
         return None
+
+    def authenticate(self, request):
+        authorization_header = JWTAuthentication.get_header(self, request)
+        using_cookie = not authorization_header and bool(
+            request.COOKIES.get(settings.SIMPLE_JWT.get("AUTH_COOKIE", "jwt-auth"))
+        )
+        result = super().authenticate(request)
+        if result and using_cookie and request.method not in {"GET", "HEAD", "OPTIONS", "TRACE"}:
+            enforce_csrf(request)
+        return result
+
+
+def enforce_csrf(request) -> None:
+    """Apply Django's origin and double-submit CSRF checks to JSON APIs."""
+    check = CSRFCheck(lambda incoming_request: None)
+    check.process_request(request)
+    reason = check.process_view(request, None, (), {})
+    if reason:
+        raise PermissionDenied(f"CSRF verification failed: {reason}")
 
 
 class StaticBearerAuthentication(BaseAuthentication):

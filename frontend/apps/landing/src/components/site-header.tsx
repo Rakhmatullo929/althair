@@ -11,6 +11,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { usePathname } from "@/i18n/navigation";
 import { EarlyAccessDialog } from "./early-access-dialog";
+import { brand } from "@workspace/brand";
 
 const anchors = ["product", "channels", "how", "industries", "faq"] as const;
 const locales = ["ru", "uz", "en"] as const;
@@ -70,6 +71,15 @@ export function SiteHeader() {
             items={languageItems}
           />
           <div className="hidden lg:block">
+            <a
+              href={`${brand.clientAppUrl}/${locale}/login`}
+              className={buttonStyles({
+                variant: "ghost",
+                className: "mr-1 min-h-10 px-3 text-xs xl:text-sm",
+              })}
+            >
+              {t("login")}
+            </a>
             <EarlyAccessDialog
               label={t("earlyAccess")}
               className="min-h-10 px-4 text-xs xl:text-sm"
@@ -88,9 +98,15 @@ export function SiteHeader() {
                 </a>
               ))}
               <a
-                href="#early-access"
-                className={buttonStyles({ className: "mt-4" })}
+                href={`${brand.clientAppUrl}/${locale}/login`}
+                className={buttonStyles({
+                  variant: "secondary",
+                  className: "mt-4",
+                })}
               >
+                {t("login")}
+              </a>
+              <a href="#early-access" className={buttonStyles()}>
                 {t("earlyAccess")}
               </a>
             </nav>

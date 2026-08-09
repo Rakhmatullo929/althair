@@ -9,6 +9,7 @@ import os
 import ssl
 import sys
 from datetime import timedelta
+from corsheaders.defaults import default_headers
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -65,6 +66,7 @@ INSTALLED_APPS = [
     'organizations',
     'channels',
     'early_access',
+    'assistant_context',
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -92,17 +94,22 @@ MIDDLEWARE = [
 # ---------------------------------------------------------------------------
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = ['DELETE', 'GET', 'OPTIONS', 'PATCH', 'POST', 'PUT']
+CORS_ALLOW_HEADERS = (*default_headers, 'x-organization-id', 'x-request-id')
 
 if DEBUG:
     CORS_ALLOWED_ORIGINS = [
         'http://localhost:3000',
         'http://127.0.0.1:3000',
+        'http://localhost:3001',
+        'http://127.0.0.1:3001',
         'http://localhost:5173',
         'http://127.0.0.1:5173',
     ]
     CSRF_TRUSTED_ORIGINS = [
         'http://localhost:3000',
         'http://127.0.0.1:3000',
+        'http://localhost:3001',
+        'http://127.0.0.1:3001',
         'http://localhost:5173',
         'http://127.0.0.1:5173',
     ]
@@ -327,6 +334,9 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'users': '30/min',
         'login': '5/min',
+        'registration': '5/hour',
+        'invitation': '10/min',
+        'password_sensitive': '5/hour',
         'anon': '100/hour',
         'intake_webhook': '120/min',  # public webhook endpoints (Twilio / Outlook relay)
         'jobs': '120/min',  # Phase 2 operational job API (authenticated)
@@ -340,6 +350,15 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.BrowsableAPIRenderer',
     ),
 }
+
+if os.environ.get('E2E_TESTING', '').lower() in ('true', '1', 'yes'):
+    REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'].update({
+        'login': '200/min',
+        'registration': '200/min',
+        'invitation': '200/min',
+        'password_sensitive': '200/min',
+        'anon': '1000/min',
+    })
 
 # ---------------------------------------------------------------------------
 # Session & Cookie Security
@@ -440,6 +459,12 @@ if not FIELD_ENCRYPTION_KEY and not DEBUG and 'test' not in sys.argv:
 # ---------------------------------------------------------------------------
 FRONTEND_DOMAIN = os.environ.get('FRONTEND_DOMAIN', '')
 BACKEND_DOMAIN = os.environ.get('BACKEND_DOMAIN', '')
+CLIENT_APP_URL = os.environ.get('CLIENT_APP_URL', 'http://localhost:3001')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@example.test')
+EMAIL_BACKEND = os.environ.get(
+    'EMAIL_BACKEND',
+    'django.core.mail.backends.console.EmailBackend' if DEBUG else 'django.core.mail.backends.smtp.EmailBackend',
+)
 
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')

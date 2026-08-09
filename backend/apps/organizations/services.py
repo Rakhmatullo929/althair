@@ -34,6 +34,16 @@ def create_organization(*, creator, name: str, slug: str, **fields) -> Organizat
         public_business_name=organization.name,
         supported_languages=[organization.default_language],
     )
+    # Imported locally to keep the organizations domain reusable while still
+    # guaranteeing every newly created customer tenant has one AI Context root.
+    from assistant_context.models import OrganizationAssistantProfile
+
+    OrganizationAssistantProfile.objects.create(
+        organization=organization,
+        supported_languages=[organization.default_language],
+        default_language=organization.default_language,
+        updated_by=creator,
+    )
     return organization
 
 

@@ -34,6 +34,34 @@ def validate_json_object(value: dict) -> None:
         raise ValidationError(_("This value must be a JSON object."))
 
 
+def validate_working_hours(value: dict) -> None:
+    """Validate a compact, executable-code-free weekly hours structure."""
+    validate_json_object(value)
+    allowed_days = {"mon", "tue", "wed", "thu", "fri", "sat", "sun"}
+    if any(day not in allowed_days for day in value):
+        raise ValidationError(_("Working hours contain an unknown weekday."))
+    for day, periods in value.items():
+        if not isinstance(periods, list):
+            raise ValidationError({day: _("Working hours must be a list of periods.")})
+        for period in periods:
+            if not isinstance(period, dict) or set(period) != {"open", "close"}:
+                raise ValidationError({day: _("Each period must contain open and close times.")})
+            for key in ("open", "close"):
+                raw = period[key]
+                if (
+                    not isinstance(raw, str)
+                    or len(raw) != 5
+                    or raw[2] != ":"
+                    or not raw.replace(":", "").isdigit()
+                ):
+                    raise ValidationError({day: _("Times must use 24-hour HH:MM format.")})
+                hours, minutes = map(int, raw.split(":"))
+                if hours > 23 or minutes > 59:
+                    raise ValidationError({day: _("Enter a valid time.")})
+            if period["open"] >= period["close"]:
+                raise ValidationError({day: _("Opening time must be before closing time.")})
+
+
 class OrganizationStatus(models.TextChoices):
     TRIAL = "trial", _("Trial")
     ACTIVE = "active", _("Active")
@@ -191,6 +219,7 @@ class Branch(models.Model):
     phone = models.CharField(max_length=30, blank=True)
     email = models.EmailField(blank=True)
     timezone = models.CharField(max_length=64, default="Asia/Tashkent", validators=[validate_timezone])
+    working_hours = models.JSONField(default=dict, blank=True, validators=[validate_working_hours])
     is_active = models.BooleanField(default=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -236,6 +265,12 @@ class OrganizationProfile(models.Model):
         default=0,
         validators=[MinValueValidator(0), MaxValueValidator(100)],
     )
+    onboarding_current_step = models.PositiveSmallIntegerField(
+        default=1,
+        validators=[MinValueValidator(1), MaxValueValidator(6)],
+    )
+    onboarding_completed_steps = models.JSONField(default=list, blank=True)
+    onboarding_completed_at = models.DateTimeField(null=True, blank=True)
     status = models.CharField(
         max_length=20,
         choices=OrganizationProfileStatus.choices,

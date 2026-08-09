@@ -6,6 +6,8 @@ export const brand = {
     process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "hello@example.com",
   telegramUrl: process.env.NEXT_PUBLIC_TELEGRAM_URL ?? "",
   appUrl: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+  clientAppUrl:
+    process.env.NEXT_PUBLIC_CLIENT_APP_URL ?? "http://localhost:3001",
 } as const;
 
 export type Brand = typeof brand;

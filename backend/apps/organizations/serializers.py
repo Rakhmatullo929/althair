@@ -7,6 +7,7 @@ from organizations.models import (
     Organization,
     OrganizationMembership,
     OrganizationProfile,
+    OrganizationInvitation,
 )
 from organizations.services import create_organization
 
@@ -16,10 +17,14 @@ User = get_user_model()
 class MembershipSummarySerializer(serializers.ModelSerializer):
     organization_name = serializers.CharField(source="organization.name", read_only=True)
     organization_slug = serializers.CharField(source="organization.slug", read_only=True)
+    organization_status = serializers.CharField(source="organization.status", read_only=True)
 
     class Meta:
         model = OrganizationMembership
-        fields = ["id", "organization", "organization_name", "organization_slug", "role", "status", "joined_at"]
+        fields = [
+            "id", "organization", "organization_name", "organization_slug",
+            "organization_status", "role", "status", "joined_at",
+        ]
 
 
 class MeSerializer(serializers.ModelSerializer):
@@ -64,9 +69,13 @@ class OrganizationProfileSerializer(serializers.ModelSerializer):
             "products_services_summary", "business_rules", "preferred_communication_tone",
             "supported_languages", "response_guidelines", "escalation_instructions",
             "public_contact_information", "onboarding_completion_percentage", "status", "version",
+            "onboarding_current_step", "onboarding_completed_steps", "onboarding_completed_at",
             "created_at", "updated_at", "published_at",
         ]
-        read_only_fields = ["organization", "version", "created_at", "updated_at", "published_at"]
+        read_only_fields = [
+            "organization", "version", "onboarding_completed_at", "created_at",
+            "updated_at", "published_at",
+        ]
 
     def update(self, instance, validated_data):
         instance.version += 1
@@ -80,7 +89,10 @@ class BranchSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Branch
-        fields = ["id", "organization", "name", "address", "phone", "email", "timezone", "is_active", "created_at", "updated_at"]
+        fields = [
+            "id", "organization", "name", "address", "phone", "email", "timezone",
+            "working_hours", "is_active", "created_at", "updated_at",
+        ]
         read_only_fields = ["id", "organization", "created_at", "updated_at"]
 
 
@@ -96,3 +108,26 @@ class MembershipSerializer(serializers.ModelSerializer):
 
     def get_user_name(self, obj):
         return obj.user.get_full_name() or obj.user.username
+
+
+class InvitationSerializer(serializers.ModelSerializer):
+    invited_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrganizationInvitation
+        fields = [
+            "id", "organization", "email", "role", "status", "expires_at",
+            "invited_by_name", "accepted_at", "created_at", "updated_at",
+        ]
+        read_only_fields = fields
+
+    def get_invited_by_name(self, obj):
+        return obj.invited_by.get_full_name() or obj.invited_by.email or obj.invited_by.username
+
+
+class InvitationCreateSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    role = serializers.ChoiceField(choices=["admin", "manager", "agent", "viewer"])
+
+    def validate_email(self, value):
+        return value.strip().lower()

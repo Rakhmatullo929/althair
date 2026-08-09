@@ -37,12 +37,12 @@ export function SiteHeader() {
   return (
     <header
       className={cn(
-        "fixed inset-x-0 top-0 z-40 border-b border-transparent transition",
+        "fixed inset-x-0 top-0 z-40 border-b border-transparent transition duration-300",
         scrolled &&
-          "border-border bg-white/88 shadow-[0_4px_24px_rgba(16,24,40,.04)] backdrop-blur-xl",
+          "border-emerald-950/10 bg-[#fbfcf8]/88 shadow-[0_10px_35px_rgba(20,35,28,.045)] backdrop-blur-xl",
       )}
     >
-      <div className="container-shell flex h-[72px] items-center justify-between gap-4">
+      <div className="container-shell flex h-[76px] items-center justify-between gap-4">
         <a href="#top" className="focus-ring rounded-xl" aria-label={t("home")}>
           <Logo />
         </a>
@@ -56,7 +56,7 @@ export function SiteHeader() {
               key={anchor}
               className={buttonStyles({
                 variant: "ghost",
-                className: "min-h-10 px-3 text-xs xl:text-sm",
+                className: "min-h-10 px-3 text-xs font-medium xl:text-sm",
               })}
             >
               {t(anchor)}
@@ -82,7 +82,7 @@ export function SiteHeader() {
                 <a
                   href={`#${anchor}`}
                   key={anchor}
-                  className="focus-ring text-ink rounded-xl px-3 py-3 text-base font-semibold hover:bg-emerald-50"
+                  className="focus-ring text-ink rounded-xl px-3 py-3 text-base font-semibold hover:bg-emerald-950/[.045]"
                 >
                   {t(anchor)}
                 </a>

@@ -2,9 +2,9 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
 const localizedHeadings = {
-  ru: /Ваш умный ассистент/,
-  uz: /Biznesingiz o‘sishi uchun/,
-  en: /Your intelligent assistant/,
+  ru: /Каждый диалог/,
+  uz: /Har bir suhbat/,
+  en: /Every conversation/,
 };
 
 for (const [locale, heading] of Object.entries(localizedHeadings)) {

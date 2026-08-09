@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "title": "AI assistant for business growth",
-    "description": "One AI workspace for customer conversations, sales, bookings, and CRM — currently preparing for early access.",
+    "title": "A digital front office for business",
+    "description": "Althair AI receives customer requests, responds with company context, and turns conversations into leads, bookings, and tasks.",
     "privacyTitle": "Privacy policy — draft",
     "termsTitle": "Terms of use — draft"
   },
@@ -21,15 +21,15 @@
     "mobileNav": "Mobile navigation"
   },
   "hero": {
-    "badge": "AI assistant for your business",
-    "titleBefore": "Your intelligent assistant for",
-    "titleHighlight": "business growth",
-    "description": "AI responds to customers, supports sales, books appointments, and keeps CRM records — all in one workspace.",
+    "badge": "AI front office for growing teams",
+    "titleBefore": "Every conversation,",
+    "titleHighlight": "already in motion",
+    "description": "Althair AI receives requests from your channels, responds with company context, and turns each conversation into a lead, booking, or team task.",
     "primary": "Get early access",
     "secondary": "See how it works",
-    "note": "Early access for the first companies",
-    "visualLabel": "Demo of AI connecting customer channels",
-    "hub": "AI hub",
+    "note": "Early access for the first teams",
+    "visualLabel": "Interactive 3D model of Althair AI connecting a customer conversation to a business outcome",
+    "hub": "Context active",
     "messages": [
       { "label": "Instagram", "text": "Any availability this evening?" },
       { "label": "AI reply", "text": "Yes, 6:30 PM is available" },

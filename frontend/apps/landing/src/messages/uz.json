@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "title": "Biznes o‘sishi uchun AI-assistent",
-    "description": "Mijozlar bilan muloqot, sotuv, yozuvlar va CRM uchun yagona AI-muhit — hozir erta kirishga tayyorlanmoqda.",
+    "title": "Biznes uchun raqamli front office",
+    "description": "Althair AI murojaatlarni qabul qiladi, kompaniya kontekstida javob beradi va suhbatlarni lid, yozuv hamda vazifalarga aylantiradi.",
     "privacyTitle": "Maxfiylik siyosati — qoralama",
     "termsTitle": "Foydalanish shartlari — qoralama"
   },
@@ -21,15 +21,15 @@
     "mobileNav": "Mobil navigatsiya"
   },
   "hero": {
-    "badge": "Biznesingiz uchun AI-assistent",
-    "titleBefore": "Biznesingiz o‘sishi uchun",
-    "titleHighlight": "aqlli assistent",
-    "description": "AI mijozlarga javob beradi, sotuvga yordam beradi, xizmatlarga yozadi va ma’lumotlarni CRM’da saqlaydi — barchasi bitta oynada.",
+    "badge": "Rivojlanayotgan jamoalar uchun AI front office",
+    "titleBefore": "Har bir suhbat —",
+    "titleHighlight": "allaqachon ishda",
+    "description": "Althair AI kanallaringizdagi murojaatlarni qabul qiladi, kompaniya kontekstida javob beradi va suhbatni lid, yozuv yoki jamoa vazifasiga aylantiradi.",
     "primary": "Erta kirish imkonini olish",
     "secondary": "Qanday ishlashini ko‘rish",
-    "note": "Dastlabki kompaniyalar uchun erta kirish",
-    "visualLabel": "AI aloqa kanallarini birlashtirishi namoyishi",
-    "hub": "AI markaz",
+    "note": "Dastlabki jamoalar uchun erta kirish",
+    "visualLabel": "Mijoz suhbatini biznes natijasiga bog‘laydigan Althair AI interaktiv 3D modeli",
+    "hub": "Kontekst faol",
     "messages": [
       { "label": "Instagram", "text": "Bugun kechqurun bo‘sh vaqt bormi?" },
       { "label": "AI javobi", "text": "Ha, soat 18:30 bo‘sh" },

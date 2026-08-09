@@ -1,7 +1,7 @@
 import { brand } from "@workspace/brand";
 import { ImageResponse } from "next/og";
 
-export const alt = `${brand.name} — AI assistant for business`;
+export const alt = `${brand.name} — digital front office for business`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -10,7 +10,7 @@ export default function OpenGraphImage() {
     <div
       style={{
         alignItems: "center",
-        background: "#f4fbf7",
+        background: "#eef3ed",
         display: "flex",
         height: "100%",
         justifyContent: "center",
@@ -20,10 +20,10 @@ export default function OpenGraphImage() {
     >
       <div
         style={{
-          background: "white",
-          border: "1px solid #dcebe3",
-          borderRadius: 40,
-          boxShadow: "0 30px 90px rgba(8, 80, 55, .10)",
+          background: "#071a13",
+          border: "1px solid #17382a",
+          borderRadius: 34,
+          boxShadow: "0 30px 90px rgba(8, 36, 23, .16)",
           display: "flex",
           flexDirection: "column",
           height: "100%",
@@ -35,6 +35,7 @@ export default function OpenGraphImage() {
         <div
           style={{
             alignItems: "center",
+            color: "#ffffff",
             display: "flex",
             fontSize: 28,
             fontWeight: 700,
@@ -44,32 +45,24 @@ export default function OpenGraphImage() {
           <div
             style={{
               alignItems: "center",
-              background: "#08a66a",
+              border: "1px solid #27543f",
               borderRadius: 15,
-              color: "white",
+              color: "#dff79e",
               display: "flex",
-              fontSize: 32,
+              fontSize: 18,
               height: 58,
               justifyContent: "center",
               width: 58,
             }}
           >
-            <div
-              style={{
-                background: "white",
-                borderRadius: 999,
-                display: "flex",
-                height: 18,
-                width: 18,
-              }}
-            />
+            AI
           </div>
           {brand.name}
         </div>
         <div style={{ display: "flex", flexDirection: "column" }}>
           <div
             style={{
-              color: "#08a66a",
+              color: "#9ee1bd",
               fontSize: 22,
               fontWeight: 700,
               letterSpacing: 2,
@@ -80,7 +73,7 @@ export default function OpenGraphImage() {
           </div>
           <div
             style={{
-              color: "#111827",
+              color: "#ffffff",
               fontSize: 68,
               fontWeight: 800,
               letterSpacing: -3,
@@ -89,7 +82,7 @@ export default function OpenGraphImage() {
               maxWidth: 930,
             }}
           >
-            AI assistant for business growth
+            Every conversation, already in motion
           </div>
         </div>
       </div>

@@ -1,6 +1,6 @@
 export const brand = {
-  name: process.env.NEXT_PUBLIC_BRAND_NAME ?? "AI Front Office",
-  shortName: process.env.NEXT_PUBLIC_BRAND_SHORT_NAME ?? "AIFO",
+  name: process.env.NEXT_PUBLIC_BRAND_NAME ?? "Althair AI",
+  shortName: process.env.NEXT_PUBLIC_BRAND_SHORT_NAME ?? "Althair",
   stage: "prelaunch",
   primaryContactEmail:
     process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "hello@example.com",

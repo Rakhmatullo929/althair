@@ -8,6 +8,7 @@ import {
 } from "next-intl/server";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
+import { MotionOrchestrator } from "@/components/motion-orchestrator";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { routing } from "@/i18n/routing";
@@ -66,6 +67,7 @@ export default async function LocaleLayout({
   const nav = await getTranslations({ locale, namespace: "nav" });
   return (
     <NextIntlClientProvider messages={messages}>
+      <MotionOrchestrator />
       <a
         href="#main"
         className="focus:bg-primary sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:rounded-lg focus:px-4 focus:py-2 focus:text-white"

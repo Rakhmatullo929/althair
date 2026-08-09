@@ -1,0 +1,22 @@
+{
+  "name": "@workspace/brand",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./mark": "./src/mark.tsx"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.14",
+    "@types/react": "19.2.14",
+    "@workspace/typescript-config": "workspace:*",
+    "typescript": "6.0.3"
+  }
+}

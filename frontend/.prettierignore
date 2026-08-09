@@ -1,0 +1,7 @@
+node_modules
+.next
+.turbo
+playwright-report
+test-results
+artifacts
+pnpm-lock.yaml

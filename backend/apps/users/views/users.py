@@ -1,6 +1,11 @@
 import logging
+import hashlib
+import secrets
+from datetime import timedelta
 
 from django.contrib.auth import authenticate, get_user_model
+from django.core.mail import send_mail
+from django.db import IntegrityError, transaction
 from django.middleware import csrf
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
@@ -19,22 +24,30 @@ from django.shortcuts import get_object_or_404
 from users.serializers.users import (
     ChangePasswordSerializer,
     LoginSerializer,
+    InvitationAcceptSerializer,
+    InvitationTokenSerializer,
+    PasswordResetConfirmSerializer,
+    PasswordResetRequestSerializer,
+    RegistrationSerializer,
     UserAdminSerializer,
     UserSerializer,
 )
-from users.models import UserRole
+from users.models import PasswordResetToken, UserRole
+from users.utils.authentication import enforce_csrf
 from intake.models import TeamLead
 from organizations.models import (
     OrganizationMembership,
     OrganizationMembershipRole,
     OrganizationMembershipStatus,
+    OrganizationInvitation,
+    OrganizationInvitationStatus,
 )
 from organizations.permissions import (
     HasOrganizationRole,
     IsOrganizationMember,
     OrganizationContextMixin,
 )
-from organizations.services import update_membership
+from organizations.services import accept_invitation, hash_invitation_token, update_membership
 
 User = get_user_model()
 security_logger = logging.getLogger('security.audit')
@@ -154,6 +167,16 @@ def _clear_tokens(response: Response):
         response.delete_cookie(name, path='/')
 
 
+def _auth_response(user, *, status_code=status.HTTP_200_OK, extra=None):
+    refresh = RefreshToken.for_user(user)
+    payload = UserSerializer(user).data
+    if extra:
+        payload.update(extra)
+    response = Response(payload, status=status_code)
+    _set_tokens(response, refresh.access_token, refresh)
+    return response
+
+
 class LoginView(APIView):
     """
     POST {email, password}
@@ -165,6 +188,7 @@ class LoginView(APIView):
     throttle_scope = 'login'
 
     def post(self, request):
+        enforce_csrf(request)
         ser = LoginSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
         email = ser.validated_data['email'].lower().strip()
@@ -189,13 +213,34 @@ class LoginView(APIView):
 
         security_logger.info('Successful login for user %s from IP %s', user.id, client_ip)
 
-        refresh = RefreshToken.for_user(user)
-        access = refresh.access_token
+        return _auth_response(user)
 
-        data = UserSerializer(user).data
-        resp = Response(data, status=status.HTTP_200_OK)
-        _set_tokens(resp, access, refresh)
-        return resp
+
+class RegistrationView(APIView):
+    permission_classes = [permissions.AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'registration'
+
+    def post(self, request):
+        enforce_csrf(request)
+        serializer = RegistrationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            user, organization = serializer.save()
+        except IntegrityError:
+            return Response(
+                {
+                    'detail': 'Registration could not be completed with these details.',
+                    'code': 'registration_unavailable',
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+        security_logger.info('Registered user %s with organization %s', user.id, organization.id)
+        return _auth_response(
+            user,
+            status_code=status.HTTP_201_CREATED,
+            extra={'organization_id': str(organization.id)},
+        )
 
 
 class RefreshView(APIView):
@@ -208,6 +253,7 @@ class RefreshView(APIView):
     throttle_scope = 'users'
 
     def post(self, request):
+        enforce_csrf(request)
         refresh_name = settings.SIMPLE_JWT.get('AUTH_COOKIE_REFRESH', 'refresh')
         raw_refresh = request.COOKIES.get(refresh_name)
         if not raw_refresh:
@@ -283,6 +329,9 @@ class ChangePasswordView(APIView):
     Verifies the current password, sets the new one, and clears must_change_password.
     """
 
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'password_sensitive'
+
     def post(self, request):
         ser = ChangePasswordSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
@@ -308,6 +357,179 @@ class CSRFView(APIView):
     @method_decorator(ensure_csrf_cookie)
     def get(self, request):
         return Response({'csrftoken': csrf.get_token(request)})
+
+
+class InvitationInspectView(APIView):
+    permission_classes = [permissions.AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'invitation'
+
+    def post(self, request):
+        enforce_csrf(request)
+        serializer = InvitationTokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        invitation = OrganizationInvitation.objects.select_related('organization').filter(
+            token_hash=hash_invitation_token(serializer.validated_data['token']),
+        ).first()
+        if not invitation:
+            return Response({'state': 'invalid'}, status=status.HTTP_404_NOT_FOUND)
+        if invitation.status == OrganizationInvitationStatus.PENDING and invitation.expires_at <= timezone.now():
+            invitation.status = OrganizationInvitationStatus.EXPIRED
+            invitation.save(update_fields=['status', 'updated_at'])
+        return Response({
+            'state': invitation.status,
+            'email': invitation.email,
+            'organization_name': invitation.organization.name,
+            'role': invitation.role,
+            'expires_at': invitation.expires_at,
+        })
+
+
+class InvitationAcceptView(APIView):
+    permission_classes = [permissions.AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'invitation'
+
+    @transaction.atomic
+    def post(self, request):
+        enforce_csrf(request)
+        serializer = InvitationAcceptSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        raw_token = serializer.validated_data['token']
+        invitation = OrganizationInvitation.objects.select_for_update().filter(
+            token_hash=hash_invitation_token(raw_token),
+        ).first()
+        if not invitation:
+            return Response(
+                {'detail': 'Invitation is invalid or already used.', 'code': 'invitation_invalid'},
+                status=status.HTTP_409_CONFLICT,
+            )
+        if invitation.status != OrganizationInvitationStatus.PENDING:
+            return Response(
+                {'detail': f'Invitation is {invitation.status}.', 'code': f'invitation_{invitation.status}'},
+                status=status.HTTP_409_CONFLICT,
+            )
+        if invitation.expires_at <= timezone.now():
+            invitation.status = OrganizationInvitationStatus.EXPIRED
+            invitation.save(update_fields=['status', 'updated_at'])
+            return Response(
+                {'detail': 'Invitation has expired.', 'code': 'invitation_expired'},
+                status=status.HTTP_410_GONE,
+            )
+
+        user = request.user if request.user.is_authenticated else None
+        created_user = False
+        if user is None:
+            user = User.objects.filter(email__iexact=invitation.email).first()
+            if user:
+                return Response(
+                    {'detail': 'Sign in with the invited account to continue.', 'code': 'login_required'},
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
+            password = serializer.validated_data.get('password')
+            if not password:
+                return Response(
+                    {'detail': 'A password is required for a new account.', 'code': 'password_required'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            user = User.objects.create_user(
+                username=invitation.email,
+                email=invitation.email,
+                password=password,
+                first_name=serializer.validated_data.get('first_name', ''),
+                last_name=serializer.validated_data.get('last_name', ''),
+            )
+            created_user = True
+        try:
+            membership = accept_invitation(raw_token=raw_token, user=user)
+        except ValueError as exc:
+            return Response(
+                {'detail': str(exc), 'code': 'invitation_email_mismatch'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        security_logger.info(
+            'User %s accepted invitation %s for organization %s',
+            user.id,
+            invitation.id,
+            membership.organization_id,
+        )
+        payload = {
+            'detail': 'Invitation accepted.',
+            'organization_id': str(membership.organization_id),
+            'membership_role': membership.role,
+        }
+        if created_user:
+            return _auth_response(user, status_code=status.HTTP_201_CREATED, extra=payload)
+        return Response(payload)
+
+
+class PasswordResetRequestView(APIView):
+    permission_classes = [permissions.AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'password_sensitive'
+
+    def post(self, request):
+        enforce_csrf(request)
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = User.objects.filter(email__iexact=serializer.validated_data['email']).first()
+        development_reset_url = None
+        if user:
+            raw_token = secrets.token_urlsafe(32)
+            PasswordResetToken.objects.create(
+                user=user,
+                token_hash=hashlib.sha256(raw_token.encode('utf-8')).hexdigest(),
+                expires_at=timezone.now() + timedelta(hours=1),
+            )
+            client_app_url = getattr(settings, 'CLIENT_APP_URL', 'http://localhost:3001').rstrip('/')
+            reset_path = f"/ru/reset-password/{raw_token}"
+            if settings.DEBUG:
+                development_reset_url = f"{client_app_url}{reset_path}"
+                send_mail(
+                    'Development password reset',
+                    f'Open this development-only reset link: {development_reset_url}',
+                    settings.DEFAULT_FROM_EMAIL,
+                    [user.email],
+                    fail_silently=True,
+                )
+        payload = {
+            'detail': 'If the account can be reset, recovery instructions are available.',
+            'delivery': 'development_console' if settings.DEBUG else 'not_configured',
+        }
+        if development_reset_url:
+            payload['development_reset_url'] = development_reset_url
+        return Response(payload, status=status.HTTP_202_ACCEPTED)
+
+
+class PasswordResetConfirmView(APIView):
+    permission_classes = [permissions.AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'password_sensitive'
+
+    @transaction.atomic
+    def post(self, request):
+        enforce_csrf(request)
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        token_hash = hashlib.sha256(serializer.validated_data['token'].encode('utf-8')).hexdigest()
+        reset_token = PasswordResetToken.objects.select_for_update().filter(
+            token_hash=token_hash,
+            used_at__isnull=True,
+            expires_at__gt=timezone.now(),
+        ).select_related('user').first()
+        if not reset_token:
+            return Response(
+                {'detail': 'Reset token is invalid or expired.', 'code': 'reset_token_invalid'},
+                status=status.HTTP_410_GONE,
+            )
+        reset_token.user.set_password(serializer.validated_data['password'])
+        reset_token.user.save(update_fields=['password'])
+        reset_token.used_at = timezone.now()
+        reset_token.save(update_fields=['used_at'])
+        from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
+        OutstandingToken.objects.filter(user=reset_token.user).delete()
+        security_logger.info('User %s completed password reset', reset_token.user.id)
+        return Response({'detail': 'Password reset complete.'})
 
 
 # ── User management (Administrator-only) ──────────────────────────────────────
@@ -341,9 +563,10 @@ class UserListCreateView(OrganizationContextMixin, APIView):
                 {'detail': 'Invalid membership role.', 'code': 'invalid_role'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        if requested_role == OrganizationMembershipRole.OWNER and request.organization_membership.role != OrganizationMembershipRole.OWNER:
+        authority = {'viewer': 1, 'agent': 2, 'manager': 3, 'admin': 4, 'owner': 5}
+        if authority[requested_role] > authority[request.organization_membership.role]:
             return Response(
-                {'detail': 'Only an owner can grant ownership.', 'code': 'owner_required'},
+                {'detail': 'You cannot grant a role above your own.', 'code': 'role_escalation_denied'},
                 status=status.HTTP_403_FORBIDDEN,
             )
         serializer = UserAdminSerializer(
@@ -405,9 +628,16 @@ class UserDetailView(OrganizationContextMixin, APIView):
                 {'detail': 'Invalid membership status.', 'code': 'invalid_status'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        if requested_role == OrganizationMembershipRole.OWNER and request.organization_membership.role != OrganizationMembershipRole.OWNER:
+        actor_role = request.organization_membership.role
+        authority = {'viewer': 1, 'agent': 2, 'manager': 3, 'admin': 4, 'owner': 5}
+        if membership.role == OrganizationMembershipRole.OWNER and actor_role != OrganizationMembershipRole.OWNER:
             return Response(
-                {'detail': 'Only an owner can grant ownership.', 'code': 'owner_required'},
+                {'detail': "Only an owner can change another owner's membership.", 'code': 'owner_required'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if requested_role and authority[requested_role] > authority[actor_role]:
+            return Response(
+                {'detail': 'You cannot grant a role above your own.', 'code': 'role_escalation_denied'},
                 status=status.HTTP_403_FORBIDDEN,
             )
         serializer = UserAdminSerializer(

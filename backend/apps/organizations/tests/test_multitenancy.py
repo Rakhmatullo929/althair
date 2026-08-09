@@ -91,6 +91,7 @@ class MultiTenantFoundationTests(APITestCase):
         creator = User.objects.create_user(username='creator', password='pw12345!')
         organization = create_organization(creator=creator, name='Created', slug='created')
         self.assertTrue(organization.profile.pk)
+        self.assertTrue(organization.assistant_profile.pk)
         self.assertTrue(OrganizationMembership.objects.filter(
             organization=organization, user=creator, role='owner', status='active',
         ).exists())

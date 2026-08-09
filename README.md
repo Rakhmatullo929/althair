@@ -1,34 +1,74 @@
 # AI Front Office workspace
 
-This repository contains the existing Next.js landing workspace and a tenant-safe Django modular
-monolith.
+This repository contains three preserved parts of the product: the public localized Landing, the
+localized customer portal, and a tenant-safe Django modular monolith. The legacy MMC vertical is
+still isolated in the backend and remains covered by its regression tests.
 
-## Backend services
+## Local stack
 
 ```bash
 cp backend/.env.example .env
-# Fill local placeholders; do not commit .env.
-docker compose up --build
-docker compose exec api python manage.py createsuperuser
-docker compose exec api python manage.py seed_dev_workspace
+# Replace local placeholders. Never commit .env.
+docker compose up -d --build
+docker compose exec api python manage.py migrate --noinput
+
+cd frontend
+corepack enable
+pnpm install --frozen-lockfile
+pnpm dev                 # Landing at http://localhost:3000
+pnpm dev:client          # Client portal at http://localhost:3001
 ```
 
-The API is available at `http://localhost:8000`; health routes are `/health/live` and
-`/health/ready`.
+The API is at `http://localhost:8000`; health routes are `/health/live` and `/health/ready`.
+The Landing uses `NEXT_PUBLIC_CLIENT_APP_URL` for its login entry point. The portal uses
+`NEXT_PUBLIC_API_URL` and sends credentialed cookie requests to the API.
 
-## Landing
+## Deterministic portal data
+
+The seed command is deliberately development-only and requires an explicit password:
 
 ```bash
-cd frontend
+cd backend
+DEBUG=true CLIENT_PORTAL_SEED_PASSWORD='development-only-change-me' \
+  python manage.py seed_client_portal
+```
+
+It creates `owner@portal.test`, a lower-role member, active multi-organization data, a suspended
+organization, branches, channel status records, and versioned AI Context. The password is never
+printed. `seed_dev_workspace` remains available for the preserved legacy development fixtures.
+
+## Verification
+
+```bash
+cd backend
+pip install -r requirements.txt -r requirements-dev.txt
+python manage.py makemigrations --check
+python manage.py migrate --noinput
+python manage.py check
+python manage.py test
+python -m compileall -q .
+
+cd ../frontend
 pnpm install --frozen-lockfile
-pnpm dev
+pnpm format:check
+pnpm lint
+pnpm typecheck
+pnpm build
+pnpm test
+pnpm test:e2e
+pnpm screenshots
+
+cd ..
+./scripts/check-secrets.sh
 ```
 
-Configure its server-side lead delivery with:
+See [backend/docs/api/multitenant-api.md](backend/docs/api/multitenant-api.md),
+[backend/docs/security/client-authentication.md](backend/docs/security/client-authentication.md),
+and [backend/docs/architecture/client-onboarding.md](backend/docs/architecture/client-onboarding.md).
 
-```dotenv
-LEAD_WEBHOOK_URL=http://localhost:8000/api/v1/public/early-access/
-LEAD_WEBHOOK_SECRET=replace-with-the-same-random-value
-```
+## Current boundary
 
-The secret is read only by the Next.js server route and must never use a `NEXT_PUBLIC_` name.
+This stage intentionally does not activate provider integrations, run OpenAI, generate system
+prompts, add a CRM inbox, booking, billing, or Super Admin, or deploy production infrastructure.
+Password-reset and invitation email delivery use the development console lifecycle only until a
+reliable production mail provider is configured.

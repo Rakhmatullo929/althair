@@ -8,12 +8,14 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev --filter=@workspace/landing",
+    "dev:client": "turbo run dev --filter=@workspace/client",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test:e2e": "pnpm --filter @workspace/landing test:e2e",
-    "screenshots": "pnpm --filter @workspace/landing screenshots"
+    "test": "pnpm --filter @workspace/client test",
+    "test:e2e": "pnpm --filter @workspace/landing test:e2e && pnpm --filter @workspace/client test:e2e",
+    "screenshots": "pnpm --filter @workspace/landing screenshots && pnpm --filter @workspace/client screenshots"
   },
   "devDependencies": {
     "prettier": "3.8.2",

@@ -16,6 +16,14 @@ fail closed. Provider message idempotency is scoped by organization and connecti
 AI tools receive tenant-owned objects from server-side context. Model validation rejects related
 objects owned by another organization, and credentials remain encrypted/write-only.
 
+The browser may retain the UUID of its last selected organization, but this is only a preference.
+On every portal start it is validated against active memberships from `/api/v1/me/`. Each tenant
+request is independently resolved from `X-Organization-ID` and an active membership; cached UI data
+is cleared before a switch is exposed. Organization status is enforced centrally so suspended and
+archived tenants cannot mutate any customer endpoint.
+
+See `client-onboarding.md` for the AI Context ownership/version model and complete role matrix.
+
 ## Legacy MMC vertical
 
 The MMC job fields and PO/REQ rules are intentionally preserved in `intake.JobRecord` during this

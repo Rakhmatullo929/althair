@@ -1,5 +1,12 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db import transaction
+from django.utils.text import slugify
 from rest_framework import serializers
+
+from organizations.models import Organization
+from organizations.services import create_organization
 
 User = get_user_model()
 
@@ -7,6 +14,101 @@ User = get_user_model()
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True, trim_whitespace=False)
+
+
+class RegistrationSerializer(serializers.Serializer):
+    first_name = serializers.CharField(max_length=150)
+    last_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True, trim_whitespace=False)
+    organization_name = serializers.CharField(max_length=160)
+    industry = serializers.CharField(max_length=30, default="generic")
+    default_language = serializers.ChoiceField(choices=["ru", "uz", "en"], default="ru")
+    timezone = serializers.CharField(max_length=64, default="Asia/Tashkent")
+
+    def validate_email(self, value):
+        return value.strip().lower()
+
+    def validate_password(self, value):
+        try:
+            validate_password(value)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError(list(exc.messages)) from exc
+        return value
+
+    def validate(self, attrs):
+        # A deliberately generic conflict avoids exposing account existence.
+        if User.objects.filter(email__iexact=attrs["email"]).exists():
+            raise serializers.ValidationError(
+                {"detail": "Registration could not be completed with these details."}
+            )
+        return attrs
+
+    @transaction.atomic
+    def create(self, validated_data):
+        organization_name = validated_data.pop("organization_name").strip()
+        industry = validated_data.pop("industry")
+        default_language = validated_data.pop("default_language")
+        organization_timezone = validated_data.pop("timezone")
+        password = validated_data.pop("password")
+        email = validated_data["email"]
+        base_slug = slugify(organization_name)[:68] or "workspace"
+        slug = base_slug
+        suffix = 2
+        while Organization.objects.filter(slug=slug).exists():
+            slug = f"{base_slug[: max(1, 78 - len(str(suffix)))]}-{suffix}"
+            suffix += 1
+        user = User.objects.create_user(
+            username=email,
+            password=password,
+            **validated_data,
+        )
+        organization = create_organization(
+            creator=user,
+            name=organization_name,
+            slug=slug,
+            industry=industry,
+            default_language=default_language,
+            timezone=organization_timezone,
+        )
+        return user, organization
+
+
+class InvitationTokenSerializer(serializers.Serializer):
+    token = serializers.CharField(write_only=True, min_length=32, max_length=256)
+
+
+class InvitationAcceptSerializer(InvitationTokenSerializer):
+    first_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
+    last_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
+    password = serializers.CharField(
+        write_only=True,
+        trim_whitespace=False,
+        required=False,
+        allow_blank=False,
+    )
+
+    def validate_password(self, value):
+        try:
+            validate_password(value)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError(list(exc.messages)) from exc
+        return value
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class PasswordResetConfirmSerializer(InvitationTokenSerializer):
+    password = serializers.CharField(write_only=True, trim_whitespace=False)
+
+    def validate_password(self, value):
+        try:
+            validate_password(value)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError(list(exc.messages)) from exc
+        return value
 
 
 class UserSerializer(serializers.ModelSerializer):

@@ -1,0 +1,17 @@
+{
+  "name": "@workspace/api-client",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.14",
+    "@workspace/typescript-config": "workspace:*",
+    "typescript": "6.0.3"
+  }
+}

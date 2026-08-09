@@ -1,5 +1,6 @@
 from __future__ import annotations
 import os
+import uuid
 from uuid import uuid4
 
 from django.contrib.auth.models import AbstractUser, BaseUserManager
@@ -36,7 +37,7 @@ class UserManager(BaseUserManager):
     def create_user(self, username, email=None, password=None, **extra_fields):
         if not username:
             raise ValueError("The given username must be set")
-        email = self.normalize_email(email)
+        email = self.normalize_email(email) if email else None
         user = self.model(username=username, email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -60,7 +61,13 @@ class User(AbstractUser):
     Кастомная модель User (без location и address).
     """
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    email = models.EmailField(_("email address"), blank=True, validators=[EmailValidator()])
+    email = models.EmailField(
+        _("email address"),
+        blank=True,
+        null=True,
+        unique=True,
+        validators=[EmailValidator()],
+    )
     phone = models.CharField(_("phone"), max_length=24, validators=[phone_validator], blank=True)
     # DEPRECATED: migration input only. Never use for tenant resolution or authorization.
     organization = models.CharField(_("organization"), max_length=255, blank=True)
@@ -123,3 +130,17 @@ class User(AbstractUser):
         total = len(fields)
         filled = sum(1 for f in fields if getattr(self, f) not in [None, "", []])
         return int(round((filled / total) * 100)) if total else 0
+
+
+class PasswordResetToken(models.Model):
+    """Single-use password reset grant. Only a SHA-256 token hash is persisted."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="password_reset_tokens")
+    token_hash = models.CharField(max_length=64, unique=True, editable=False)
+    expires_at = models.DateTimeField(db_index=True)
+    used_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [models.Index(fields=["user", "expires_at", "used_at"])]

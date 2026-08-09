@@ -17,7 +17,7 @@ export default withNextIntl({
     return [
       {
         source: "/api/:path*",
-        destination: `${backendApiOrigin}/api/:path*`,
+        destination: `${backendApiOrigin}/api/:path*/`,
       },
     ];
   },

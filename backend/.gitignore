@@ -26,4 +26,5 @@ __pycache__/
 staticfiles/
 .env.*
 !.env.example
+!.env.production.example
 venv/

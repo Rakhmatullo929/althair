@@ -62,6 +62,23 @@ cd ..
 ./scripts/check-secrets.sh
 ```
 
+## Production backend
+
+Production uses `docker-compose.prod.yml`: PostgreSQL and Redis stay on an internal Docker network,
+only the API joins the existing reverse-proxy network, containers restart automatically, and Docker
+logs are rotated. Copy `backend/.env.production.example` to `.env.production`, replace every
+placeholder, and run:
+
+```bash
+docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build
+docker compose --env-file .env.production -f docker-compose.prod.yml exec -T api \
+  python manage.py check --deploy
+```
+
+The portal should use `NEXT_PUBLIC_API_URL=/api/v1` and `BACKEND_API_ORIGIN` as the HTTPS API
+origin. Its Next.js rewrite keeps browser authentication same-origin while the reverse proxy
+terminates TLS in front of Django. Nginx bootstrap and TLS configs live in `deploy/nginx/`.
+
 See [backend/docs/api/multitenant-api.md](backend/docs/api/multitenant-api.md),
 [backend/docs/security/client-authentication.md](backend/docs/security/client-authentication.md),
 and [backend/docs/architecture/client-onboarding.md](backend/docs/architecture/client-onboarding.md).

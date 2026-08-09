@@ -1,0 +1,35 @@
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+SECRET_KEY = os.environ.get('SECRET_KEY', 'local-secret-key')
+
+
+DEBUG = True
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'pilot',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
+        'PORT': 5432,
+    }
+}
+
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+
+# Отключаем S3 и используем локальные пути
+DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+
+# Локальные пути для статики и медиа
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'files/static')
+
+MEDIA_URL = '/files/uploads/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'files/uploads')

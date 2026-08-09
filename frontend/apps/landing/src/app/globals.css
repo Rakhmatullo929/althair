@@ -1,0 +1,245 @@
+@import "tailwindcss";
+@source "../../../../packages/ui/src";
+
+:root {
+  --primary: #067a4e;
+  --primary-hover: #05613e;
+  --primary-foreground: #ffffff;
+  --primary-soft: #eaf8f1;
+  --primary-softer: #f4fbf7;
+  --ink: #111827;
+  --secondary: #667085;
+  --muted: #667085;
+  --border: #e6ece8;
+  --section: #fafcfb;
+  --error: #d92d20;
+  --success: #079455;
+}
+
+@theme inline {
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-softer: var(--primary-softer);
+  --color-ink: var(--ink);
+  --color-secondary: var(--secondary);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-section: var(--section);
+  --color-error: var(--error);
+  --color-success: var(--success);
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 88px;
+}
+
+body {
+  background: #fff;
+  color: var(--ink);
+  overflow-x: hidden;
+}
+
+::selection {
+  background: #bdf4d9;
+  color: #064e3b;
+}
+
+button,
+a,
+select,
+input,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.container-shell {
+  width: min(100% - 2rem, 76rem);
+  margin-inline: auto;
+}
+
+.section-space {
+  padding-block: clamp(4.5rem, 9vw, 7.5rem);
+}
+
+.eyebrow {
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.focus-ring:focus-visible {
+  outline: 3px solid rgb(8 166 106 / 0.28);
+  outline-offset: 3px;
+}
+
+.hero-atmosphere {
+  background:
+    radial-gradient(
+      circle at 78% 44%,
+      rgb(8 166 106 / 0.12),
+      transparent 28rem
+    ),
+    radial-gradient(circle at 15% 10%, rgb(8 166 106 / 0.05), transparent 22rem);
+}
+
+.dot-grid {
+  background-image: radial-gradient(rgb(8 166 106 / 0.14) 1px, transparent 1px);
+  background-size: 18px 18px;
+  mask-image: linear-gradient(to bottom, black, transparent 88%);
+}
+
+.float-card {
+  animation: float 6s ease-in-out infinite;
+}
+
+.float-card:nth-child(2n) {
+  animation-delay: -2.2s;
+}
+
+.hub-pulse::before {
+  position: absolute;
+  inset: -12px;
+  content: "";
+  border: 1px solid rgb(8 166 106 / 0.2);
+  border-radius: 999px;
+  animation: pulse-ring 3s ease-out infinite;
+}
+
+.connector {
+  stroke-dasharray: 5 7;
+  animation: dash 8s linear infinite;
+}
+
+.scenario-message {
+  animation: message-in 0.38s both;
+}
+
+.scenario-message:nth-child(2) {
+  animation-delay: 0.16s;
+}
+
+.scenario-message:nth-child(3) {
+  animation-delay: 0.32s;
+}
+
+.scenario-message:nth-child(4) {
+  animation-delay: 0.48s;
+}
+
+.reveal {
+  animation: reveal linear both;
+  animation-timeline: view();
+  animation-range: entry 5% cover 25%;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    opacity: 0.8;
+    transform: scale(0.9);
+  }
+  80%,
+  100% {
+    opacity: 0;
+    transform: scale(1.18);
+  }
+}
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: -72;
+  }
+}
+
+@keyframes message-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .container-shell {
+    width: min(100% - 1.25rem, 76rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+}

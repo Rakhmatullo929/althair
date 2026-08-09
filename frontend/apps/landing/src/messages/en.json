@@ -1,0 +1,447 @@
+{
+  "metadata": {
+    "title": "AI assistant for business growth",
+    "description": "One AI workspace for customer conversations, sales, bookings, and CRM — currently preparing for early access.",
+    "privacyTitle": "Privacy policy — draft",
+    "termsTitle": "Terms of use — draft"
+  },
+  "nav": {
+    "product": "Product",
+    "channels": "Channels",
+    "how": "How it works",
+    "industries": "Industries",
+    "faq": "FAQ",
+    "earlyAccess": "Get early access",
+    "language": "Choose language",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "skip": "Skip to content",
+    "home": "Home",
+    "primaryNav": "Primary navigation",
+    "mobileNav": "Mobile navigation"
+  },
+  "hero": {
+    "badge": "AI assistant for your business",
+    "titleBefore": "Your intelligent assistant for",
+    "titleHighlight": "business growth",
+    "description": "AI responds to customers, supports sales, books appointments, and keeps CRM records — all in one workspace.",
+    "primary": "Get early access",
+    "secondary": "See how it works",
+    "note": "Early access for the first companies",
+    "visualLabel": "Demo of AI connecting customer channels",
+    "hub": "AI hub",
+    "messages": [
+      { "label": "Instagram", "text": "Any availability this evening?" },
+      { "label": "AI reply", "text": "Yes, 6:30 PM is available" },
+      { "label": "CRM", "text": "New lead created" },
+      { "label": "Booking", "text": "Confirmed for 6:30 PM" }
+    ]
+  },
+  "product": {
+    "eyebrow": "One workspace",
+    "title": "Every conversation and action in one context",
+    "description": "{brand} brings messages, calls, sales, support, and CRM together. Every company gets a separate secure workspace with its own AI context, channels, customers, and team.",
+    "features": [
+      {
+        "title": "One AI",
+        "description": "Understands conversation history and company rules."
+      },
+      {
+        "title": "Connected channels",
+        "description": "Brings customer requests into one workspace."
+      },
+      {
+        "title": "CRM and history",
+        "description": "Keeps customers, leads, bookings, and outcomes."
+      },
+      {
+        "title": "Actions and handoff",
+        "description": "Performs approved tasks and involves an employee."
+      }
+    ]
+  },
+  "channels": {
+    "eyebrow": "Channels",
+    "title": "Customers reach you where they already are",
+    "description": "Connections will roll out in stages. Card statuses show the current product plan, not a promise of public availability.",
+    "status": {
+      "planned": "Planned",
+      "beta": "Closed beta",
+      "available": "Available"
+    },
+    "items": [
+      {
+        "id": "instagram",
+        "name": "Instagram",
+        "description": "Questions, reactions, and leads from messages.",
+        "status": "planned"
+      },
+      {
+        "id": "telegram",
+        "name": "Telegram",
+        "description": "Customer conversations through a business bot.",
+        "status": "planned"
+      },
+      {
+        "id": "whatsapp",
+        "name": "WhatsApp",
+        "description": "Support and sales in a familiar messenger.",
+        "status": "planned"
+      },
+      {
+        "id": "phone",
+        "name": "Phone calls",
+        "description": "Future voice flows and call history.",
+        "status": "planned"
+      },
+      {
+        "id": "gmail",
+        "name": "Gmail",
+        "description": "Handle inbound emails and requests.",
+        "status": "planned"
+      },
+      {
+        "id": "sms",
+        "name": "SMS",
+        "description": "Notifications, confirmations, and reminders.",
+        "status": "planned"
+      },
+      {
+        "id": "web",
+        "name": "Web chat",
+        "description": "Conversations with visitors on your website.",
+        "status": "planned"
+      }
+    ]
+  },
+  "how": {
+    "eyebrow": "How it works",
+    "title": "From the first message to a clear outcome",
+    "description": "AI handles conversations within defined permissions, records the result, and hands complex cases to a person at the right time.",
+    "steps": [
+      {
+        "title": "A customer reaches out",
+        "description": "They message or call through a connected channel."
+      },
+      {
+        "title": "AI understands",
+        "description": "It uses company context and customer history."
+      },
+      {
+        "title": "It responds or acts",
+        "description": "It answers, creates a lead, or offers a booking."
+      },
+      {
+        "title": "Everything is saved",
+        "description": "Conversation, customer, booking, and result stay in CRM."
+      }
+    ],
+    "mockup": {
+      "inbox": "Inbox",
+      "customers": "Customers",
+      "appointments": "Bookings",
+      "analytics": "Analytics",
+      "conversation": "Customer conversation",
+      "aiMode": "AI is responding",
+      "customer": "Maria S.",
+      "customerInfo": "Customer profile",
+      "newLead": "New lead",
+      "booking": "Booking: 6:30 PM",
+      "handoff": "Hand off to employee",
+      "history": "3 conversations",
+      "messages": [
+        "Hi! Can I book something today?",
+        "Yes, 6:30 PM is available. Does that work?",
+        "Yes, please confirm it."
+      ]
+    }
+  },
+  "scenario": {
+    "eyebrow": "Demo scenarios",
+    "title": "One product, different workflows",
+    "description": "This is a pre-scripted visual demonstration. It is not connected to an external AI and does not process real customer data.",
+    "demoLabel": "Demonstration scenario",
+    "result": "Result",
+    "items": [
+      {
+        "id": "salon",
+        "label": "Beauty salon",
+        "messages": [
+          {
+            "from": "client",
+            "text": "How much is a haircut, and do you have an evening slot?"
+          },
+          {
+            "from": "ai",
+            "text": "A haircut is UZS 180,000. We have 6:30 PM today."
+          },
+          { "from": "client", "text": "Please book it." }
+        ],
+        "action": "Booking created · today, 6:30 PM"
+      },
+      {
+        "id": "clinic",
+        "label": "Clinic",
+        "messages": [
+          { "from": "client", "text": "When is the physician available?" },
+          {
+            "from": "ai",
+            "text": "The doctor is available tomorrow from 10 AM. I can send a request to reception."
+          },
+          { "from": "client", "text": "Yes, please contact me." }
+        ],
+        "action": "Appointment request handed to reception"
+      },
+      {
+        "id": "store",
+        "label": "Online store",
+        "messages": [
+          { "from": "client", "text": "Is this item available in green?" },
+          {
+            "from": "ai",
+            "text": "The green option is expected soon. Shall I notify you?"
+          },
+          { "from": "client", "text": "Yes, let me know when it arrives." }
+        ],
+        "action": "Lead and reminder created"
+      }
+    ]
+  },
+  "context": {
+    "eyebrow": "Company context",
+    "title": "AI that understands your business",
+    "description": "You decide what the assistant knows, how it speaks, and which actions it may take. Each company’s data is isolated in its own workspace.",
+    "workspace": "Secure company workspace",
+    "items": [
+      "Company description",
+      "Services and products",
+      "Prices",
+      "Locations and working hours",
+      "Booking rules",
+      "Delivery and returns",
+      "Tone of voice",
+      "Languages",
+      "Allowed AI actions",
+      "Knowledge documents",
+      "Human escalation rules"
+    ]
+  },
+  "outcomes": {
+    "eyebrow": "Team outcomes",
+    "title": "Less repetitive work. More attention for customers.",
+    "items": [
+      {
+        "title": "Respond faster",
+        "description": "Keep common questions from being missed."
+      },
+      {
+        "title": "Capture every inquiry",
+        "description": "Bring conversations and contacts into one place."
+      },
+      {
+        "title": "Keep customer history",
+        "description": "See the right context before every response."
+      },
+      {
+        "title": "Automate routine work",
+        "description": "Let AI handle repeatable, approved actions."
+      },
+      {
+        "title": "Move toward outcomes",
+        "description": "Turn conversations into leads, bookings, and orders."
+      },
+      {
+        "title": "Keep people in control",
+        "description": "Bring an employee into complex cases."
+      }
+    ]
+  },
+  "industries": {
+    "eyebrow": "Industries",
+    "title": "A universal core, shaped around your business",
+    "description": "The platform is designed for different service teams: context and workflows change while the shared foundation stays consistent.",
+    "items": [
+      "Beauty salons and barbershops",
+      "Clinics and dentistry",
+      "E-commerce",
+      "Education",
+      "Auto services",
+      "Real estate",
+      "Hospitality",
+      "Other service businesses"
+    ]
+  },
+  "security": {
+    "eyebrow": "Security and control",
+    "title": "AI operates within company rules",
+    "description": "The architecture is being designed around data separation and controlled permissions — without unverified certification claims.",
+    "items": [
+      {
+        "title": "Separate workspace",
+        "description": "Every company’s context and data stay separated."
+      },
+      {
+        "title": "Employee roles",
+        "description": "Access follows each person’s responsibilities."
+      },
+      {
+        "title": "Allowed actions",
+        "description": "The company defines automation boundaries."
+      },
+      {
+        "title": "Human handoff",
+        "description": "The team can take over at the right moment."
+      },
+      {
+        "title": "Action history",
+        "description": "A transparent record of important events is planned."
+      }
+    ]
+  },
+  "faq": {
+    "eyebrow": "FAQ",
+    "title": "Common questions",
+    "items": [
+      {
+        "id": "what",
+        "question": "What is this platform?",
+        "answer": "It is a future unified AI platform for customer communication, approved business actions, and shared CRM context."
+      },
+      {
+        "id": "business",
+        "question": "Which businesses is it for?",
+        "answer": "It is designed for salons, clinics, stores, education, auto services, real estate, hospitality, and other service companies."
+      },
+      {
+        "id": "channels",
+        "question": "Which channels will it support?",
+        "answer": "Instagram, Telegram, WhatsApp, Gmail, SMS, web chat, and phone scenarios are planned. Connections will roll out in stages."
+      },
+      {
+        "id": "actions",
+        "question": "Can AI create leads and bookings?",
+        "answer": "That is one of the planned capabilities. Each company will define what the AI is allowed to do."
+      },
+      {
+        "id": "handoff",
+        "question": "Can an employee take over?",
+        "answer": "Yes. Human handoff is part of the planned workflow for complex or sensitive situations."
+      },
+      {
+        "id": "learn",
+        "question": "How does AI learn about the company?",
+        "answer": "The company will provide services, prices, hours, rules, documents, and other knowledge in its workspace."
+      },
+      {
+        "id": "separate",
+        "question": "Is every company’s data separated?",
+        "answer": "The product is being designed as a multi-tenant platform with a separate workspace and context for each company."
+      },
+      {
+        "id": "available",
+        "question": "Is the product available now?",
+        "answer": "There is no public launch yet. We are collecting interest from companies for future early access."
+      }
+    ]
+  },
+  "cta": {
+    "eyebrow": "Early access",
+    "title": "Help shape {brand} for real work",
+    "description": "Tell us about your business and customer channels. We will get in touch when we are ready to invite the first companies.",
+    "primary": "Get early access",
+    "secondary": "See how it works",
+    "note": "The product is in preparation. Launch terms, timing, and pricing have not been announced."
+  },
+  "footer": {
+    "description": "One workspace for customer conversations, actions, and CRM context.",
+    "product": "Product",
+    "company": "Information",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "contact": "Contact",
+    "rights": "All rights reserved.",
+    "stage": "Pre-launch"
+  },
+  "form": {
+    "title": "Early-access request",
+    "description": "Share your contact details and a little about your company. This is a request, not registration for a finished product.",
+    "name": "Full name",
+    "company": "Company",
+    "contact": "Email or phone",
+    "industry": "Industry",
+    "channel": "Preferred contact channel",
+    "note": "Note (optional)",
+    "consentBefore": "I agree to data processing under the",
+    "consentLink": "draft privacy policy",
+    "submit": "Send request",
+    "sending": "Sending…",
+    "select": "Select an option",
+    "industries": [
+      "Beauty",
+      "Healthcare",
+      "E-commerce",
+      "Education",
+      "Auto services",
+      "Real estate",
+      "Hospitality",
+      "Other"
+    ],
+    "channels": ["Email", "Phone", "Telegram", "WhatsApp"],
+    "required": "This field is required",
+    "invalidContact": "Enter a valid email address or phone number",
+    "consentRequired": "Consent is required",
+    "success": "Thank you. Your request was delivered to the team.",
+    "demo": "Demo mode: no lead destination is configured, so your details were not stored. Try again later or contact us directly.",
+    "error": "We could not send your request. Please try again later.",
+    "close": "Close"
+  },
+  "legal": {
+    "back": "Back to home",
+    "draft": "Draft — legal review is required before public launch",
+    "updated": "Version dated August 9, 2026",
+    "privacy": {
+      "title": "Privacy policy",
+      "intro": "This preliminary document explains data handling for the early-access form. It is not the final legal policy.",
+      "sections": [
+        {
+          "title": "Data we collect",
+          "text": "Name, company, contact details, industry, and an optional note."
+        },
+        {
+          "title": "Why we collect it",
+          "text": "To assess early-access interest and contact you about product development."
+        },
+        {
+          "title": "Delivery and retention",
+          "text": "The form sends data only to the server destination configured by the site owner. Retention periods must be defined before launch."
+        },
+        {
+          "title": "Questions",
+          "text": "For questions about your data, contact us at the address shown at the bottom of the page."
+        }
+      ]
+    },
+    "terms": {
+      "title": "Terms of use",
+      "intro": "This site presents a pre-launch product concept. A request does not guarantee access, launch timing, or commercial terms.",
+      "sections": [
+        {
+          "title": "Product status",
+          "text": "Features, integrations, and interfaces shown here are planned or demonstrative and may change."
+        },
+        {
+          "title": "Acceptable use",
+          "text": "Do not submit confidential, medical, payment, or other sensitive data through the form."
+        },
+        {
+          "title": "Intellectual property",
+          "text": "Site materials introduce the product concept. Final terms will be defined before launch."
+        },
+        {
+          "title": "Changes",
+          "text": "This draft will be replaced by a legally reviewed version before public launch."
+        }
+      ]
+    }
+  }
+}

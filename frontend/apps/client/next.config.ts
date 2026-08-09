@@ -5,6 +5,7 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 const backendApiOrigin = process.env.BACKEND_API_ORIGIN?.replace(/\/$/, "");
 
 export default withNextIntl({
+  skipTrailingSlashRedirect: true,
   transpilePackages: [
     "@workspace/api-client",
     "@workspace/brand",

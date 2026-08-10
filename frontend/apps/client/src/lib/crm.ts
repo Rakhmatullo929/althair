@@ -1,4 +1,5 @@
 import type { Conversation, OrganizationRole } from "@workspace/api-client";
+import { instagramComposerState } from "./instagram";
 
 export const crmQueryKeys = {
   root: (organizationId: string) => ["crm", organizationId] as const,
@@ -47,6 +48,8 @@ export function composerState(
   if (organizationStatus === "suspended" || organizationStatus === "archived")
     return "read_only" as const;
   if (!canOperateCrm(role)) return "permission_denied" as const;
+  const instagramState = instagramComposerState(conversation);
+  if (instagramState) return instagramState;
   if (!conversation.can_send) return "provider_unavailable" as const;
   return "enabled" as const;
 }

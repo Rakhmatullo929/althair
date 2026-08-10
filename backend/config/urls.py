@@ -40,6 +40,19 @@ def health_ready(request):
 
     checks['web_chat'] = 'disabled' if not settings.WEB_CHAT_ENABLE_PUBLIC else 'enabled'
 
+    if settings.META_INSTAGRAM_ENABLE_LIVE:
+        instagram_ready = all([
+            settings.META_APP_ID,
+            settings.META_APP_SECRET,
+            settings.META_INSTAGRAM_VERIFY_TOKEN,
+            settings.META_INSTAGRAM_GRAPH_API_VERSION,
+            settings.META_INSTAGRAM_REDIRECT_URI,
+        ])
+        checks['instagram'] = 'configured' if instagram_ready else 'configuration_incomplete'
+        healthy = healthy and instagram_ready
+    else:
+        checks['instagram'] = 'fake_or_disabled'
+
     status_code = 200 if healthy else 503
     return JsonResponse({'status': 'ready' if healthy else 'degraded', 'checks': checks}, status=status_code)
 
@@ -58,6 +71,8 @@ urlpatterns = [
         path('', include(('crm.urls', 'crm'), namespace='crm')),
         path('', include(('ai_runtime.urls', 'ai_runtime'), namespace='ai_runtime')),
         path('', include(('web_chat.urls', 'web_chat'), namespace='web_chat')),
+        path('', include(('instagram.urls', 'instagram'), namespace='instagram')),
+        path('webhooks/', include(('instagram.webhook_urls', 'instagram_webhooks'), namespace='instagram_webhooks')),
         path('public/web-chat/', include(('web_chat.public_urls', 'web_chat_public'), namespace='web_chat_public')),
         path('public/', include(('early_access.urls', 'early_access'), namespace='early_access')),
         path('users/', include(('users.urls', 'users'), namespace='users')),

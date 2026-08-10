@@ -102,9 +102,11 @@ export function AIAutomationPage() {
       />
     );
 
-  const internalChannels =
+  const eligibleChannels =
     channels.data?.results.filter(
-      (item) => item.provider === "internal_test" && item.type === "webchat",
+      (item) =>
+        (item.provider === "internal_test" && item.type === "webchat") ||
+        (item.provider === "meta_instagram" && item.type === "instagram"),
     ) ?? [];
   const current = { ...config.data!, ...form } as AIRuntimeConfig;
 
@@ -319,8 +321,8 @@ export function AIAutomationPage() {
           </div>
           <fieldset className="ai-channel-picker" disabled={readOnly}>
             <legend>{t("internalChannels")}</legend>
-            {internalChannels.length ? (
-              internalChannels.map((channel) => (
+            {eligibleChannels.length ? (
+              eligibleChannels.map((channel) => (
                 <label key={channel.id}>
                   <input
                     type="checkbox"

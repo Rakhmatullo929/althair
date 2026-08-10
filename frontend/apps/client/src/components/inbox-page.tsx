@@ -3,6 +3,7 @@
 import type { Conversation, ConversationMessage } from "@workspace/api-client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  AtSign,
   ArrowLeft,
   BotOff,
   CheckCheck,
@@ -108,6 +109,7 @@ export function InboxPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [noteMode, setNoteMode] = useState(false);
   const [draft, setDraft] = useState("");
+  const [useHumanAgent, setUseHumanAgent] = useState(false);
   const [testOpen, setTestOpen] = useState(false);
   const [testName, setTestName] = useState("Test customer");
   const [testBody, setTestBody] = useState(
@@ -197,7 +199,12 @@ export function InboxPage() {
     mutation.mutate(() =>
       noteMode
         ? workspace.api.addConversationNote(selected.id, body)
-        : workspace.api.sendMessage(selected.id, body, crypto.randomUUID()),
+        : workspace.api.sendMessage(
+            selected.id,
+            body,
+            crypto.randomUUID(),
+            useHumanAgent,
+          ),
     );
   };
   const state = selected
@@ -455,6 +462,36 @@ export function InboxPage() {
                   </select>
                 </label>
               </div>
+              {selected.channel_type === "instagram" ? (
+                <div
+                  className={`instagram-inbox-policy state-${selected.provider_context.state ?? "unknown"}`}
+                  role="status"
+                >
+                  <AtSign aria-hidden="true" />
+                  <div>
+                    <strong>
+                      {selected.provider_context.professional_account ??
+                        selected.channel_name}
+                    </strong>
+                    <p>
+                      {t(
+                        `instagramStates.${selected.provider_context.state ?? "provider_unavailable"}`,
+                      )}
+                    </p>
+                    {selected.provider_context.standard_window_expires_at ? (
+                      <small>
+                        {t("inbox.instagramWindow", {
+                          time: relativeTime(
+                            selected.provider_context
+                              .standard_window_expires_at,
+                            locale,
+                          ),
+                        })}
+                      </small>
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
               <ConversationAIPanel
                 conversation={selected}
                 organizationId={organizationId}
@@ -514,6 +551,21 @@ export function InboxPage() {
                     {t(`composer.${state}`)}
                   </div>
                 ) : null}
+                {!noteMode && state === "human_agent_available" ? (
+                  <label className="human-agent-toggle">
+                    <input
+                      type="checkbox"
+                      checked={useHumanAgent}
+                      onChange={(event) =>
+                        setUseHumanAgent(event.target.checked)
+                      }
+                    />
+                    <span>
+                      <strong>{t("inbox.humanAgentSend")}</strong>
+                      <small>{t("inbox.humanAgentSendHint")}</small>
+                    </span>
+                  </label>
+                ) : null}
                 <textarea
                   value={draft}
                   onChange={(event) => setDraft(event.target.value)}
@@ -525,7 +577,9 @@ export function InboxPage() {
                   disabled={
                     readOnly ||
                     !canOperateCrm(membership.role) ||
-                    (!noteMode && state !== "enabled")
+                    (!noteMode &&
+                      state !== "enabled" &&
+                      !(state === "human_agent_available" && useHumanAgent))
                   }
                   rows={3}
                 />
@@ -536,7 +590,9 @@ export function InboxPage() {
                     !draft.trim() ||
                     mutation.isPending ||
                     readOnly ||
-                    (!noteMode && state !== "enabled")
+                    (!noteMode &&
+                      state !== "enabled" &&
+                      !(state === "human_agent_available" && useHumanAgent))
                   }
                   onClick={submitComposer}
                 >

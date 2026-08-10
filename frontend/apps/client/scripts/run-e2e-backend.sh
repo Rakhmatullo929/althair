@@ -20,6 +20,14 @@ export WEB_CHAT_ALLOW_FAKE_AUTOPILOT=True
 export WEB_CHAT_SESSION_SIGNING_KEY="e2e-only-web-chat-signing-key"
 export WEB_CHAT_WIDGET_ORIGINS="http://localhost:3001"
 export WEB_CHAT_DEMO_INSTALLATION_KEY="wc_demo_portal_test"
+export META_APP_ID="fake-meta-app"
+export META_APP_SECRET="test-only-meta-app-secret"
+export META_INSTAGRAM_VERIFY_TOKEN="e2e-only-meta-verify-token"
+export META_INSTAGRAM_GRAPH_API_VERSION="v-test"
+export META_INSTAGRAM_REDIRECT_URI="http://127.0.0.1:8011/api/v1/integrations/instagram/oauth/callback/"
+export META_INSTAGRAM_ENABLE_LIVE=False
+export META_INSTAGRAM_ENABLE_HUMAN_AGENT=True
+export META_INSTAGRAM_FAKE_PROVIDER=True
 FIELD_ENCRYPTION_KEY="$(../../../backend/.venv/bin/python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')"
 export FIELD_ENCRYPTION_KEY
 export CLIENT_PORTAL_SEED_PASSWORD="client-portal-development-only-password"

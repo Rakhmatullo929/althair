@@ -54,7 +54,9 @@ test.describe.serial("safe AI conversation runtime", () => {
     await expect(
       page.getByRole("heading", { name: "AI Automation" }),
     ).toBeVisible();
-    await expect(page.getByText("Internal test channel only")).toBeVisible();
+    await expect(
+      page.getByText("Allowed test and Instagram channels"),
+    ).toBeVisible();
     await page.getByLabel("Enable AI runtime").check();
     await page.getByLabel("Default mode").selectOption("suggest");
     const internalChannel = page.getByRole("checkbox", {
@@ -235,7 +237,7 @@ test.describe.serial("safe AI conversation runtime", () => {
     await expect(page.getByText("Response draft")).toHaveCount(0);
     await page.goto("/en/app/settings/ai-automation");
     await expect(
-      page.getByText(/External Instagram, Telegram, Gmail/),
+      page.getByText(/Other providers remain unavailable/),
     ).toBeVisible();
   });
 

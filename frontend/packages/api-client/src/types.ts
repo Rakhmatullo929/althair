@@ -305,6 +305,7 @@ export type Conversation = {
     | "suggest"
     | "autopilot_test"
     | "autopilot_web_chat"
+    | "autopilot_instagram"
     | "paused_by_human"
     | "handoff_required";
   ai_state_updated_at: string | null;
@@ -312,6 +313,27 @@ export type Conversation = {
   unread_count: number;
   last_message_preview: string;
   can_send: boolean;
+  provider_context: Record<string, unknown> & {
+    state?:
+      | "can_reply"
+      | "waiting_for_customer"
+      | "window_expired"
+      | "human_agent_available"
+      | "connection_expired"
+      | "permission_missing"
+      | "provider_degraded"
+      | "provider_unavailable"
+      | "organization_read_only";
+    professional_account?: string;
+    connection_status?: string;
+    connection_health?: string;
+    human_agent_approved?: boolean;
+    can_send?: boolean;
+    human_agent_available?: boolean;
+    last_customer_message_at?: string;
+    standard_window_expires_at?: string;
+    human_agent_window_expires_at?: string;
+  };
   last_message_at: string | null;
   last_inbound_at: string | null;
   last_outbound_at: string | null;
@@ -330,13 +352,67 @@ export type ConversationMessage = {
   sender_name: string | null;
   provider_message_id: string | null;
   client_message_id: string | null;
-  content_type: "text" | "note" | "event";
+  content_type: "text" | "note" | "event" | "media";
   body: string;
-  status: "queued" | "sent" | "delivered" | "failed" | "received";
+  status: "queued" | "sent" | "delivered" | "read" | "failed" | "received";
   error_code: string;
   reply_to: string | null;
   metadata: Record<string, unknown>;
   occurred_at: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type InstagramHealth = {
+  status:
+    | "draft"
+    | "connected"
+    | "degraded"
+    | "expired"
+    | "revoked"
+    | "disconnected";
+  account_connected: boolean;
+  token_present: boolean;
+  token_expired: boolean;
+  token_expires_at: string | null;
+  permissions_ok: boolean;
+  missing_permissions: string[];
+  webhook_subscription: string;
+  last_webhook_at: string | null;
+  last_send_at: string | null;
+  last_health_check_at: string | null;
+  error_code: string;
+  graph_api_version: string;
+  app_mode: "development" | "live";
+  queue: { queued: number; failed: number; dead_letter: number };
+};
+
+export type InstagramConnection = {
+  id: string;
+  organization: string;
+  channel_connection: string;
+  instagram_user_id: string;
+  username: string;
+  account_type: string;
+  profile_name: string;
+  profile_picture_url: string;
+  profile_picture_expires_at: string | null;
+  graph_api_version: string;
+  permission_snapshot: string[];
+  webhook_subscription_status: string;
+  connection_status: InstagramHealth["status"];
+  automation_mode: "manual" | "suggest" | "autopilot";
+  human_agent_approved: boolean;
+  token_expires_at: string | null;
+  last_webhook_at: string | null;
+  last_successful_send_at: string | null;
+  last_health_check_at: string | null;
+  last_error_code: string;
+  connected_at: string | null;
+  disconnected_at: string | null;
+  has_encrypted_token: boolean;
+  health: InstagramHealth;
+  app_review_checklist: Array<{ key: string; ready: boolean }>;
   created_at: string;
   updated_at: string;
 };
@@ -452,7 +528,8 @@ export type AIRuntimeMode =
   | "off"
   | "suggest"
   | "autopilot_test"
-  | "autopilot_web_chat";
+  | "autopilot_web_chat"
+  | "autopilot_instagram";
 
 export type AIRuntimeConfig = {
   id: string;

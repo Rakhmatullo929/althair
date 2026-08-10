@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     'crm',
     'ai_runtime',
     'web_chat',
+    'instagram',
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -354,6 +355,7 @@ REST_FRAMEWORK = {
         'early_access': '30/hour',
         'crm_search': '120/min',
         'crm_message': '60/min',
+        'instagram_webhook': '600/min',
     },
     'EXCEPTION_HANDLER': 'core.api.exception_handler.api_exception_handler',
     'DEFAULT_RENDERER_CLASSES': (
@@ -373,6 +375,7 @@ if os.environ.get('E2E_TESTING', '').lower() in ('true', '1', 'yes'):
         'anon': '1000/min',
         'crm_search': '1000/min',
         'crm_message': '1000/min',
+        'instagram_webhook': '5000/min',
     })
 
 # ---------------------------------------------------------------------------
@@ -517,6 +520,46 @@ WEB_CHAT_MAX_URLS_PER_MESSAGE = int(os.environ.get('WEB_CHAT_MAX_URLS_PER_MESSAG
 WEB_CHAT_BLOCKED_TERMS = [
     value.strip() for value in os.environ.get('WEB_CHAT_BLOCKED_TERMS', '').split(',') if value.strip()
 ]
+
+# Instagram Messaging uses Business Login for Instagram. Live mode is fail-closed:
+# no Graph API call is possible until every required Meta value is configured.
+META_APP_ID = os.environ.get('META_APP_ID', '')
+META_APP_SECRET = os.environ.get('META_APP_SECRET', '')
+META_INSTAGRAM_VERIFY_TOKEN = os.environ.get('META_INSTAGRAM_VERIFY_TOKEN', '')
+META_INSTAGRAM_GRAPH_API_VERSION = os.environ.get('META_INSTAGRAM_GRAPH_API_VERSION', '')
+META_INSTAGRAM_REDIRECT_URI = os.environ.get('META_INSTAGRAM_REDIRECT_URI', '')
+META_INSTAGRAM_ENABLE_LIVE = os.environ.get('META_INSTAGRAM_ENABLE_LIVE', '').lower() in ('true', '1', 'yes')
+META_INSTAGRAM_ENABLE_HUMAN_AGENT = os.environ.get('META_INSTAGRAM_ENABLE_HUMAN_AGENT', '').lower() in ('true', '1', 'yes')
+META_INSTAGRAM_FAKE_PROVIDER = os.environ.get('META_INSTAGRAM_FAKE_PROVIDER', 'true').lower() in ('true', '1', 'yes')
+META_INSTAGRAM_OAUTH_STATE_MINUTES = int(os.environ.get('META_INSTAGRAM_OAUTH_STATE_MINUTES', '10'))
+META_INSTAGRAM_STANDARD_WINDOW_HOURS = int(os.environ.get('META_INSTAGRAM_STANDARD_WINDOW_HOURS', '24'))
+META_INSTAGRAM_HUMAN_AGENT_WINDOW_HOURS = int(os.environ.get('META_INSTAGRAM_HUMAN_AGENT_WINDOW_HOURS', '168'))
+META_INSTAGRAM_MAX_WEBHOOK_BYTES = int(os.environ.get('META_INSTAGRAM_MAX_WEBHOOK_BYTES', '1048576'))
+META_INSTAGRAM_MAX_ATTACHMENTS = int(os.environ.get('META_INSTAGRAM_MAX_ATTACHMENTS', '5'))
+META_INSTAGRAM_MAX_TEXT_LENGTH = int(os.environ.get('META_INSTAGRAM_MAX_TEXT_LENGTH', '1000'))
+META_INSTAGRAM_ORG_SENDS_PER_MINUTE = int(os.environ.get('META_INSTAGRAM_ORG_SENDS_PER_MINUTE', '120'))
+META_INSTAGRAM_SEND_LOCK_SECONDS = int(os.environ.get('META_INSTAGRAM_SEND_LOCK_SECONDS', '15'))
+META_INSTAGRAM_MAX_SEND_ATTEMPTS = int(os.environ.get('META_INSTAGRAM_MAX_SEND_ATTEMPTS', '3'))
+META_INSTAGRAM_MAX_EVENT_ATTEMPTS = int(os.environ.get('META_INSTAGRAM_MAX_EVENT_ATTEMPTS', '3'))
+META_INSTAGRAM_CIRCUIT_BREAKER_SECONDS = int(os.environ.get('META_INSTAGRAM_CIRCUIT_BREAKER_SECONDS', '120'))
+META_INSTAGRAM_HEALTH_BATCH_SIZE = int(os.environ.get('META_INSTAGRAM_HEALTH_BATCH_SIZE', '100'))
+META_INSTAGRAM_TOKEN_WARNING_DAYS = int(os.environ.get('META_INSTAGRAM_TOKEN_WARNING_DAYS', '7'))
+META_INSTAGRAM_BACKFILL_MAX_ITEMS = int(os.environ.get('META_INSTAGRAM_BACKFILL_MAX_ITEMS', '100'))
+
+CELERY_BEAT_SCHEDULE.update({
+    'instagram-health-every-15-minutes': {
+        'task': 'instagram.tasks.check_instagram_connections',
+        'schedule': 900.0,
+    },
+    'instagram-token-expiry-hourly': {
+        'task': 'instagram.tasks.warn_instagram_token_expiry',
+        'schedule': 3600.0,
+    },
+    'instagram-subscription-health-hourly': {
+        'task': 'instagram.tasks.verify_instagram_subscriptions',
+        'schedule': 3600.0,
+    },
+})
 
 TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '')
 TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN', '')

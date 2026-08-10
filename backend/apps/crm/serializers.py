@@ -161,6 +161,7 @@ class ConversationSerializer(serializers.ModelSerializer):
     assigned_name = serializers.SerializerMethodField()
     last_message_preview = serializers.CharField(read_only=True, default="")
     can_send = serializers.SerializerMethodField()
+    provider_context = serializers.SerializerMethodField()
 
     class Meta:
         model = Conversation
@@ -169,13 +170,13 @@ class ConversationSerializer(serializers.ModelSerializer):
             "external_thread_id", "contact", "contact_name", "contact_status", "status", "priority",
             "assignment_state", "assigned_membership", "assigned_name", "automation_state", "handoff_reason",
             "ai_state", "ai_state_updated_at",
-            "unread_count", "last_message_preview", "can_send", "last_message_at", "last_inbound_at",
+            "unread_count", "last_message_preview", "can_send", "provider_context", "last_message_at", "last_inbound_at",
             "last_outbound_at", "subject", "created_at", "updated_at", "resolved_at",
         ]
         read_only_fields = [
             "id", "organization", "channel_connection", "channel_type", "channel_name", "channel_provider",
             "external_thread_id", "contact", "contact_name", "contact_status", "assignment_state",
-            "assigned_membership", "assigned_name", "unread_count", "last_message_preview", "can_send",
+            "assigned_membership", "assigned_name", "unread_count", "last_message_preview", "can_send", "provider_context",
             "last_message_at", "last_inbound_at", "last_outbound_at", "created_at", "updated_at", "resolved_at",
             "ai_state_updated_at",
         ]
@@ -189,12 +190,24 @@ class ConversationSerializer(serializers.ModelSerializer):
 
         if settings.ENABLE_CRM_TEST_CHANNEL and is_internal_test_connection(obj.channel_connection):
             return True
+        if obj.channel_type == "instagram":
+            from instagram.services import window_eligibility
+
+            policy = window_eligibility(obj)
+            return bool(policy.get("can_send") or policy.get("human_agent_available"))
         try:
             from web_chat.services import can_send_public_web_chat
 
             return can_send_public_web_chat(obj)
         except ImportError:
             return False
+
+    def get_provider_context(self, obj):
+        if obj.channel_type == "instagram":
+            from instagram.services import serialize_conversation_policy
+
+            return serialize_conversation_policy(obj)
+        return {}
 
 
 class PipelineStageSerializer(serializers.ModelSerializer):

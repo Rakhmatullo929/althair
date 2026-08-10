@@ -145,6 +145,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <label className="organization-switcher">
             <span>{t("organization.switchLabel")}</span>
             <select
+              aria-label={t("organization.switchLabel")}
               value={workspace.selectedOrganizationId}
               onChange={(event) =>
                 workspace.selectOrganization(event.target.value)

@@ -23,6 +23,8 @@ import type {
   CursorPaginated,
   FollowUpTask,
   Invitation,
+  InstagramConnection,
+  InstagramHealth,
   Lead,
   Locale,
   Membership,
@@ -474,10 +476,19 @@ export class ApiClient {
     this.request<CursorPaginated<ConversationMessage>>(
       `/conversations/${id}/messages/${queryString({ cursor })}`,
     );
-  sendMessage = (id: string, body: string, clientMessageId: string) =>
+  sendMessage = (
+    id: string,
+    body: string,
+    clientMessageId: string,
+    humanAgent = false,
+  ) =>
     this.request<ConversationMessage>(`/conversations/${id}/messages/`, {
       method: "POST",
-      body: { body, client_message_id: clientMessageId },
+      body: {
+        body,
+        client_message_id: clientMessageId,
+        ...(humanAgent ? { human_agent: true } : {}),
+      },
     });
   addConversationNote = (id: string, body: string) =>
     this.request<ConversationMessage>(`/conversations/${id}/notes/`, {
@@ -601,7 +612,14 @@ export class ApiClient {
       `/conversations/${id}/ai/pause/`,
       { method: "POST" },
     );
-  resumeConversationAI = (id: string, mode: "suggest" | "autopilot_test") =>
+  resumeConversationAI = (
+    id: string,
+    mode:
+      | "suggest"
+      | "autopilot_test"
+      | "autopilot_web_chat"
+      | "autopilot_instagram",
+  ) =>
     this.request<{ ai_state: Conversation["ai_state"] }>(
       `/conversations/${id}/ai/resume/`,
       { method: "POST", body: { mode } },
@@ -639,6 +657,70 @@ export class ApiClient {
     this.request<AIHandoff>(`/ai/handoffs/${id}/resolve/`, {
       method: "POST",
     });
+
+  instagramConnections = () =>
+    this.request<Paginated<InstagramConnection>>("/integrations/instagram/");
+  instagramConnection = (id: string) =>
+    this.request<InstagramConnection>(`/integrations/instagram/${id}/`);
+  startInstagramOAuth = (redirect: string) =>
+    this.request<{
+      authorization_url: string;
+      state: string | null;
+      expires_in: number;
+      mode: "development" | "live";
+    }>(`/integrations/instagram/oauth/start/${queryString({ redirect })}`);
+  completeInstagramOAuth = (state: string, code: string) =>
+    this.request<{ connection: InstagramConnection; redirect: string }>(
+      `/integrations/instagram/oauth/callback/${queryString({ state, code })}`,
+      { scope: "authenticated" },
+    );
+  updateInstagramConnection = (
+    id: string,
+    body: Pick<InstagramConnection, "automation_mode">,
+  ) =>
+    this.request<InstagramConnection>(`/integrations/instagram/${id}/`, {
+      method: "PATCH",
+      body,
+    });
+  disconnectInstagram = (id: string) =>
+    this.request<InstagramConnection>(
+      `/integrations/instagram/${id}/disconnect/`,
+      {
+        method: "POST",
+      },
+    );
+  reconnectInstagram = (id: string) =>
+    this.request<InstagramConnection>(
+      `/integrations/instagram/${id}/reconnect/`,
+      {
+        method: "POST",
+      },
+    );
+  instagramHealth = (id: string, refresh = false) =>
+    this.request<InstagramHealth>(`/integrations/instagram/${id}/health/`, {
+      method: refresh ? "POST" : "GET",
+    });
+  instagramTestEvent = (
+    id: string,
+    body: {
+      event_type: string;
+      text?: string;
+      sender_id?: string;
+      message_id?: string;
+    },
+  ) =>
+    this.request<{ accepted: number; duplicates: number }>(
+      `/integrations/instagram/${id}/test-event/`,
+      { method: "POST", body },
+    );
+  instagramTestControl = (id: string, action: string) =>
+    this.request<InstagramConnection>(
+      `/integrations/instagram/${id}/test-control/`,
+      {
+        method: "POST",
+        body: { action },
+      },
+    );
 
   webChatInstallations = () =>
     this.request<Paginated<WebChatInstallation>>("/web-chat/installations/");

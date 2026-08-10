@@ -202,6 +202,7 @@ class ConversationAIState(models.TextChoices):
     SUGGEST = "suggest", _("Suggest")
     AUTOPILOT_TEST = "autopilot_test", _("Internal test autopilot")
     AUTOPILOT_WEB_CHAT = "autopilot_web_chat", _("Web Chat autopilot")
+    AUTOPILOT_INSTAGRAM = "autopilot_instagram", _("Instagram autopilot")
     PAUSED_BY_HUMAN = "paused_by_human", _("Paused by human")
     HANDOFF_REQUIRED = "handoff_required", _("Handoff required")
 
@@ -276,6 +277,7 @@ class MessageContentType(models.TextChoices):
     TEXT = "text", _("Text")
     NOTE = "note", _("Note")
     EVENT = "event", _("Event")
+    MEDIA = "media", _("Media")
 
 
 class MessageStatus(models.TextChoices):
@@ -284,6 +286,7 @@ class MessageStatus(models.TextChoices):
     DELIVERED = "delivered", _("Delivered")
     FAILED = "failed", _("Failed")
     RECEIVED = "received", _("Received")
+    READ = "read", _("Read")
 
 
 class Message(OrganizationOwnedModel):

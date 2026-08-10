@@ -24,6 +24,10 @@ import type {
   LogoOrbitInput,
   LogoOrbitState,
 } from "./cinematic-journey.types";
+import {
+  createSolidLogoGeometry,
+  type SolidGeometryAudit,
+} from "./solid-logo-geometry";
 
 type SceneProps = {
   interactionDescriptionId: string;
@@ -857,19 +861,7 @@ function useExactLogoGeometry() {
   const svg = useLoader(SVGLoader, "/robot-head.svg");
   const geometry = useMemo(() => {
     const shapes = svg.paths.flatMap((path) => path.toShapes());
-    const exactGeometry = new THREE.ExtrudeGeometry(shapes, {
-      bevelEnabled: true,
-      bevelSegments: 5,
-      bevelSize: 1.8,
-      bevelThickness: 2,
-      curveSegments: 12,
-      depth: 18,
-      steps: 1,
-    });
-    exactGeometry.scale(0.0255, -0.0255, 0.0255);
-    exactGeometry.center();
-    exactGeometry.computeVertexNormals();
-    return exactGeometry;
+    return createSolidLogoGeometry(shapes);
   }, [svg]);
 
   useEffect(() => () => geometry.dispose(), [geometry]);
@@ -890,6 +882,7 @@ function useLogoMaterials() {
         metalness: 0.16,
         roughness: 0.34,
         roughnessMap,
+        side: THREE.FrontSide,
       }),
       edge: new THREE.MeshPhysicalMaterial({
         clearcoat: 0.58,
@@ -901,6 +894,7 @@ function useLogoMaterials() {
         metalness: 0.52,
         roughness: 0.25,
         roughnessMap,
+        side: THREE.FrontSide,
       }),
     }),
     [roughnessMap],
@@ -1010,12 +1004,18 @@ function RenderReporter({ onReady }: { onReady: () => void }) {
       "[data-cinematic-journey]",
     );
     if (root) {
+      let actorMesh:
+        | THREE.Mesh<THREE.BufferGeometry, THREE.Material | THREE.Material[]>
+        | undefined;
       let actorMeshes = 0;
       let meshes = 0;
       let triangles = 0;
       scene.traverse((object) => {
         if (!(object instanceof THREE.Mesh) || !isVisibleInTree(object)) return;
-        if (object.name === "exact-althair-logo-webgl") actorMeshes += 1;
+        if (object.name === "exact-althair-logo-webgl") {
+          actorMeshes += 1;
+          actorMesh = object;
+        }
         const positionCount = object.geometry.attributes.position?.count ?? 0;
         meshes += 1;
         triangles += object.geometry.index
@@ -1029,6 +1029,66 @@ function RenderReporter({ onReady }: { onReady: () => void }) {
       root.dataset.proceduralModel = "false";
       root.dataset.triangles = String(Math.round(triangles));
       root.dataset.modelType = "exact-svg-logo-webgl-3d";
+
+      const solidAudit = actorMesh?.geometry.userData.solidAudit as
+        | SolidGeometryAudit
+        | undefined;
+      const actorMaterials = actorMesh
+        ? Array.isArray(actorMesh.material)
+          ? actorMesh.material
+          : [actorMesh.material]
+        : [];
+      const usesFrontSide =
+        actorMaterials.length > 0 &&
+        actorMaterials.every((material) => material.side === THREE.FrontSide);
+
+      root.dataset.solidGeometry =
+        solidAudit?.isWatertight && usesFrontSide
+          ? "watertight-manifold"
+          : solidAudit
+            ? "invalid"
+            : "missing";
+      root.dataset.solidMaterialSide = usesFrontSide ? "front" : "invalid";
+
+      if (solidAudit) {
+        root.dataset.solidBackCapTriangles = String(
+          solidAudit.backCapTriangles,
+        );
+        root.dataset.solidBoundaryEdges = String(solidAudit.boundaryEdges);
+        root.dataset.solidCapTriangles = String(solidAudit.capTriangles);
+        root.dataset.solidComponents = String(solidAudit.componentCount);
+        root.dataset.solidDegenerateTriangles = String(
+          solidAudit.degenerateTriangles,
+        );
+        root.dataset.solidDepthSpread = solidAudit.depthSpread.toExponential(3);
+        root.dataset.solidFrontCapTriangles = String(
+          solidAudit.frontCapTriangles,
+        );
+        root.dataset.solidHoles = String(solidAudit.intentionalHoles);
+        root.dataset.solidInconsistentEdges = String(
+          solidAudit.inconsistentEdges,
+        );
+        root.dataset.solidInwardCapTriangles = String(
+          solidAudit.inwardCapTriangles,
+        );
+        root.dataset.solidInwardComponents = String(
+          solidAudit.inwardComponents,
+        );
+        root.dataset.solidMaxDepth = solidAudit.maxComponentDepth.toFixed(6);
+        root.dataset.solidMisalignedNormalVertices = String(
+          solidAudit.misalignedNormalVertices,
+        );
+        root.dataset.solidMinDepth = solidAudit.minComponentDepth.toFixed(6);
+        root.dataset.solidNonManifoldEdges = String(
+          solidAudit.nonManifoldEdges,
+        );
+        root.dataset.solidOutwardCapTriangles = String(
+          solidAudit.outwardCapTriangles,
+        );
+        root.dataset.solidParts = String(solidAudit.solidParts);
+        root.dataset.solidSideTriangles = String(solidAudit.sideTriangles);
+        root.dataset.solidSignedVolume = solidAudit.signedVolume.toFixed(6);
+      }
     }
     reported.current = true;
     onReady();

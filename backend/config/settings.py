@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     'channels',
     'early_access',
     'assistant_context',
+    'crm',
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -341,6 +342,8 @@ REST_FRAMEWORK = {
         'intake_webhook': '120/min',  # public webhook endpoints (Twilio / Outlook relay)
         'jobs': '120/min',  # Phase 2 operational job API (authenticated)
         'early_access': '30/hour',
+        'crm_search': '120/min',
+        'crm_message': '60/min',
     },
     'EXCEPTION_HANDLER': 'core.api.exception_handler.api_exception_handler',
     'DEFAULT_RENDERER_CLASSES': (
@@ -358,6 +361,8 @@ if os.environ.get('E2E_TESTING', '').lower() in ('true', '1', 'yes'):
         'invitation': '200/min',
         'password_sensitive': '200/min',
         'anon': '1000/min',
+        'crm_search': '1000/min',
+        'crm_message': '1000/min',
     })
 
 # ---------------------------------------------------------------------------
@@ -468,6 +473,7 @@ EMAIL_BACKEND = os.environ.get(
 
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
+ENABLE_CRM_TEST_CHANNEL = os.environ.get('ENABLE_CRM_TEST_CHANNEL', '').lower() in ('true', '1', 'yes')
 
 TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '')
 TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN', '')

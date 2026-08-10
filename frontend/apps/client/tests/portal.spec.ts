@@ -11,7 +11,7 @@ async function login(page: Page, email = seedEmail, password = seedPassword) {
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/en\/app/);
   await expect(
-    page.getByRole("heading", { name: "Company overview" }),
+    page.getByRole("heading", { name: "CRM overview" }),
   ).toBeVisible();
 }
 
@@ -54,8 +54,9 @@ test.describe.serial("client portal journeys", () => {
     await page.getByRole("button", { name: /Finish onboarding/ }).click();
     await expect(page).toHaveURL(/\/en\/app\/?$/);
     await expect(
-      page.getByText("Your essential setup is 100% complete."),
+      page.getByRole("heading", { name: "CRM overview" }),
     ).toBeVisible();
+    await expect(page.getByText("100%", { exact: true }).first()).toBeVisible();
   });
 
   test("logs out and back in with HttpOnly cookie auth", async ({ page }) => {
@@ -67,7 +68,7 @@ test.describe.serial("client portal journeys", () => {
     await page.getByLabel("Password", { exact: true }).fill(seedPassword);
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
     await expect(
-      page.getByRole("heading", { name: "Company overview" }),
+      page.getByRole("heading", { name: "CRM overview" }),
     ).toBeVisible();
   });
 

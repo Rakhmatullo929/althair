@@ -86,4 +86,41 @@ describe("typed API client", () => {
     ).toHaveLength(1);
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
+
+  it("scopes CRM filters and mutations to the selected organization", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ count: 0, next: null, previous: null, results: [] }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ csrftoken: "csrf-crm" }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ id: "message-a" }), {
+          status: 201,
+          headers: { "content-type": "application/json" },
+        }),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+    const api = new ApiClient({ baseUrl: "https://api.example.test/api/v1" });
+    api.setOrganizationId("org-crm");
+    await api.conversations({ unread: true, search: "Dilnoza" });
+    await api.sendMessage("conversation-a", "Hello", "client-a");
+    expect(String(fetchMock.mock.calls[0]![0])).toContain(
+      "/conversations/?unread=true&search=Dilnoza",
+    );
+    expect(
+      new Headers(fetchMock.mock.calls[2]![1].headers).get("X-Organization-ID"),
+    ).toBe("org-crm");
+    expect(fetchMock.mock.calls[2]![1].body).toBe(
+      JSON.stringify({ body: "Hello", client_message_id: "client-a" }),
+    );
+  });
 });

@@ -16,7 +16,7 @@ async function login(page: Page) {
     .fill("client-portal-development-only-password");
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(
-    page.getByRole("heading", { name: "Company overview" }),
+    page.getByRole("heading", { name: "CRM overview" }),
   ).toBeVisible();
 }
 
@@ -41,10 +41,103 @@ test("@screenshots client portal evidence", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await login(page);
   await page.screenshot({
-    path: resolve(screenshotDir, "overview.png"),
+    path: resolve(screenshotDir, "updated-overview.png"),
     fullPage: true,
     style: screenshotStyle,
   });
+  await page.goto("/en/app/inbox");
+  await page.locator(".conversation-list > li > button").first().click();
+  await expect(page.locator(".message-timeline")).toBeVisible();
+  await page.screenshot({
+    path: resolve(screenshotDir, "inbox-desktop.png"),
+    fullPage: true,
+    style: screenshotStyle,
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/en/app/inbox");
+  await expect(page.locator(".conversation-list-panel")).toBeVisible();
+  await page.screenshot({
+    path: resolve(screenshotDir, "inbox-mobile-list.png"),
+    fullPage: true,
+    style: screenshotStyle,
+  });
+  await page.locator(".conversation-list > li > button").first().click();
+  await page.screenshot({
+    path: resolve(screenshotDir, "inbox-mobile-conversation.png"),
+    fullPage: true,
+    style: screenshotStyle,
+  });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/en/app/contacts");
+  await expect(page.locator(".contact-detail-panel h2")).toBeVisible();
+  await page.screenshot({
+    path: resolve(screenshotDir, "contact-detail.png"),
+    fullPage: true,
+    style: screenshotStyle,
+  });
+  await page.getByRole("button", { name: "Merge" }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.screenshot({
+    path: resolve(screenshotDir, "contact-merge-dialog.png"),
+    fullPage: true,
+    style: screenshotStyle,
+  });
+  await page.getByRole("button", { name: "Close dialog" }).click();
+  await page.goto("/en/app/leads");
+  await expect(page.locator(".kanban-board")).toBeVisible();
+  await page.screenshot({
+    path: resolve(screenshotDir, "leads-kanban.png"),
+    fullPage: true,
+    style: screenshotStyle,
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole("button", { name: "Accessible list" }).click();
+  await page.screenshot({
+    path: resolve(screenshotDir, "leads-mobile-list.png"),
+    fullPage: true,
+    style: screenshotStyle,
+  });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/en/app/tasks");
+  await page.screenshot({
+    path: resolve(screenshotDir, "tasks.png"),
+    fullPage: true,
+    style: screenshotStyle,
+  });
+  await page.getByLabel("Organization").selectOption({
+    label: "Atlas Academy · Administrator",
+  });
+  await page.goto("/en/app/inbox");
+  await expect(page.getByText("Inbox is clear")).toBeVisible();
+  await page.screenshot({
+    path: resolve(screenshotDir, "inbox-empty.png"),
+    fullPage: true,
+    style: screenshotStyle,
+  });
+  await page.getByLabel("Organization").selectOption({
+    label: "Paused Studio · Owner",
+  });
+  await expect(page.getByText(/organization is suspended/i)).toBeVisible();
+  await page.screenshot({
+    path: resolve(screenshotDir, "crm-suspended-read-only.png"),
+    fullPage: true,
+    style: screenshotStyle,
+  });
+  await page.getByLabel("Organization").selectOption({
+    label: "Mehr Clinic · Owner",
+  });
+  for (const [locale, name] of [
+    ["ru", "inbox-ru.png"],
+    ["uz", "inbox-uz.png"],
+  ] as const) {
+    await page.goto(`/${locale}/app/inbox`);
+    await page.screenshot({
+      path: resolve(screenshotDir, name),
+      fullPage: true,
+      style: screenshotStyle,
+    });
+  }
+  await page.goto("/en/app");
   for (const [path, name, heading] of [
     [
       "/en/app/onboarding",

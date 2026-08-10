@@ -4,8 +4,19 @@ import type {
   AssistantRevision,
   Branch,
   ChannelConnection,
+  Contact,
+  ContactIdentity,
+  ContactNote,
+  ContactTag,
+  Conversation,
+  ConversationMessage,
+  CrmActivity,
+  CrmOverview,
   CurrentUser,
+  CursorPaginated,
+  FollowUpTask,
   Invitation,
+  Lead,
   Locale,
   Membership,
   OnboardingState,
@@ -13,7 +24,22 @@ import type {
   OrganizationProfile,
   Overview,
   Paginated,
+  Pipeline,
+  PipelineStage,
 } from "./types";
+
+function queryString(
+  params?: Record<string, string | number | boolean | null | undefined>,
+) {
+  if (!params) return "";
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && value !== "")
+      query.set(key, String(value));
+  }
+  const encoded = query.toString();
+  return encoded ? `?${encoded}` : "";
+}
 
 type Scope = "public" | "authenticated" | "tenant";
 
@@ -368,6 +394,166 @@ export class ApiClient {
     );
   assistantRevisions = () =>
     this.request<AssistantRevision[]>("/assistant-context/revisions/");
+
+  contacts = (
+    params?: Record<string, string | number | boolean | null | undefined>,
+  ) => this.request<Paginated<Contact>>(`/contacts/${queryString(params)}`);
+  contact = (id: string) => this.request<Contact>(`/contacts/${id}/`);
+  createContact = (
+    body: Omit<Partial<Contact>, "identities"> & {
+      display_name: string;
+      identities?: Array<Partial<ContactIdentity>>;
+      tag_ids?: string[];
+    },
+  ) => this.request<Contact>("/contacts/", { method: "POST", body });
+  updateContact = (id: string, body: Partial<Contact>) =>
+    this.request<Contact>(`/contacts/${id}/`, { method: "PATCH", body });
+  mergeContact = (sourceId: string, survivingContactId: string) =>
+    this.request<Contact>(`/contacts/${sourceId}/merge/`, {
+      method: "POST",
+      body: { surviving_contact_id: survivingContactId },
+    });
+  contactIdentities = (contactId: string) =>
+    this.request<ContactIdentity[]>(`/contacts/${contactId}/identities/`);
+  addContactIdentity = (
+    contactId: string,
+    body: Partial<ContactIdentity> &
+      Pick<ContactIdentity, "type" | "raw_value">,
+  ) =>
+    this.request<ContactIdentity>(`/contacts/${contactId}/identities/`, {
+      method: "POST",
+      body,
+    });
+  updateContactIdentity = (
+    contactId: string,
+    identityId: string,
+    body: Partial<ContactIdentity>,
+  ) =>
+    this.request<ContactIdentity>(
+      `/contacts/${contactId}/identities/${identityId}/`,
+      { method: "PATCH", body },
+    );
+  removeContactIdentity = (contactId: string, identityId: string) =>
+    this.request<void>(`/contacts/${contactId}/identities/${identityId}/`, {
+      method: "DELETE",
+    });
+  contactNotes = (contactId: string) =>
+    this.request<Paginated<ContactNote>>(`/contacts/${contactId}/notes/`);
+  addContactNote = (contactId: string, body: string) =>
+    this.request<ContactNote>(`/contacts/${contactId}/notes/`, {
+      method: "POST",
+      body: { body },
+    });
+  tags = () => this.request<Paginated<ContactTag>>("/tags/");
+  createTag = (body: Pick<ContactTag, "name" | "color_token">) =>
+    this.request<ContactTag>("/tags/", { method: "POST", body });
+
+  conversations = (
+    params?: Record<string, string | number | boolean | null | undefined>,
+  ) =>
+    this.request<Paginated<Conversation>>(
+      `/conversations/${queryString(params)}`,
+    );
+  conversation = (id: string) =>
+    this.request<Conversation>(`/conversations/${id}/`);
+  updateConversation = (id: string, body: Partial<Conversation>) =>
+    this.request<Conversation>(`/conversations/${id}/`, {
+      method: "PATCH",
+      body,
+    });
+  conversationMessages = (id: string, cursor?: string) =>
+    this.request<CursorPaginated<ConversationMessage>>(
+      `/conversations/${id}/messages/${queryString({ cursor })}`,
+    );
+  sendMessage = (id: string, body: string, clientMessageId: string) =>
+    this.request<ConversationMessage>(`/conversations/${id}/messages/`, {
+      method: "POST",
+      body: { body, client_message_id: clientMessageId },
+    });
+  addConversationNote = (id: string, body: string) =>
+    this.request<ConversationMessage>(`/conversations/${id}/notes/`, {
+      method: "POST",
+      body: { body },
+    });
+  markConversationRead = (id: string) =>
+    this.request<{ unread_count: number }>(`/conversations/${id}/mark-read/`, {
+      method: "POST",
+    });
+  assignConversation = (id: string, membershipId: string | null) =>
+    this.request<Conversation>(`/conversations/${id}/assign/`, {
+      method: "POST",
+      body: { membership_id: membershipId },
+    });
+  resolveConversation = (id: string) =>
+    this.request<Conversation>(`/conversations/${id}/resolve/`, {
+      method: "POST",
+    });
+  reopenConversation = (id: string) =>
+    this.request<Conversation>(`/conversations/${id}/reopen/`, {
+      method: "POST",
+    });
+  createTestConversation = (body: {
+    display_name: string;
+    identity_value?: string;
+    body: string;
+  }) =>
+    this.request<Conversation>("/dev/test-conversations/", {
+      method: "POST",
+      body,
+    });
+
+  pipelines = () => this.request<Pipeline[]>("/pipelines/");
+  updatePipeline = (id: string, body: Partial<Pipeline>) =>
+    this.request<Pipeline>(`/pipelines/${id}/`, { method: "PATCH", body });
+  updatePipelineStage = (id: string, body: Partial<PipelineStage>) =>
+    this.request<PipelineStage>(`/pipeline-stages/${id}/`, {
+      method: "PATCH",
+      body,
+    });
+  leads = (
+    params?: Record<string, string | number | boolean | null | undefined>,
+  ) => this.request<Paginated<Lead>>(`/leads/${queryString(params)}`);
+  createLead = (
+    body: Partial<Lead> &
+      Pick<Lead, "contact" | "title"> & { confirm_duplicate?: boolean },
+  ) => this.request<Lead>("/leads/", { method: "POST", body });
+  updateLead = (id: string, body: Partial<Lead>) =>
+    this.request<Lead>(`/leads/${id}/`, { method: "PATCH", body });
+  moveLead = (id: string, stageId: string) =>
+    this.request<Lead>(`/leads/${id}/move/`, {
+      method: "POST",
+      body: { stage_id: stageId },
+    });
+  winLead = (id: string) =>
+    this.request<Lead>(`/leads/${id}/win/`, { method: "POST" });
+  loseLead = (id: string, lostReason: string) =>
+    this.request<Lead>(`/leads/${id}/lose/`, {
+      method: "POST",
+      body: { lost_reason: lostReason },
+    });
+
+  followUpTasks = (
+    params?: Record<string, string | number | boolean | null | undefined>,
+  ) =>
+    this.request<Paginated<FollowUpTask>>(
+      `/follow-up-tasks/${queryString(params)}`,
+    );
+  createFollowUpTask = (
+    body: Partial<FollowUpTask> & Pick<FollowUpTask, "title" | "due_at">,
+  ) =>
+    this.request<FollowUpTask>("/follow-up-tasks/", { method: "POST", body });
+  updateFollowUpTask = (id: string, body: Partial<FollowUpTask>) =>
+    this.request<FollowUpTask>(`/follow-up-tasks/${id}/`, {
+      method: "PATCH",
+      body,
+    });
+  crmOverview = () => this.request<CrmOverview>("/crm/overview/");
+  crmActivity = (
+    params?: Record<string, string | number | boolean | null | undefined>,
+  ) =>
+    this.request<Paginated<CrmActivity>>(
+      `/crm/activity/${queryString(params)}`,
+    );
 }
 
 export function createApiClient(options?: ApiClientOptions) {

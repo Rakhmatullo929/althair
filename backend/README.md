@@ -1,7 +1,7 @@
 # AI Front Office backend
 
-Django 5.2 modular monolith for secure client authentication, organization onboarding, versioned AI
-Context, channel configuration status, and the preserved tenant-safe legacy intake/job workflows.
+Django 5.2 modular monolith for secure client authentication, onboarding, versioned AI Context,
+channel configuration status, a tenant-safe CRM, and the preserved legacy intake/job workflows.
 
 ## Local Python setup
 
@@ -13,6 +13,7 @@ cp .env.example .env
 # Replace placeholders; generate FIELD_ENCRYPTION_KEY exactly as the example describes.
 python manage.py migrate --noinput
 CLIENT_PORTAL_SEED_PASSWORD='development-only-change-me' python manage.py seed_client_portal
+ENABLE_CRM_TEST_CHANNEL=true python manage.py seed_crm
 python manage.py runserver 0.0.0.0:8000
 ```
 
@@ -31,6 +32,7 @@ unless `DEBUG=true` and `CLIENT_PORTAL_SEED_PASSWORD` is set.
 | `POSTGRES_*`, `REDIS_URL` | Database, shared cache, throttle, and queue services |
 | `FIELD_ENCRYPTION_KEY` | Fernet key for write-only provider credential storage |
 | `CLIENT_PORTAL_SEED_PASSWORD` | Required local deterministic user password; never printed |
+| `ENABLE_CRM_TEST_CHANNEL` | Enables the internal development-only CRM channel; default false |
 | `EARLY_ACCESS_WEBHOOK_SECRET` | Landing server-to-server lead authentication |
 | `OPENAI_API_KEY`, provider credentials/secrets | Reserved legacy/later integrations; never browser-exposed |
 | `DEV_*_DESTINATION_*` | Non-secret legacy development destination routing |
@@ -53,11 +55,14 @@ Architecture and contracts:
 - `docs/security/client-authentication.md`
 - `docs/architecture/multitenancy.md`
 - `docs/architecture/client-onboarding.md`
+- `docs/architecture/crm-core.md`
 - `docs/api/multitenant-api.md`
+- `docs/api/crm-api.md`
 - `docs/security/secret-rotation-required.md`
 
 ## Known limitations
 
-Production email delivery, provider activation/OAuth, OpenAI execution, generated prompts, CRM,
-booking, billing, Super Admin, RLS, and production deployment are outside this stage. The legacy MMC
+Production email delivery, provider activation/OAuth, OpenAI execution, generated prompts, booking,
+billing, Super Admin, RLS, and production deployment are outside this stage. CRM provider adapters
+remain disabled; only the explicit internal development channel is available. The legacy MMC
 vertical is intentionally retained and independently regression-tested.

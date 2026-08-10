@@ -706,7 +706,7 @@
   }
 
   .orbitCue {
-    top: 45svh;
+    top: 12.55rem;
     bottom: auto;
     left: 50%;
     padding: 0.48rem 0.66rem;
@@ -867,6 +867,12 @@
 
   .sceneLoader {
     top: calc(29% + 10rem);
+  }
+}
+
+@media (max-width: 900px) and (max-height: 520px) {
+  .orbitCue {
+    display: none;
   }
 }
 

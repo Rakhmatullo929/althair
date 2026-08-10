@@ -49,6 +49,7 @@ type OrbitPhase = "dragging" | "idle" | "inertia" | "settling";
 const ORBIT_PITCH_LIMIT = THREE.MathUtils.degToRad(52);
 const ORBIT_YAW_PER_PIXEL = 0.0068;
 const ORBIT_PITCH_PER_PIXEL = 0.0048;
+const ORBIT_TOUCH_PITCH_PER_PIXEL = 0.0032;
 
 const DESKTOP_POSES: Pose[] = [
   {
@@ -433,7 +434,7 @@ function LogoExperience({
     );
     liveMaterials.edge.emissiveIntensity = THREE.MathUtils.damp(
       liveMaterials.edge.emissiveIntensity,
-      0.04 + contextWeight * 0.36 + saveWeight * 0.7 + transitionArc,
+      0.09 + contextWeight * 0.36 + saveWeight * 0.7 + transitionArc,
       8,
       delta,
     );
@@ -664,6 +665,8 @@ function useLogoInteractionController({
       startY = lastY = event.clientY;
       lastTime = event.timeStamp;
       horizontalTouch = pointerKind !== "touch";
+      interaction.current.yawVelocity = 0;
+      interaction.current.pitchVelocity = 0;
 
       if (pointerKind !== "touch") {
         rememberInput("pointer");
@@ -715,7 +718,7 @@ function useLogoInteractionController({
       const deltaYaw = (event.clientX - lastX) * ORBIT_YAW_PER_PIXEL;
       const deltaPitch =
         pointerKind === "touch"
-          ? 0
+          ? (event.clientY - lastY) * ORBIT_TOUCH_PITCH_PER_PIXEL
           : (event.clientY - lastY) * ORBIT_PITCH_PER_PIXEL;
       const orbit = interaction.current;
       orbit.yaw += deltaYaw;
@@ -724,12 +727,28 @@ function useLogoInteractionController({
         -ORBIT_PITCH_LIMIT,
         ORBIT_PITCH_LIMIT,
       );
-      orbit.yawVelocity = THREE.MathUtils.clamp(deltaYaw / elapsed, -7, 7);
-      orbit.pitchVelocity = THREE.MathUtils.clamp(
-        deltaPitch / elapsed,
-        -4.5,
-        4.5,
-      );
+      if (Math.abs(deltaYaw) > 0.0001 || Math.abs(deltaPitch) > 0.0001) {
+        const nextYawVelocity = THREE.MathUtils.clamp(
+          deltaYaw / elapsed,
+          -7,
+          7,
+        );
+        const nextPitchVelocity = THREE.MathUtils.clamp(
+          deltaPitch / elapsed,
+          -4.5,
+          4.5,
+        );
+        orbit.yawVelocity = THREE.MathUtils.lerp(
+          orbit.yawVelocity,
+          nextYawVelocity,
+          0.58,
+        );
+        orbit.pitchVelocity = THREE.MathUtils.lerp(
+          orbit.pitchVelocity,
+          nextPitchVelocity,
+          0.58,
+        );
+      }
       orbit.lastInputAt = performance.now();
       lastX = event.clientX;
       lastY = event.clientY;
@@ -873,14 +892,14 @@ function useLogoMaterials() {
         roughnessMap,
       }),
       edge: new THREE.MeshPhysicalMaterial({
-        clearcoat: 0.5,
-        clearcoatRoughness: 0.2,
-        color: "#073f30",
-        emissive: "#063426",
-        emissiveIntensity: 0.04,
-        envMapIntensity: 1.85,
-        metalness: 0.72,
-        roughness: 0.24,
+        clearcoat: 0.58,
+        clearcoatRoughness: 0.18,
+        color: "#0a805e",
+        emissive: "#064b37",
+        emissiveIntensity: 0.09,
+        envMapIntensity: 2.1,
+        metalness: 0.52,
+        roughness: 0.25,
         roughnessMap,
       }),
     }),

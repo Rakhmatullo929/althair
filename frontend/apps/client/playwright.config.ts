@@ -26,7 +26,7 @@ export default defineConfig({
     },
     {
       command:
-        "NEXT_PUBLIC_API_URL=http://localhost:8011/api/v1 pnpm exec next dev --port 3001",
+        "NEXT_PUBLIC_API_URL=http://localhost:8011/api/v1 NEXT_PUBLIC_WEB_CHAT_DEMO_KEY=wc_demo_portal_test pnpm exec next dev --port 3001",
       url: "http://localhost:3001/en/login",
       reuseExistingServer: false,
       timeout: 120_000,

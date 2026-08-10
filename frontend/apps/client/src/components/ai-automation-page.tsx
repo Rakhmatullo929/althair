@@ -332,10 +332,10 @@ export function AIAutomationPage() {
                         ...value,
                         allowed_channel_connections: event.target.checked
                           ? [
-                              ...(value.allowed_channel_connections ?? []),
+                              ...(current.allowed_channel_connections ?? []),
                               channel.id,
                             ]
-                          : (value.allowed_channel_connections ?? []).filter(
+                          : (current.allowed_channel_connections ?? []).filter(
                               (id) => id !== channel.id,
                             ),
                       }))

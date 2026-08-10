@@ -14,9 +14,16 @@ x-backend-environment: &backend-environment
   OPENAI_MAX_RETRIES: ${OPENAI_MAX_RETRIES:-2}
   AI_RUNTIME_PROVIDER: ${AI_RUNTIME_PROVIDER:-fake}
   AI_RUNTIME_ENABLE_REAL_OPENAI: ${AI_RUNTIME_ENABLE_REAL_OPENAI:-false}
+  AI_RUNTIME_GLOBAL_KILL_SWITCH: ${AI_RUNTIME_GLOBAL_KILL_SWITCH:-false}
   AI_INTERNAL_TEST_AUTOPILOT: ${AI_INTERNAL_TEST_AUTOPILOT:-false}
   AI_MANUAL_GENERATION_PER_MINUTE: ${AI_MANUAL_GENERATION_PER_MINUTE:-5}
   AI_MAX_TOOL_CALLS_PER_RUN: ${AI_MAX_TOOL_CALLS_PER_RUN:-8}
+  WEB_CHAT_ENABLE_PUBLIC: ${WEB_CHAT_ENABLE_PUBLIC:-false}
+  WEB_CHAT_GLOBAL_KILL_SWITCH: ${WEB_CHAT_GLOBAL_KILL_SWITCH:-false}
+  WEB_CHAT_ALLOW_FAKE_AUTOPILOT: ${WEB_CHAT_ALLOW_FAKE_AUTOPILOT:-false}
+  WEB_CHAT_SESSION_SIGNING_KEY: ${WEB_CHAT_SESSION_SIGNING_KEY:-}
+  WEB_CHAT_WIDGET_BASE_URL: http://localhost:3001
+  WEB_CHAT_WIDGET_ORIGINS: http://localhost:3001
   EMAIL_BACKEND: django.core.mail.backends.console.EmailBackend
   POSTGRES_NAME: ${POSTGRES_NAME:-aifo}
   POSTGRES_USER: ${POSTGRES_USER:-aifo}
@@ -24,7 +31,7 @@ x-backend-environment: &backend-environment
   POSTGRES_HOST: postgres
   POSTGRES_PORT: "5432"
   REDIS_URL: redis://redis:6379/0
-  FIELD_ENCRYPTION_KEY: ${FIELD_ENCRYPTION_KEY:-}
+  FIELD_ENCRYPTION_KEY: ${FIELD_ENCRYPTION_KEY:-MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA=}
   EARLY_ACCESS_WEBHOOK_SECRET: ${EARLY_ACCESS_WEBHOOK_SECRET:-}
 
 services:
@@ -37,7 +44,11 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-aifo} -d ${POSTGRES_NAME:-aifo}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-aifo} -d ${POSTGRES_NAME:-aifo}",
+        ]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -64,7 +75,13 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready')"]
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready')",
+        ]
       interval: 10s
       timeout: 5s
       retries: 12

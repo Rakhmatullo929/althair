@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from django.conf import settings
+from django.core.cache import cache
 
 
 @dataclass(frozen=True)
@@ -165,10 +166,14 @@ class OpenAIResponsesProvider(BaseAIProvider):
     name = "openai"
 
     def __init__(self, *, model: str, timeout_seconds: int):
+        if settings.AI_RUNTIME_GLOBAL_KILL_SWITCH:
+            raise AIProviderError("runtime_kill_switch")
         if not settings.AI_RUNTIME_ENABLE_REAL_OPENAI:
             raise AIProviderError("real_openai_disabled")
         if not settings.OPENAI_API_KEY:
             raise AIProviderError("openai_key_missing")
+        if not re.fullmatch(r"[A-Za-z0-9._:-]{1,120}", model or ""):
+            raise AIProviderError("model_not_allowed")
         from openai import OpenAI
 
         self.model = model
@@ -203,6 +208,9 @@ class OpenAIResponsesProvider(BaseAIProvider):
         )
 
     def _create(self, *, input_items: list[dict], tools: list[dict], max_output_tokens: int):
+        circuit_key = f"ai-runtime:circuit:{self.model}"
+        if not settings.TESTING and cache.get(circuit_key):
+            raise AIProviderError("provider_circuit_open", transient=True)
         started = time.monotonic()
         try:
             response = self.client.responses.create(
@@ -215,6 +223,8 @@ class OpenAIResponsesProvider(BaseAIProvider):
         except Exception as exc:
             name = exc.__class__.__name__.lower()
             transient = any(part in name for part in ("timeout", "ratelimit", "connection", "server"))
+            if transient and not settings.TESTING:
+                cache.set(circuit_key, True, timeout=30)
             raise AIProviderError("provider_transient" if transient else "provider_error", transient=transient) from exc
         calls = []
         continuation = []
@@ -248,6 +258,8 @@ class OpenAIResponsesProvider(BaseAIProvider):
 
 
 def provider_for(config):
+    if settings.AI_RUNTIME_GLOBAL_KILL_SWITCH:
+        raise AIProviderError("runtime_kill_switch")
     if config.provider == "fake":
         return FakeAIProvider()
     if config.provider == "openai":

@@ -304,6 +304,7 @@ export type Conversation = {
     | "off"
     | "suggest"
     | "autopilot_test"
+    | "autopilot_web_chat"
     | "paused_by_human"
     | "handoff_required";
   ai_state_updated_at: string | null;
@@ -447,7 +448,11 @@ export type CrmOverview = {
   ai_context_version: number;
 };
 
-export type AIRuntimeMode = "off" | "suggest" | "autopilot_test";
+export type AIRuntimeMode =
+  | "off"
+  | "suggest"
+  | "autopilot_test"
+  | "autopilot_web_chat";
 
 export type AIRuntimeConfig = {
   id: string;
@@ -577,7 +582,14 @@ export type AIRun = {
   cached_tokens: number;
   latency_ms: number;
   tool_rounds: number;
-  outcome: "" | "draft" | "sent_test_reply" | "handoff" | "no_reply" | "failed";
+  outcome:
+    | ""
+    | "draft"
+    | "sent_test_reply"
+    | "sent_web_chat_reply"
+    | "handoff"
+    | "no_reply"
+    | "failed";
   response_language: string;
   error_category: string;
   error_code: string;
@@ -603,4 +615,63 @@ export type AIUsage = {
   average_provider_latency_ms: number;
   handoff_rate: number;
   stale_run_cancellations: number;
+};
+
+export type WebChatInstallation = {
+  id: string;
+  organization: string;
+  channel_connection: string;
+  public_key: string;
+  status: "draft" | "active" | "paused" | "revoked";
+  display_name: string;
+  assistant_label: string;
+  greeting: string;
+  offline_message: string;
+  human_handoff_message: string;
+  privacy_policy_url: string;
+  terms_url: string;
+  consent_text: string;
+  consent_version: string;
+  require_consent: boolean;
+  require_prechat_form: boolean;
+  collect_name: boolean;
+  collect_email: boolean;
+  collect_phone: boolean;
+  default_language: Locale;
+  supported_languages: Locale[];
+  default_branch: string | null;
+  allowed_origins: string[];
+  theme_config: { accent: string; position: string; radius: string };
+  ai_mode: "manual" | "suggest" | "autopilot";
+  retention_days: number;
+  production_approved: boolean;
+  live_ai_opt_in: boolean;
+  health: {
+    status: string;
+    origin_count: number;
+    published_context: boolean;
+    public_api_enabled: boolean;
+    last_session_at: string | null;
+  };
+  session_counts: { total: number; active: number; blocked: number };
+  embed_snippet: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type WebChatSessionSummary = {
+  public_session_id: string;
+  status: string;
+  language: Locale;
+  origin: string;
+  conversation: string | null;
+  contact: string | null;
+  consented_at: string | null;
+  started_at: string;
+  last_seen_at: string;
+  expires_at: string;
+  closed_at: string | null;
+  abuse_score: number;
+  first_message_at: string | null;
+  first_response_at: string | null;
 };

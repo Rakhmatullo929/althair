@@ -187,7 +187,14 @@ class ConversationSerializer(serializers.ModelSerializer):
         from django.conf import settings
         from crm.services import is_internal_test_connection
 
-        return settings.ENABLE_CRM_TEST_CHANNEL and is_internal_test_connection(obj.channel_connection)
+        if settings.ENABLE_CRM_TEST_CHANNEL and is_internal_test_connection(obj.channel_connection):
+            return True
+        try:
+            from web_chat.services import can_send_public_web_chat
+
+            return can_send_public_web_chat(obj)
+        except ImportError:
+            return False
 
 
 class PipelineStageSerializer(serializers.ModelSerializer):

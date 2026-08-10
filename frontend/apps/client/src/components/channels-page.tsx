@@ -17,6 +17,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { can } from "@/lib/permissions";
+import { Link } from "@/i18n/navigation";
 import { useWorkspace } from "./workspace-provider";
 import {
   ErrorState,
@@ -200,7 +201,14 @@ export function ChannelsPage() {
                   </div>
                 </dl>
               ) : null}
-              {primary && editable ? (
+              {type === "webchat" ? (
+                <Link
+                  className="button secondary"
+                  href="/app/settings/channels/web-chat"
+                >
+                  {t("configureWebChat")}
+                </Link>
+              ) : primary && editable ? (
                 <button
                   className="button secondary"
                   onClick={() => setEditing(primary)}

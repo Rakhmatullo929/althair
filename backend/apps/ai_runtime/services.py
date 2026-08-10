@@ -93,6 +93,14 @@ def ensure_runtime_config(organization):
 
 
 def default_ai_state_for_connection(organization, connection):
+    try:
+        from web_chat.services import ai_state_for_installation
+
+        public_state = ai_state_for_installation(organization, connection)
+        if public_state is not None:
+            return public_state
+    except ImportError:
+        pass
     if not is_internal_test_connection(connection):
         return ConversationAIState.OFF
     config = ensure_runtime_config(organization)
@@ -136,7 +144,17 @@ def _check_run_limits(config, *, current_run=None):
 
 
 def _validate_channel(config, conversation):
-    if not settings.ENABLE_CRM_TEST_CHANNEL or not is_internal_test_connection(conversation.channel_connection):
+    public_allowed = False
+    try:
+        from web_chat.services import is_public_web_chat_connection
+
+        public_allowed = is_public_web_chat_connection(conversation.channel_connection)
+    except ImportError:
+        pass
+    internal_allowed = settings.ENABLE_CRM_TEST_CHANNEL and is_internal_test_connection(
+        conversation.channel_connection
+    )
+    if not internal_allowed and not public_allowed:
         raise AIRuntimeUnavailable("internal_test_channel_only")
     if config.allowed_channel_connections.exists() and not config.allowed_channel_connections.filter(
         pk=conversation.channel_connection_id
@@ -163,7 +181,7 @@ def create_queued_run(*, message, task_key, mode=None):
         raise AIRuntimeUnavailable("runtime_disabled")
     _validate_channel(config, conversation)
     selected_mode = mode or conversation.ai_state
-    if selected_mode not in {RuntimeMode.SUGGEST, RuntimeMode.AUTOPILOT_TEST}:
+    if selected_mode not in {RuntimeMode.SUGGEST, RuntimeMode.AUTOPILOT_TEST, RuntimeMode.AUTOPILOT_WEB_CHAT}:
         raise AIRuntimeUnavailable("conversation_ai_paused")
     if selected_mode == RuntimeMode.AUTOPILOT_TEST and not _autopilot_environment_allowed():
         selected_mode = RuntimeMode.SUGGEST
@@ -295,7 +313,11 @@ def process_run(run_id):
         if run.status not in {AIRunStatus.QUEUED, AIRunStatus.RUNNING}:
             return run
         conversation = Conversation.objects.select_for_update().get(pk=run.conversation_id)
-        if conversation.ai_state not in {ConversationAIState.SUGGEST, ConversationAIState.AUTOPILOT_TEST} or _stale_after_human_reply(run):
+        if conversation.ai_state not in {
+            ConversationAIState.SUGGEST,
+            ConversationAIState.AUTOPILOT_TEST,
+            ConversationAIState.AUTOPILOT_WEB_CHAT,
+        } or _stale_after_human_reply(run):
             run.status = AIRunStatus.SUPERSEDED
             run.error_category = "stale_context"
             run.error_code = "human_takeover_or_pause"
@@ -339,6 +361,21 @@ def process_run(run_id):
     except AIRuntimeLimit as exc:
         return _fail_run(run, category="limit", code=str(exc))
     except AIProviderError as exc:
+        try:
+            from web_chat.services import is_public_web_chat_connection
+
+            if is_public_web_chat_connection(run.conversation.channel_connection):
+                create_handoff(
+                    conversation=run.conversation,
+                    run=run,
+                    reason_code="provider_unavailable",
+                    safe_summary="The assistant is unavailable, so a team member needs to continue the Web Chat.",
+                    requested_by=HandoffRequestedBy.POLICY,
+                )
+                run.refresh_from_db()
+                return run
+        except ImportError:
+            pass
         return _fail_run(run, category="provider", code=exc.code)
     except (ToolValidationError, ToolPermissionError) as exc:
         create_handoff(
@@ -505,9 +542,18 @@ def _complete_text(*, run, text, context):
             requested_by=HandoffRequestedBy.POLICY,
         )
         return run
-    if run.mode == RuntimeMode.AUTOPILOT_TEST and _can_autopilot(run):
-        _create_ai_message(run=run, body=safe_text, client_message_id=f"ai-run:{run.id}", metadata={"ai_run_id": str(run.id), "mode": "autopilot_test"})
-        run.outcome = AIRunOutcome.SENT_TEST_REPLY
+    if run.mode in {RuntimeMode.AUTOPILOT_TEST, RuntimeMode.AUTOPILOT_WEB_CHAT} and _can_autopilot(run):
+        _create_ai_message(
+            run=run,
+            body=safe_text,
+            client_message_id=f"ai-run:{run.id}",
+            metadata={"ai_run_id": str(run.id), "mode": run.mode},
+        )
+        run.outcome = (
+            AIRunOutcome.SENT_TEST_REPLY
+            if run.mode == RuntimeMode.AUTOPILOT_TEST
+            else AIRunOutcome.SENT_WEB_CHAT_REPLY
+        )
     else:
         AIDraft.objects.update_or_create(
             organization=run.organization,
@@ -523,7 +569,13 @@ def _complete_text(*, run, text, context):
     record_activity(
         organization=run.organization,
         event_type="ai.reply_created",
-        summary="AI draft created" if run.outcome == AIRunOutcome.DRAFT else "AI internal test reply sent",
+        summary=(
+            "AI draft created"
+            if run.outcome == AIRunOutcome.DRAFT
+            else "AI internal test reply sent"
+            if run.outcome == AIRunOutcome.SENT_TEST_REPLY
+            else "AI Web Chat reply sent"
+        ),
         contact=run.conversation.contact,
         conversation=run.conversation,
         metadata={"run_id": str(run.id), "outcome": run.outcome},
@@ -534,10 +586,20 @@ def _complete_text(*, run, text, context):
 
 def _can_autopilot(run):
     conversation = Conversation.objects.get(pk=run.conversation_id)
-    return bool(
+    channel_allowed = bool(
         _autopilot_environment_allowed()
         and is_internal_test_connection(conversation.channel_connection)
         and conversation.ai_state == ConversationAIState.AUTOPILOT_TEST
+    )
+    try:
+        from web_chat.services import web_chat_autopilot_allowed
+
+        if conversation.ai_state == ConversationAIState.AUTOPILOT_WEB_CHAT:
+            channel_allowed = web_chat_autopilot_allowed(conversation.channel_connection.web_chat_installation)
+    except (ImportError, AttributeError):
+        pass
+    return bool(
+        channel_allowed
         and not _stale_after_human_reply(run)
         and not AIHandoff.objects.for_organization(run.organization).filter(
             conversation=conversation, status__in=[AIHandoffStatus.OPEN, AIHandoffStatus.ACKNOWLEDGED]
@@ -555,7 +617,15 @@ def _create_ai_message(*, run, body, client_message_id, metadata):
     ).first()
     if existing:
         return existing, False
-    if not settings.ENABLE_CRM_TEST_CHANNEL or not is_internal_test_connection(run.conversation.channel_connection):
+    is_test = settings.ENABLE_CRM_TEST_CHANNEL and is_internal_test_connection(run.conversation.channel_connection)
+    is_public = False
+    try:
+        from web_chat.services import can_send_public_web_chat
+
+        is_public = can_send_public_web_chat(run.conversation)
+    except ImportError:
+        pass
+    if not is_test and not is_public:
         raise AIRuntimeUnavailable("external_send_blocked")
     now = timezone.now()
     message = Message(
@@ -568,12 +638,16 @@ def _create_ai_message(*, run, body, client_message_id, metadata):
         content_type=MessageContentType.TEXT,
         body=body,
         status=MessageStatus.SENT,
-        metadata={"test_data": True, "ai_generated": True, **metadata},
+        metadata={"test_data": is_test, "ai_generated": True, **metadata},
         occurred_at=now,
     )
     message.full_clean()
     message.save()
     Conversation.objects.filter(pk=run.conversation_id).update(last_message_at=now, last_outbound_at=now)
+    if is_public:
+        from web_chat.services import publish_message_event
+
+        transaction.on_commit(lambda: publish_message_event(message))
     return message, True
 
 
@@ -786,7 +860,12 @@ def set_conversation_ai_state(*, conversation, actor, state):
     conversation = Conversation.objects.select_for_update().get(pk=conversation.pk)
     if conversation.organization_id != actor.organization_id:
         raise Conversation.DoesNotExist
-    if state not in {ConversationAIState.OFF, ConversationAIState.SUGGEST, ConversationAIState.AUTOPILOT_TEST}:
+    if state not in {
+        ConversationAIState.OFF,
+        ConversationAIState.SUGGEST,
+        ConversationAIState.AUTOPILOT_TEST,
+        ConversationAIState.AUTOPILOT_WEB_CHAT,
+    }:
         raise AIRuntimeConflict("invalid_ai_state")
     config = ensure_runtime_config(conversation.organization)
     if state != ConversationAIState.OFF:
@@ -795,6 +874,14 @@ def set_conversation_ai_state(*, conversation, actor, state):
         _validate_channel(config, conversation)
     if state == ConversationAIState.AUTOPILOT_TEST and not _autopilot_environment_allowed():
         raise AIRuntimeUnavailable("autopilot_not_enabled")
+    if state == ConversationAIState.AUTOPILOT_WEB_CHAT:
+        try:
+            from web_chat.services import web_chat_autopilot_allowed
+
+            if not web_chat_autopilot_allowed(conversation.channel_connection.web_chat_installation):
+                raise AIRuntimeUnavailable("autopilot_not_enabled")
+        except AttributeError as exc:
+            raise AIRuntimeUnavailable("autopilot_not_enabled") from exc
     conversation.ai_state = state
     conversation.ai_state_updated_at = timezone.now()
     conversation.handoff_reason = "" if state != ConversationAIState.HANDOFF_REQUIRED else conversation.handoff_reason

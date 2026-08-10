@@ -249,7 +249,15 @@ class ConversationRunsView(RunListView):
         rows = AIRun.objects.for_organization(request.organization).filter(conversation_id=conversation_id).select_related(
             "ai_context_revision", "conversation", "trigger_message"
         ).prefetch_related("tool_calls__approved_by__user", "handoffs", "draft")
-        return _paginate(request, self, rows, RunSerializer)
+        response = _paginate(request, self, rows, RunSerializer)
+        # Customer-requested Web Chat handoffs may not have an AIRun. Return
+        # them alongside the paginated run history so the Inbox can still
+        # acknowledge and resolve the operator takeover.
+        handoffs = AIHandoff.objects.for_organization(request.organization).filter(
+            conversation_id=conversation_id
+        ).select_related("assigned_membership__user")
+        response.data["handoffs"] = HandoffSerializer(handoffs, many=True).data
+        return response
 
 
 class DraftActionView(AIBaseView):

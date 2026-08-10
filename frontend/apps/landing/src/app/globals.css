@@ -106,13 +106,17 @@ a {
 
 .motion-ready .reveal,
 .motion-ready .motion-item {
+  opacity: 0;
   transform: translate3d(0, 1.15rem, 0);
-  transition: transform 680ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition:
+    opacity 520ms ease,
+    transform 680ms cubic-bezier(0.22, 1, 0.36, 1);
   transition-delay: var(--motion-delay, 0ms);
 }
 
 .motion-ready .reveal.is-revealed,
 .motion-ready .motion-item.is-revealed {
+  opacity: 1;
   transform: translate3d(0, 0, 0);
 }
 
@@ -868,19 +872,11 @@ a {
 
 .capability-row {
   display: grid;
-  grid-template-columns: 4.5rem minmax(12rem, 0.72fr) minmax(16rem, 1fr) 1.5rem;
+  grid-template-columns: 4.5rem minmax(12rem, 0.72fr) minmax(16rem, 1fr);
   align-items: center;
   gap: clamp(1rem, 3vw, 2.5rem);
   min-height: 8.5rem;
   border-top: 1px solid var(--border);
-  transition:
-    padding 280ms ease,
-    background 280ms ease;
-}
-
-.capability-row:hover {
-  padding-inline: 1rem;
-  background: #f3f7f2;
 }
 
 .capability-icon {
@@ -916,19 +912,6 @@ a {
   margin: 0;
   color: var(--secondary);
   line-height: 1.65;
-}
-
-.capability-row > svg {
-  width: 1rem;
-  color: var(--muted);
-  transition:
-    transform 200ms ease,
-    color 200ms ease;
-}
-
-.capability-row:hover > svg {
-  color: var(--primary);
-  transform: translateX(0.25rem);
 }
 
 /* Channels */
@@ -1409,6 +1392,163 @@ a {
   animation-delay: 0.24s;
 }
 
+.scenario-message:nth-child(4) {
+  animation-delay: 0.36s;
+}
+
+.scenario-card:focus-visible {
+  outline: 3px solid rgb(8 123 80 / 0.2);
+  outline-offset: 4px;
+}
+
+.scenario-card[hidden] {
+  display: none;
+}
+
+.scenario-context {
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1.25rem;
+}
+
+.scenario-context > p {
+  margin: 0 0 0.65rem;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.scenario-context-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.scenario-context-chips span {
+  border: 1px solid #dce8df;
+  border-radius: 999px;
+  background: white;
+  padding: 0.42rem 0.65rem;
+  color: #496157;
+  font-size: 0.68rem;
+  font-weight: 650;
+  animation: context-chip-in 0.45s both;
+  animation-delay: 0.42s;
+}
+
+.scenario-context-chips span:nth-child(2) {
+  animation-delay: 0.5s;
+}
+
+.scenario-context-chips span:nth-child(3) {
+  animation-delay: 0.58s;
+}
+
+.scenario-permission {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 0.85rem;
+  border-radius: 0.8rem;
+  background: rgb(8 123 80 / 0.06);
+  padding: 0.75rem;
+  color: #066843;
+  animation: context-chip-in 0.45s 0.68s both;
+}
+
+.scenario-permission > svg {
+  width: 1.15rem;
+  flex: 0 0 auto;
+}
+
+.scenario-permission span {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.scenario-permission small {
+  color: #455f53;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.scenario-permission strong {
+  font-size: 0.76rem;
+}
+
+.scenario-receipt {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid #d6eadd;
+  background: linear-gradient(155deg, #f0faf3 0%, #e6f5eb 100%);
+  padding: 1.5rem;
+}
+
+.scenario-receipt-inner {
+  width: 100%;
+  animation: receipt-in 0.55s 0.76s both;
+}
+
+.scenario-receipt-icon {
+  display: grid;
+  width: 2.8rem;
+  height: 2.8rem;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 0.8rem 2rem rgb(8 123 80 / 0.18);
+}
+
+.scenario-receipt-icon svg {
+  width: 1.25rem;
+}
+
+.scenario-receipt-data {
+  display: grid;
+  gap: 0;
+  margin: 1.5rem 0 0;
+  border-top: 1px solid rgb(8 123 80 / 0.12);
+}
+
+.scenario-receipt-data div {
+  display: grid;
+  grid-template-columns: 0.8fr 1fr;
+  gap: 1rem;
+  border-bottom: 1px solid rgb(8 123 80 / 0.12);
+  padding-block: 0.7rem;
+}
+
+.scenario-receipt-data dt,
+.scenario-receipt-data dd {
+  margin: 0;
+  font-size: 0.72rem;
+}
+
+.scenario-receipt-data dt {
+  color: #71847a;
+}
+
+.scenario-receipt-data dd {
+  color: #173d2b;
+  font-weight: 700;
+  text-align: right;
+}
+
+.scenario-receipt-data dd span {
+  display: inline-block;
+  width: 0.38rem;
+  height: 0.38rem;
+  margin-right: 0.35rem;
+  border-radius: 50%;
+  background: #1cbf73;
+  box-shadow: 0 0 0 0.2rem rgb(28 191 115 / 0.12);
+}
+
 .knowledge-section {
   border-block: 1px solid var(--border);
   background: #eef3ed;
@@ -1462,7 +1602,7 @@ a {
 .knowledge-console-head div > span {
   color: #82958a;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.52rem;
+  font-size: 0.62rem;
   letter-spacing: 0.07em;
   text-transform: uppercase;
 }
@@ -1474,36 +1614,111 @@ a {
   padding: 0.3rem 0.55rem;
   color: var(--lime);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.52rem;
+  font-size: 0.58rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
-.knowledge-cloud {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.55rem;
-  padding: 1.3rem;
+.knowledge-groups {
+  display: grid;
+  gap: 0.7rem;
+  padding: 1.05rem;
 }
 
-.knowledge-cloud > span {
-  display: inline-flex;
-  min-height: 2.45rem;
+.knowledge-group {
+  display: grid;
+  grid-template-columns: minmax(8.5rem, 0.68fr) minmax(0, 1.32fr);
   align-items: center;
-  gap: 0.5rem;
-  border: 1px solid rgb(255 255 255 / 0.1);
+  gap: 1rem;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 0.85rem;
+  background: rgb(255 255 255 / 0.035);
+  padding: 0.85rem;
+}
+
+.knowledge-group-title {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.knowledge-group-title > span {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: rgb(166 237 199 / 0.09);
+  color: #a6edc7;
+}
+
+.knowledge-group-title svg {
+  width: 0.85rem;
+}
+
+.knowledge-group-title h3 {
+  margin: 0;
+  color: #d9e5de;
+  font-family: var(--font-geologica), sans-serif;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.knowledge-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.38rem;
+}
+
+.knowledge-chips span {
+  border: 1px solid rgb(255 255 255 / 0.08);
   border-radius: 999px;
-  background: rgb(255 255 255 / 0.045);
-  padding: 0.5rem 0.75rem;
-  color: #c0cec6;
+  background: rgb(255 255 255 / 0.04);
+  padding: 0.38rem 0.55rem;
+  color: #aebfb5;
   font-size: 0.65rem;
   font-weight: 600;
 }
 
-.knowledge-cloud svg {
-  width: 0.78rem;
-  color: #93dcb5;
+.knowledge-decision {
+  border: 1px solid rgb(223 247 158 / 0.18);
+  border-radius: 0.85rem;
+  background: linear-gradient(105deg, rgb(223 247 158 / 0.08), transparent);
+  padding: 1rem;
+}
+
+.knowledge-decision small {
+  color: #82958a;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.knowledge-decision > div {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 0.45rem;
+  color: var(--lime);
+}
+
+.knowledge-decision svg {
+  width: 1rem;
+}
+
+.knowledge-decision strong {
+  font-family: var(--font-geologica), sans-serif;
+  font-size: 0.86rem;
+}
+
+.knowledge-decision p {
+  margin: 0.45rem 0 0 1.55rem;
+  color: #91a59a;
+  font-size: 0.68rem;
+  line-height: 1.55;
 }
 
 .outcome-heading {
@@ -1930,7 +2145,22 @@ a {
 
 @keyframes message-in {
   from {
+    opacity: 0;
     transform: translateY(8px);
+  }
+}
+
+@keyframes context-chip-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes receipt-in {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
   }
 }
 
@@ -1986,6 +2216,13 @@ a {
 
   .crm-sidebar nav div {
     justify-content: center;
+  }
+}
+
+@media (min-width: 1024px) {
+  .scenario-receipt {
+    border-top: 0;
+    border-left: 1px solid #d6eadd;
   }
 }
 
@@ -2176,7 +2413,7 @@ a {
   }
 
   .capability-row {
-    grid-template-columns: 3.25rem 1fr 1rem;
+    grid-template-columns: 3.25rem 1fr;
     gap: 0.8rem;
     padding-block: 1.35rem;
   }
@@ -2184,10 +2421,6 @@ a {
   .capability-row p {
     grid-column: 2 / -1;
     font-size: 0.82rem;
-  }
-
-  .capability-row:hover {
-    padding-inline: 0;
   }
 
   .channel-row {
@@ -2233,15 +2466,16 @@ a {
     display: none;
   }
 
-  .knowledge-cloud {
-    gap: 0.42rem;
+  .knowledge-groups {
     padding: 1rem;
   }
 
-  .knowledge-cloud > span {
-    min-height: 2.15rem;
-    padding: 0.42rem 0.6rem;
-    font-size: 0.58rem;
+  .knowledge-group {
+    grid-template-columns: 1fr;
+  }
+
+  .scenario-receipt {
+    padding: 1.25rem;
   }
 
   .outcome-heading {
@@ -2312,8 +2546,10 @@ a {
   *::before,
   *::after {
     scroll-behavior: auto !important;
+    animation-delay: 0s !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+    transition-delay: 0s !important;
     transition-duration: 0.01ms !important;
   }
 

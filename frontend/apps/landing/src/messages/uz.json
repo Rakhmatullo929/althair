@@ -1,7 +1,14 @@
 {
+  "motion": {
+    "intro": {
+      "kicker": "ALTHAIR / KOMPANIYA KONTEKSTI",
+      "flow": "MUROJAAT → KONTEKST → AMAL",
+      "sources": ["INSTAGRAM", "TELEGRAM", "VEB-CHAT", "CRM"]
+    }
+  },
   "metadata": {
-    "title": "Biznes uchun raqamli front office",
-    "description": "Althair AI murojaatlarni qabul qiladi, kompaniya kontekstida javob beradi va suhbatlarni lid, yozuv hamda vazifalarga aylantiradi.",
+    "title": "Mijozlar bilan ishlovchi jamoalar uchun AI front-ofis",
+    "description": "Althair AI ulangan kanallardagi murojaatlar, kompaniya qoidalariga asoslangan javoblar, ruxsat etilgan amallar va natijani CRM’da qayd etishni yagona jarayonda birlashtirish uchun yaratilmoqda.",
     "privacyTitle": "Maxfiylik siyosati — qoralama",
     "termsTitle": "Foydalanish shartlari — qoralama"
   },
@@ -11,7 +18,7 @@
     "how": "Qanday ishlaydi",
     "industries": "Sohalar",
     "faq": "Savollar",
-    "earlyAccess": "Erta kirish imkonini olish",
+    "earlyAccess": "Ariza qoldirish",
     "login": "Kirish",
     "language": "Tilni tanlash",
     "openMenu": "Menyuni ochish",
@@ -22,51 +29,66 @@
     "mobileNav": "Mobil navigatsiya"
   },
   "hero": {
-    "badge": "Rivojlanayotgan jamoalar uchun AI front office",
-    "titleBefore": "Har bir suhbat —",
-    "titleHighlight": "allaqachon ishda",
-    "description": "Althair AI kanallaringizdagi murojaatlarni qabul qiladi, kompaniya kontekstida javob beradi va suhbatni lid, yozuv yoki jamoa vazifasiga aylantiradi.",
-    "primary": "Erta kirish imkonini olish",
+    "badge": "Tayyorgarlik bosqichi · mijozlar bilan ishlovchi jamoalar uchun AI front-ofis",
+    "identityTitle": "Kontekstni yo‘qotmasdan, murojaatdan natijagacha.",
+    "titleBefore": "Har bir murojaat —",
+    "titleHighlight": "darhol ishga olinadi",
+    "description": "Althair AI ulangan kanallardagi murojaatlar, kompaniya qoidalariga asoslangan javoblar, ruxsat etilgan amallar va natijani CRM’da qayd etishni yagona jarayonda birlashtirish uchun yaratilmoqda.",
+    "primary": "Ariza qoldirish",
     "secondary": "Qanday ishlashini ko‘rish",
-    "note": "Dastlabki jamoalar uchun erta kirish",
-    "visualLabel": "Mijoz suhbatini biznes natijasiga bog‘laydigan Althair AI interaktiv 3D modeli",
-    "hub": "Kontekst faol",
+    "note": "Hozir ilk jamoalardan arizalar qabul qilmoqdamiz",
+    "visualLabel": "Althair AI logotipining interaktiv 3D modeli. Sahifa aylantirilganda murojaatni qayta ishlash bosqichlari ko‘rsatiladi.",
+    "hub": "Kompaniya konteksti ulandi",
+    "scene": {
+      "identityKicker": "ALTHAIR AI / AI FRONT-OFIS",
+      "identityProof": ["KANALLAR", "KONTEKST", "CRM"],
+      "identityStatus": "TAYYORGARLIK BOSQICHI",
+      "identityStep": "01 — ALTHAIR AI",
+      "loading": "3D MODEL YUKLANMOQDA",
+      "orbitCue": "360° · LOGOTIPNI TORTING",
+      "orbitLabel": "Althair AI interaktiv 3D logotipi. Uni 360 daraja aylantirish uchun torting. Aniq ko‘rish uchun strelka tugmalaridan, old ko‘rinishga qaytish uchun Home tugmasidan foydalaning.",
+      "scrollCue": "SSENARIYNI KO‘RISH UCHUN PASTGA SURING",
+      "stageKicker": "ALTHAIR AI / AI FRONT-OFIS",
+      "state": "KONTEKST ULANDI",
+      "telemetry": "ALTHAIR / ISH JARAYONI"
+    },
     "messages": [
-      { "label": "Instagram", "text": "Bugun kechqurun bo‘sh vaqt bormi?" },
-      { "label": "AI javobi", "text": "Ha, soat 18:30 bo‘sh" },
-      { "label": "CRM", "text": "Yangi lid yaratildi" },
-      { "label": "Yozuv", "text": "18:30 ga tasdiqlandi" }
+      { "label": "Instagram", "text": "Bugun kechqurunga yozilsam bo‘ladimi?" },
+      { "label": "AI javobi", "text": "Ha. Bugun 18:30 da bo‘sh vaqt bor." },
+      { "label": "CRM", "text": "Kontakt va suhbat saqlandi" },
+      { "label": "Bandlov", "text": "Bugun, 18:30 · tasdiqlandi" }
     ]
   },
   "product": {
-    "eyebrow": "Yagona ish muhiti",
-    "title": "Barcha murojaat va harakatlar yagona kontekstda",
-    "description": "{brand} xabarlar, qo‘ng‘iroqlar, sotuv, yordam va CRM’ni birlashtiradi. Har bir kompaniya o‘z AI-konteksti, kanallari, mijozlari va jamoasi bilan alohida himoyalangan kabinetga ega bo‘ladi.",
+    "eyebrow": "Yagona ish maydoni",
+    "title": "Kanallar, kontekst va CRM — bir joyda",
+    "description": "{brand} ulangan kanallar, AI-assistent va CRM kontekstini yagona ish maydonida birlashtirish uchun yaratilmoqda. Jamoa mijoz tarixini ko‘rishi, ruxsat etilgan amallarni belgilashi va xodimga topshirish zarur bo‘lganda suhbatni davom ettirishi ko‘zda tutilgan.",
     "features": [
       {
-        "title": "Yagona AI",
-        "description": "Suhbat tarixini va kompaniya qoidalarini tushunadi."
+        "title": "Kontekstli assistent",
+        "description": "Suhbat tarixi, kompaniya ma’lumotlari va qoidalarini hisobga oladi."
       },
       {
-        "title": "Kanallar bir joyda",
-        "description": "Mijoz murojaatlarini bitta oynaga jamlaydi."
+        "title": "Yagona kiruvchi murojaatlar",
+        "description": "Ulangan kanallardagi murojaatlarni bitta navbatga jamlaydi."
       },
       {
-        "title": "CRM va tarix",
-        "description": "Mijoz, lid, yozuv va natijalarni saqlaydi."
+        "title": "Mijoz kartasi",
+        "description": "Aloqa ma’lumotlari, suhbatlar tarixi, lidlar, bandlovlar va vazifalarni saqlaydi."
       },
       {
-        "title": "Harakat va topshirish",
-        "description": "Ruxsat etilgan ishni bajarib, xodimni jalb qiladi."
+        "title": "Nazorat ostidagi avtomatlashtirish",
+        "description": "Faqat ruxsat etilgan amallarni bajaradi va murakkab holatlarni xodimga topshiradi."
       }
     ]
   },
   "channels": {
     "eyebrow": "Kanallar",
-    "title": "Mijoz o‘ziga qulay joydan murojaat qiladi",
-    "description": "Ulanishlar bosqichma-bosqich ishga tushiriladi. Kartadagi holat ommaviy mavjudlik va’dasi emas, mahsulotning joriy rejasini ko‘rsatadi.",
+    "title": "Mijoz o‘zi uchun qulay joydan murojaat qiladi",
+    "description": "Integratsiyalar bosqichma-bosqich ulanadi. Har bir kartada joriy holat ko‘rsatilgan; tarkib va muddatlar ishga tushirishgacha o‘zgarishi mumkin.",
+    "signature": "Kanallar xaritasi",
     "status": {
-      "planned": "Rejada",
+      "planned": "Rejalashtirilgan",
       "beta": "Yopiq beta",
       "available": "Mavjud"
     },
@@ -74,225 +96,324 @@
       {
         "id": "instagram",
         "name": "Instagram",
-        "description": "Xabarlardagi savollar, reaksiyalar va yangi lidlar.",
+        "description": "Kiruvchi xabarlar va hikoyalarga javoblar.",
         "status": "planned"
       },
       {
         "id": "telegram",
         "name": "Telegram",
-        "description": "Biznes-bot orqali mijozlar bilan suhbat.",
+        "description": "Telegram-bot orqali murojaatlar.",
         "status": "planned"
       },
       {
         "id": "whatsapp",
         "name": "WhatsApp",
-        "description": "Tanish messenjerda yordam va sotuv.",
+        "description": "WhatsApp Business orqali kiruvchi murojaatlar.",
         "status": "planned"
       },
       {
         "id": "phone",
         "name": "Telefon",
-        "description": "Kelajakdagi ovozli ssenariylar va qo‘ng‘iroq tarixi.",
+        "description": "Rejalashtirilgan ovozli ssenariylar va qo‘ng‘iroq natijasini qayd etish.",
         "status": "planned"
       },
       {
         "id": "gmail",
         "name": "Gmail",
-        "description": "Kiruvchi xatlar va so‘rovlarni qayta ishlash.",
+        "description": "Kiruvchi xatlar va elektron pochtadagi murojaatlar.",
         "status": "planned"
       },
       {
         "id": "sms",
         "name": "SMS",
-        "description": "Bildirishnoma, tasdiq va eslatmalar.",
+        "description": "Tasdiqlar, eslatmalar va xizmat bildirishnomalari.",
         "status": "planned"
       },
       {
         "id": "web",
         "name": "Veb-chat",
-        "description": "Sayt tashrifchilari bilan suhbatlar.",
+        "description": "Sayt tashrifchilarining murojaatlari.",
         "status": "planned"
       }
     ]
   },
   "how": {
     "eyebrow": "Qanday ishlaydi",
-    "title": "Birinchi xabardan aniq natijagacha",
-    "description": "AI belgilangan ruxsatlar doirasida muloqot qiladi, natijani qayd etadi va murakkab holatni vaqtida xodimga topshiradi.",
+    "title": "Murojaat qanday qilib natijaga aylanadi",
+    "description": "Har bir ssenariy uchun ruxsat etilgan amallar va xodimga topshirish shartlari belgilanadi. Agar so‘rov ushbu chegaralardan chiqsa, xodim suhbatni uning konteksti bilan birga qabul qiladi.",
     "steps": [
       {
-        "title": "Mijoz murojaat qiladi",
-        "description": "Ulangan kanal orqali yozadi yoki qo‘ng‘iroq qiladi."
+        "title": "Murojaat keladi",
+        "description": "Mijoz ulangan kanal orqali yozadi yoki qo‘ng‘iroq qiladi."
       },
       {
-        "title": "AI so‘rovni tushunadi",
-        "description": "Kompaniya konteksti va mijoz tarixini hisobga oladi."
+        "title": "Althair AI so‘rovni aniqlaydi",
+        "description": "Murojaatni mijoz tarixi, kompaniya ma’lumotlari va qoidalari bilan solishtiradi."
       },
       {
-        "title": "Javob yoki harakat",
-        "description": "Maslahat beradi, lid yaratadi yoki vaqt taklif qiladi."
+        "title": "Javob beradi yoki amal bajaradi",
+        "description": "Kompaniyaning tekshirilgan ma’lumotlaridan foydalanadi va ruxsat etilgan bo‘lsa, lid, bandlov yoki vazifa yaratadi."
       },
       {
-        "title": "CRM’da saqlaydi",
-        "description": "Suhbat, mijoz, yozuv va natija tizimda qoladi."
+        "title": "Natijani CRM’da qayd etadi",
+        "description": "Suhbat, mijoz kartasi, bajarilgan amal va mas’ul xodimni saqlaydi."
+      }
+    ],
+    "stageMeta": [
+      {
+        "status": "Murojaat qabul qilindi",
+        "proof": ["Instagram", "Telegram", "Veb-chat"]
+      },
+      {
+        "status": "Kontekst topildi",
+        "proof": ["Mijoz tarixi", "Qoidalar", "Narxlar"]
+      },
+      {
+        "status": "Javob yoki amal bajarildi",
+        "proof": ["AI javobi", "Yangi lid", "Bandlov"]
+      },
+      {
+        "status": "Natija saqlandi",
+        "proof": ["CRM", "Suhbat", "Mas’ul xodim"]
       }
     ],
     "mockup": {
       "inbox": "Kiruvchi",
       "customers": "Mijozlar",
-      "appointments": "Yozuvlar",
+      "appointments": "Bandlovlar",
       "analytics": "Tahlil",
       "conversation": "Mijoz bilan suhbat",
-      "aiMode": "AI javob bermoqda",
+      "aiMode": "Suhbatni AI olib bormoqda",
       "customer": "Mariya S.",
       "customerInfo": "Mijoz kartasi",
       "newLead": "Yangi lid",
-      "booking": "Yozuv: 18:30",
+      "booking": "Bandlov: 18:30",
       "handoff": "Xodimga topshirish",
       "history": "3 ta murojaat",
       "messages": [
         "Assalomu alaykum! Bugunga yozilsam bo‘ladimi?",
         "Ha, soat 18:30 bo‘sh. Sizga mosmi?",
-        "Ha, tasdiqlang, iltimos."
+        "Ha, tasdiqlang, iltimos.",
+        "Tayyor. Bugun soat 18:30 ga bandlov yaratildi."
       ]
     }
   },
   "scenario": {
     "eyebrow": "Demo-ssenariylar",
     "title": "Bitta mahsulot — turli ish jarayonlari",
-    "description": "Bu oldindan tayyorlangan vizual namoyish. U tashqi AI’ga ulanmagan va haqiqiy mijoz ma’lumotlarini qayta ishlamaydi.",
-    "demoLabel": "Namoyish ssenariysi",
+    "description": "Bu kelajakdagi ish jarayonlarining namoyishi: javoblar oldindan tayyorlangan, haqiqiy mijozlar ma’lumotlari ishlatilmaydi.",
+    "demoLabel": "Demo ssenariy",
     "result": "Natija",
+    "sender": {
+      "client": "Mijoz",
+      "ai": "Althair AI"
+    },
+    "contextLabel": "Kompaniya konteksti",
+    "permissionLabel": "Ruxsat etilgan amal",
+    "receipt": {
+      "source": "Manba",
+      "customer": "Mijoz",
+      "status": "Holat",
+      "statusValue": "CRM’da saqlandi"
+    },
     "items": [
       {
         "id": "salon",
         "label": "Go‘zallik saloni",
+        "context": [
+          "Xizmatlar va narxlar",
+          "Bo‘sh vaqtlar",
+          "Bandlov qoidalari"
+        ],
+        "permission": "Bandlov yaratish",
+        "source": "Instagram",
+        "customer": "Mariya S.",
         "messages": [
           {
             "from": "client",
-            "text": "Soch olish qancha va kechqurun bo‘sh vaqt bormi?"
+            "text": "Soch oldirish qancha turadi va kechqurun bo‘sh vaqt bormi?"
           },
-          { "from": "ai", "text": "Narxi 180 000 so‘m. Bugun 18:30 bo‘sh." },
-          { "from": "client", "text": "Meni yozib qo‘ying." }
+          {
+            "from": "ai",
+            "text": "Soch oldirish 180 000 so‘m. Bugun 18:30 ga bo‘sh joy bor."
+          },
+          { "from": "client", "text": "Meni 18:30 ga yozib qo‘ying." },
+          {
+            "from": "ai",
+            "text": "Bandlovingiz bugun soat 18:30 ga tasdiqlandi."
+          }
         ],
-        "action": "Yozuv yaratildi · bugun, 18:30"
+        "action": "Bandlov yaratildi · bugun, 18:30 · suhbat saqlandi"
       },
       {
         "id": "clinic",
         "label": "Klinika",
+        "context": [
+          "Shifokorlar jadvali",
+          "Qabulga yozilish qoidalari",
+          "Xodimga topshirish"
+        ],
+        "permission": "Administratorga topshirish",
+        "source": "Telegram",
+        "customer": "Aziza K.",
         "messages": [
           { "from": "client", "text": "Terapevt qachon qabul qiladi?" },
           {
             "from": "ai",
-            "text": "Shifokor ertaga 10:00 dan qabul qiladi. So‘rovni administratorga beraymi?"
+            "text": "Shifokor ertaga soat 10:00 dan qabul qiladi. So‘rovingizni administratorga yuboraymi?"
           },
-          { "from": "client", "text": "Ha, men bilan bog‘laning." }
+          { "from": "client", "text": "Ha, iltimos, men bilan bog‘lanishsin." },
+          {
+            "from": "ai",
+            "text": "Tayyor. Administrator so‘rovingizni qabul qildi va siz bilan bog‘lanadi."
+          }
         ],
-        "action": "Yozilish so‘rovi administratorga topshirildi"
+        "action": "So‘rov administratorga topshirildi · kontekst saqlandi"
       },
       {
         "id": "store",
         "label": "Onlayn do‘kon",
+        "context": [
+          "Mahsulotlar katalogi",
+          "Mavjudlik holati",
+          "Xabarnoma qoidalari"
+        ],
+        "permission": "Vazifa yaratish",
+        "source": "Veb-chat",
+        "customer": "Kamil A.",
         "messages": [
           { "from": "client", "text": "Bu mahsulot yashil rangda bormi?" },
           {
             "from": "ai",
-            "text": "Yashil variant kutilmoqda. Kelganda xabar beraymi?"
+            "text": "Hozir yashil rangdagi mahsulot mavjud emas. Kelganda xabar beraymi?"
           },
-          { "from": "client", "text": "Ha, xabar bering." }
+          { "from": "client", "text": "Ha, xabar bering." },
+          {
+            "from": "ai",
+            "text": "Tayyor. Xabarnoma so‘rovingiz saqlandi."
+          }
         ],
-        "action": "Lid va eslatma yaratildi"
+        "action": "Xabarnoma so‘rovi va vazifa CRM’da saqlandi"
       }
     ]
   },
   "context": {
     "eyebrow": "Kompaniya konteksti",
-    "title": "Aynan sizning biznesingizni tushunadigan AI",
-    "description": "Assistent nimani bilishi, qanday ohangda gapirishi va qaysi ishlarni bajarishi mumkinligini siz belgilaysiz. Har bir kompaniya ma’lumoti alohida muhitda saqlanadi.",
-    "workspace": "Himoyalangan kompaniya muhiti",
+    "title": "Kompaniyangiz ma’lumotlari va qoidalariga asoslangan javoblar",
+    "description": "Bilim manbalari, muloqot ohangi, ruxsat etilgan amallar va xodimga topshirish shartlarini siz belgilaysiz. Har bir kompaniya uchun alohida ish maydoni ko‘zda tutilgan.",
+    "workspace": "Kompaniya ish maydoni",
+    "workspaceCaption": "Bitta kompaniyaning bilimlari, qoidalari va amallari",
+    "workspaceStatus": "Jamoa tomonidan sozlanadi",
     "items": [
       "Kompaniya tavsifi",
-      "Xizmat va mahsulotlar",
+      "Xizmatlar va mahsulotlar",
       "Narxlar",
-      "Manzil va ish vaqti",
-      "Yozilish qoidalari",
-      "Yetkazish va qaytarish",
+      "Manzillar va ish vaqtlari",
+      "Bandlov qoidalari",
+      "Yetkazib berish va qaytarish",
       "Muloqot ohangi",
-      "Tillar",
-      "Ruxsat etilgan AI ishlari",
-      "Bilim hujjatlari",
+      "Qo‘llab-quvvatlanadigan tillar",
+      "Ruxsat etilgan amallar",
+      "Hujjatlar va ko‘p beriladigan savollarga javoblar",
       "Xodimga topshirish qoidalari"
-    ]
+    ],
+    "groups": [
+      {
+        "title": "Kompaniya haqidagi bilimlar",
+        "items": [
+          "Kompaniya tavsifi",
+          "Xizmatlar va mahsulotlar",
+          "Narxlar",
+          "Manzillar va ish vaqtlari",
+          "Bandlov qoidalari",
+          "Yetkazib berish va qaytarish",
+          "Bilimlar bazasi"
+        ]
+      },
+      {
+        "title": "Muloqot uslubi",
+        "items": ["Muloqot ohangi", "Qo‘llab-quvvatlanadigan tillar"]
+      },
+      {
+        "title": "Amallar va nazorat",
+        "items": ["Ruxsat etilgan amallar", "Xodimga topshirish qoidalari"]
+      }
+    ],
+    "decision": {
+      "label": "Ssenariy chegarasi",
+      "status": "Javobga ruxsat berildi",
+      "detail": "Manba topildi · amal kompaniya qoidalariga ko‘ra ruxsat etilgan."
+    }
   },
   "outcomes": {
     "eyebrow": "Jamoa uchun foyda",
-    "title": "Kamroq takroriy ish. Mijozlarga ko‘proq e’tibor.",
+    "title": "Kamroq qo‘l mehnati, jamoada ko‘proq nazorat",
     "items": [
       {
-        "title": "Tezroq javob",
-        "description": "Oddiy savollarni e’tiborsiz qoldirmaslik."
+        "title": "Tezroq javob berish",
+        "description": "Odatiy savollar bo‘sh xodimni kutib qolmaydi."
       },
       {
         "title": "Murojaatlarni yo‘qotmaslik",
-        "description": "Suhbat va kontaktlarni bir joyga yig‘ish."
+        "description": "Ulangan kanallardagi xabarlar yagona navbatga tushadi."
       },
       {
-        "title": "Mijoz tarixini saqlash",
-        "description": "Har javobdan oldin kerakli kontekstni ko‘rish."
+        "title": "Tarixni saqlash",
+        "description": "Jamoa javob berishdan oldin avvalgi suhbatlar va amallarni ko‘radi."
       },
       {
-        "title": "Takroriy ishni avtomatlashtirish",
-        "description": "Ruxsat etilgan odatiy harakatlarni AI’ga topshirish."
+        "title": "Nazorat ostida avtomatlashtirish",
+        "description": "AI faqat oldindan ruxsat etilgan takroriy amallarni bajaradi."
       },
       {
-        "title": "Natijaga olib borish",
-        "description": "Suhbatlarni lid, yozuv va buyurtmaga aylantirish."
+        "title": "Natijani qayd etish",
+        "description": "Lid, bandlov yoki vazifa suhbat tarixi bilan birga yaratiladi."
       },
       {
-        "title": "Nazoratni odamda qoldirish",
-        "description": "Murakkab holatga xodimni ulash."
+        "title": "Murakkab holatni xodimga topshirish",
+        "description": "Xodim suhbatni yig‘ilgan kontekst bilan birga qabul qiladi."
       }
     ]
   },
   "industries": {
     "eyebrow": "Sohalar",
-    "title": "Universal asos, biznesingizga mos ssenariylar",
-    "description": "Platforma turli xizmat jamoalari uchun yaratilmoqda: kontekst va jarayon o‘zgaradi, yagona asos esa saqlanadi.",
+    "title": "Yagona asos — biznesingizga mos ssenariylar",
+    "description": "Har bir sohada bilimlar, qoidalar, ruxsat etilgan amallar va xodimga topshirish yo‘li o‘zgaradi, umumiy ish jarayoni esa bir xil qoladi.",
     "items": [
-      "Salon va barbershoplar",
-      "Klinika va stomatologiya",
-      "E-commerce",
-      "Ta’lim",
+      "Go‘zallik salonlari va sartaroshxonalar",
+      "Klinikalar va stomatologiya markazlari",
+      "Elektron tijorat",
+      "Ta’lim markazlari",
       "Avtoservislar",
-      "Ko‘chmas mulk",
-      "Mehmonxona va xizmat",
+      "Ko‘chmas mulk agentliklari",
+      "Mehmonxonalar va joylashtirish xizmatlari",
       "Boshqa xizmat bizneslari"
     ]
   },
   "security": {
-    "eyebrow": "Xavfsizlik va nazorat",
-    "title": "AI kompaniya qoidalari doirasida ishlaydi",
-    "description": "Arxitektura ma’lumotlarni ajratish va boshqariladigan ruxsatlar asosida loyihalanmoqda — tasdiqlanmagan sertifikat da’volarisiz.",
+    "eyebrow": "Nazorat va chegaralar",
+    "title": "Avtomatlashtirish jamoa nazorati ostida qoladi",
+    "description": "Kompaniya assistentga qaysi ma’lumotlar ochiqligini, u nimalarni mustaqil bajarishi va suhbatni qachon xodimga topshirishi kerakligini belgilaydi.",
     "items": [
       {
         "title": "Alohida muhit",
-        "description": "Har bir kompaniya konteksti va ma’lumoti ajratiladi."
+        "description": "Har bir kompaniya uchun alohida ma’lumotlar va kontekst ko‘zda tutilgan."
       },
       {
-        "title": "Xodim rollari",
-        "description": "Kirish huquqi vazifaga qarab belgilanadi."
+        "title": "Rollar va kirish huquqi",
+        "description": "Xodimning kirish huquqi uning roliga bog‘liq bo‘ladi."
       },
       {
-        "title": "Ruxsat etilgan ishlar",
-        "description": "Avtomatlashtirish chegarasini kompaniya belgilaydi."
+        "title": "Avtomatlashtirish chegaralari",
+        "description": "AI faqat oldindan ruxsat etilgan amallarni bajara oladi."
       },
       {
         "title": "Xodimga topshirish",
-        "description": "Jamoa kerakli paytda suhbatni qabul qiladi."
+        "description": "Jamoa suhbatni yig‘ilgan kontekst bilan birga davom ettira oladi."
       },
       {
-        "title": "Harakatlar tarixi",
-        "description": "Muhim hodisalarning shaffof jurnali rejalashtirilgan."
+        "title": "Amallar tarixi",
+        "description": "Muhim javoblar, amallar va topshirishlar jurnalga qayd etiladi."
       }
     ]
   },
@@ -303,141 +424,146 @@
       {
         "id": "what",
         "question": "Bu qanday platforma?",
-        "answer": "Bu mijozlar bilan aloqa, ruxsat etilgan ishlarni avtomatlashtirish va umumiy CRM-kontekst uchun kelajakdagi yagona AI-platforma."
+        "answer": "Althair AI — ishlab chiqilayotgan AI front-ofis. U mijoz murojaatlari va assistent javoblarini, ruxsat etilgan amallarni, xodimga topshirish jarayonini hamda natijani CRM’da qayd etishni yagona ish maydonida birlashtirish uchun yaratilmoqda."
       },
       {
         "id": "business",
         "question": "Qaysi bizneslar uchun mos?",
-        "answer": "Salonlar, klinikalar, do‘konlar, ta’lim markazlari, avtoservislar, ko‘chmas mulk, mehmonxona va boshqa xizmat kompaniyalari uchun."
+        "answer": "Go‘zallik salonlari, klinikalar, do‘konlar, ta’lim markazlari, avtoservislar, ko‘chmas mulk agentliklari, mehmonxonalar va boshqa xizmat ko‘rsatuvchi kompaniyalar uchun."
       },
       {
         "id": "channels",
-        "question": "Qaysi kanallar qo‘llab-quvvatlanadi?",
-        "answer": "Instagram, Telegram, WhatsApp, Gmail, SMS, veb-chat va telefon ssenariylari rejalashtirilgan. Ulanishlar bosqichma-bosqich ishga tushadi."
+        "question": "Qaysi kanallarni qo‘llab-quvvatlash rejalashtirilgan?",
+        "answer": "Instagram, Telegram, WhatsApp, Gmail, SMS, veb-chat va telefon ssenariylari rejalashtirilgan. Integratsiyalar bosqichma-bosqich ishga tushadi."
       },
       {
         "id": "actions",
-        "question": "AI lid va yozuv yarata oladimi?",
-        "answer": "Bu rejalashtirilgan imkoniyatlardan biri. Har bir kompaniya AI’ga qaysi ishlar ruxsat etilishini belgilaydi."
+        "question": "AI lidlar va bandlovlar yarata oladimi?",
+        "answer": "Bu imkoniyat rejalashtirilgan. U kompaniya amalni bajarishga ruxsat berganda va ulangan integratsiya uni qo‘llab-quvvatlaganda ishlashi ko‘zda tutilgan. Har bir ssenariy uchun avtomatlashtirish chegaralari alohida sozlanadi."
       },
       {
         "id": "handoff",
-        "question": "Xodim suhbatni qabul qila oladimi?",
-        "answer": "Ha. Murakkab yoki nozik holatlarda xodimga topshirish rejalashtirilgan jarayonning bir qismi."
+        "question": "Xodim suhbatni o‘z zimmasiga ola oladimi?",
+        "answer": "Ha. Xodim suhbatni davom ettirishi, murojaat tarixini va yig‘ilgan kontekstni ko‘rishi mumkin bo‘ladi."
       },
       {
         "id": "learn",
-        "question": "AI kompaniya haqida qanday biladi?",
-        "answer": "Kompaniya xizmatlar, narxlar, jadval, qoidalar, hujjatlar va boshqa bilimlarni o‘z muhitiga kiritadi."
+        "question": "AI kompaniya haqidagi ma’lumotni qayerdan oladi?",
+        "answer": "Jamoa ish maydoniga tekshirilgan ma’lumotlarni: xizmatlar, narxlar, ish vaqti, qoidalar va hujjatlarni qo‘shadi. Assistent ularni ish konteksti sifatida ishlatadi va qoidalar yoki ruxsatlarni mustaqil o‘zgartira olmaydi."
       },
       {
         "id": "separate",
         "question": "Kompaniyalar ma’lumoti ajratiladimi?",
-        "answer": "Mahsulot har bir kompaniya uchun alohida muhit va kontekstli multi-tenant tizim sifatida loyihalanmoqda."
+        "answer": "Har bir kompaniya uchun alohida ish maydoni ko‘zda tutilgan: uning ma’lumotlari va konteksti boshqa jamoalarniki bilan aralashmaydi."
+      },
+      {
+        "id": "uncertain",
+        "question": "AI javobga ishonch hosil qilmasa nima bo‘ladi?",
+        "answer": "U aniqlashtiruvchi savol beradi yoki kompaniya qoidalariga muvofiq suhbatni xodimga topshiradi."
       },
       {
         "id": "available",
         "question": "Mahsulot hozir mavjudmi?",
-        "answer": "Hozircha ommaviy ishga tushmagan. Kelajakdagi erta kirish uchun kompaniyalardan arizalar yig‘ilmoqda."
+        "answer": "Mahsulot hali ommaviy ishga tushirilmagan. Kelgusidagi erta kirish dasturi uchun kompaniyalardan arizalar qabul qilinmoqda."
       }
     ]
   },
   "cta": {
     "eyebrow": "Erta kirish",
-    "title": "Haqiqiy vazifalar uchun {brand}ni yaratishda yordam bering",
-    "description": "Biznesingiz va mijozlar bilan aloqa kanallari haqida ayting. Dastlabki kompaniyalarni taklif qilishga tayyor bo‘lganimizda bog‘lanamiz.",
-    "primary": "Erta kirish imkonini olish",
+    "title": "Qaysi jarayonni avtomatlashtirmoqchi ekaningizni ayting",
+    "description": "Murojaatlar qayerdan kelishini va jamoa qaysi natijani qayd etishi kerakligini ko‘rsating. Ssenariyingiz erta kirish uchun tayyor bo‘lganda siz bilan bog‘lanamiz.",
+    "primary": "Ariza qoldirish",
     "secondary": "Qanday ishlashini ko‘rish",
-    "note": "Mahsulot tayyorgarlik bosqichida. Ishga tushish shartlari, muddati va narxlari hali e’lon qilinmagan."
+    "note": "Muddat, funksiyalar tarkibi va ishtirok shartlarini ulanishdan oldin ma’lum qilamiz."
   },
   "footer": {
-    "description": "Mijozlar bilan suhbat, harakatlar va CRM-kontekst uchun yagona muhit.",
+    "description": "Mijoz murojaatlari, ruxsat etilgan amallar va CRM natijalari uchun yagona ish maydoni.",
     "product": "Mahsulot",
     "company": "Ma’lumot",
     "privacy": "Maxfiylik",
     "terms": "Shartlar",
     "contact": "Aloqa",
     "rights": "Barcha huquqlar himoyalangan.",
-    "stage": "Ishga tushishdan oldin"
+    "stage": "Tayyorgarlik bosqichi"
   },
   "form": {
     "title": "Erta kirish uchun ariza",
-    "description": "Kontaktlaringizni va kompaniya haqida qisqa ma’lumot qoldiring. Bu tayyor mahsulotda ro‘yxatdan o‘tish emas, ariza hisoblanadi.",
+    "description": "Aloqa ma’lumotlaringizni qoldiring va avtomatlashtirmoqchi bo‘lgan jarayoningizni qisqacha tasvirlab bering. Ariza avtomatik tarzda hisob yaratmaydi.",
     "name": "Ism va familiya",
     "company": "Kompaniya",
-    "contact": "Email yoki telefon",
+    "contact": "Email yoki telefon raqami",
     "industry": "Biznes sohasi",
-    "channel": "Qanday bog‘lanish qulay",
-    "note": "Izoh (ixtiyoriy)",
-    "consentBefore": "Ma’lumotlarni qayta ishlashga",
-    "consentLink": "maxfiylik siyosati qoralamasiga muvofiq roziman",
+    "channel": "Qulay aloqa usuli",
+    "note": "Nimani avtomatlashtirmoqchisiz? (ixtiyoriy)",
+    "consentBefore": "Shaxsiy ma’lumotlarimni quyidagi shartlar asosida qayta ishlashga roziman:",
+    "consentLink": "dastlabki maxfiylik siyosati",
     "submit": "Ariza yuborish",
     "sending": "Yuborilmoqda…",
     "select": "Variantni tanlang",
     "industries": [
-      "Go‘zallik",
-      "Tibbiyot",
-      "E-commerce",
-      "Ta’lim",
+      "Go‘zallik saloni",
+      "Klinika",
+      "Elektron tijorat",
+      "Ta’lim markazi",
       "Avtoservis",
-      "Ko‘chmas mulk",
-      "Mehmonxona",
+      "Ko‘chmas mulk agentligi",
+      "Mehmonxona biznesi",
       "Boshqa"
     ],
     "channels": ["Email", "Telefon", "Telegram", "WhatsApp"],
     "required": "Maydonni to‘ldiring",
-    "invalidContact": "To‘g‘ri email yoki telefon kiriting",
+    "invalidContact": "Yaroqli email manzili yoki telefon raqamini kiriting",
     "consentRequired": "Rozilikni tasdiqlash kerak",
-    "success": "Rahmat! Ariza jamoaga yetkazildi.",
-    "demo": "Demo rejimi: ariza qabul qiluvchi manzil sozlanmagan, shuning uchun ma’lumotlar saqlanmadi. Keyinroq urinib ko‘ring yoki bizga yozing.",
+    "success": "Rahmat! Arizangizni qabul qildik va ko‘rsatilgan aloqa ma’lumotlari orqali siz bilan bog‘lanamiz.",
+    "demo": "Forma hozircha demo rejimida ishlaydi va ma’lumotlarni saqlamaydi. Keyinroq qayta urinib ko‘ring.",
     "error": "Arizani yuborib bo‘lmadi. Keyinroq urinib ko‘ring.",
     "close": "Yopish"
   },
   "legal": {
     "back": "Bosh sahifaga qaytish",
     "draft": "Qoralama — ommaviy ishga tushirishdan oldin yuridik tekshiruv zarur",
-    "updated": "2026-yil 9-avgustdagi versiya",
+    "updated": "2026-yil 10-avgustdagi versiya",
     "privacy": {
       "title": "Maxfiylik siyosati",
-      "intro": "Ushbu dastlabki hujjat erta kirish formasidagi ma’lumotlar qanday ishlatilishini tushuntiradi. Bu yakuniy yuridik siyosat emas.",
+      "intro": "Ushbu dastlabki hujjat erta kirish shaklidagi ma’lumotlar qanday qayta ishlanishini tushuntiradi. Bu yakuniy yuridik siyosat emas.",
       "sections": [
         {
-          "title": "Qanday ma’lumot yig‘iladi",
-          "text": "Ism, kompaniya nomi, aloqa ma’lumoti, biznes sohasi va ixtiyoriy izoh."
+          "title": "Qanday ma’lumotlar yig‘iladi",
+          "text": "Ism, kompaniya nomi, aloqa ma’lumotlari, biznes sohasi va ixtiyoriy izoh."
         },
         {
           "title": "Nima uchun kerak",
-          "text": "Erta kirishga qiziqishni o‘rganish va mahsulot rivoji haqida bog‘lanish uchun."
+          "text": "Erta kirish dasturiga qiziqishni baholash hamda mahsulot rivoji va erta kirish bo‘yicha siz bilan bog‘lanish uchun."
         },
         {
           "title": "Yuborish va saqlash",
-          "text": "Forma ma’lumotni faqat sayt egasi sozlagan server manziliga yuboradi. Saqlash muddati ishga tushishdan oldin belgilanadi."
+          "text": "Shakl ma’lumotlarni faqat sayt egasi sozlagan server manziliga yuboradi. Saqlash muddatlari ishga tushirishdan oldin belgilanadi."
         },
         {
           "title": "Savollar",
-          "text": "Ma’lumotlaringiz bo‘yicha savol uchun sahifa pastidagi manzil orqali bog‘laning."
+          "text": "Ma’lumotlar bo‘yicha savollar uchun aloqa manzili arizalarni yig‘ish boshlanishidan oldin e’lon qilinadi."
         }
       ]
     },
     "terms": {
       "title": "Foydalanish shartlari",
-      "intro": "Sayt ishga tushishdan oldingi mahsulot konsepsiyasini ko‘rsatadi. Ariza kirish, muddat yoki tijoriy shartlarni kafolatlamaydi.",
+      "intro": "Ushbu sayt ishga tushirilishidan oldingi mahsulot konsepsiyasini taqdim etadi. Ariza topshirish mahsulotga kirish, ishga tushirish muddati yoki tijoriy shartlarni kafolatlamaydi.",
       "sections": [
         {
           "title": "Mahsulot holati",
           "text": "Saytdagi funksiyalar, integratsiyalar va interfeyslar rejalashtirilgan yoki namoyish uchun bo‘lib, o‘zgarishi mumkin."
         },
         {
-          "title": "To‘g‘ri foydalanish",
-          "text": "Formaga maxfiy, tibbiy, to‘lov yoki boshqa nozik ma’lumotlarni yubormang."
+          "title": "Foydalanish qoidalari",
+          "text": "Shakl orqali maxfiy, tibbiy, to‘lovga oid yoki boshqa nozik ma’lumotlarni yubormang."
         },
         {
           "title": "Intellektual mulk",
-          "text": "Sayt materiallari mahsulot konsepsiyasi bilan tanishtirish uchun. Yakuniy shartlar ishga tushishdan oldin belgilanadi."
+          "text": "Sayt materiallari mahsulot konsepsiyasi bilan tanishtirishga xizmat qiladi. Yakuniy shartlar ishga tushirishdan oldin belgilanadi."
         },
         {
           "title": "O‘zgarishlar",
-          "text": "Ushbu qoralama ommaviy ishga tushirishdan oldin yuridik tekshirilgan versiyaga almashtiriladi."
+          "text": "Ushbu qoralama ommaviy ishga tushirishdan oldin yuridik ekspertizadan o‘tgan versiyaga almashtiriladi."
         }
       ]
     }

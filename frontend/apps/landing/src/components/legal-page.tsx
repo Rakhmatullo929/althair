@@ -37,9 +37,11 @@ export async function LegalPage({ kind }: { kind: "privacy" | "terms" }) {
             </section>
           ))}
         </Card>
-        <p className="text-secondary mt-8 text-sm">
-          {brand.primaryContactEmail}
-        </p>
+        {brand.primaryContactEmail ? (
+          <p className="text-secondary mt-8 text-sm">
+            {brand.primaryContactEmail}
+          </p>
+        ) : null}
       </Container>
     </article>
   );

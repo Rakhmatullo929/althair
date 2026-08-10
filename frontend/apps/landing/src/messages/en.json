@@ -1,7 +1,14 @@
 {
+  "motion": {
+    "intro": {
+      "kicker": "ALTHAIR / COMPANY CONTEXT",
+      "flow": "INQUIRY → CONTEXT → ACTION",
+      "sources": ["INSTAGRAM", "TELEGRAM", "WEB CHAT", "CRM"]
+    }
+  },
   "metadata": {
-    "title": "A digital front office for business",
-    "description": "Althair AI receives customer requests, responds with company context, and turns conversations into leads, bookings, and tasks.",
+    "title": "AI front office for customer-facing teams",
+    "description": "Althair AI will bring together inquiries from connected channels, replies based on company rules, permitted actions, and CRM outcome tracking.",
     "privacyTitle": "Privacy policy — draft",
     "termsTitle": "Terms of use — draft"
   },
@@ -11,7 +18,7 @@
     "how": "How it works",
     "industries": "Industries",
     "faq": "FAQ",
-    "earlyAccess": "Get early access",
+    "earlyAccess": "Apply for early access",
     "login": "Log in",
     "language": "Choose language",
     "openMenu": "Open menu",
@@ -22,49 +29,64 @@
     "mobileNav": "Mobile navigation"
   },
   "hero": {
-    "badge": "AI front office for growing teams",
-    "titleBefore": "Every conversation,",
-    "titleHighlight": "already in motion",
-    "description": "Althair AI receives requests from your channels, responds with company context, and turns each conversation into a lead, booking, or team task.",
-    "primary": "Get early access",
+    "badge": "Pre-launch · AI front office for customer-facing teams",
+    "identityTitle": "From inquiry to outcome, without losing context.",
+    "titleBefore": "Every inquiry—",
+    "titleHighlight": "handled from the start",
+    "description": "Althair AI will bring together inquiries from connected channels, replies based on company rules, permitted actions, and CRM outcome tracking.",
+    "primary": "Submit an application",
     "secondary": "See how it works",
-    "note": "Early access for the first teams",
-    "visualLabel": "Interactive 3D model of Althair AI connecting a customer conversation to a business outcome",
-    "hub": "Context active",
+    "note": "We are currently accepting applications from early teams",
+    "visualLabel": "Interactive 3D model of the Althair AI logo. Scrolling reveals each stage of handling an inquiry.",
+    "hub": "Company context connected",
+    "scene": {
+      "identityKicker": "ALTHAIR AI / AI FRONT OFFICE",
+      "identityProof": ["CHANNELS", "CONTEXT", "CRM"],
+      "identityStatus": "PRE-LAUNCH",
+      "identityStep": "01 — ALTHAIR AI",
+      "loading": "LOADING 3D MODEL",
+      "orbitCue": "360° · DRAG THE LOGO",
+      "orbitLabel": "Interactive Althair AI 3D logo. Drag to rotate it through 360 degrees. Use the arrow keys for precise inspection and Home to return to the front view.",
+      "scrollCue": "SCROLL TO EXPLORE THE WORKFLOW",
+      "stageKicker": "ALTHAIR AI / AI FRONT OFFICE",
+      "state": "CONTEXT CONNECTED",
+      "telemetry": "ALTHAIR / WORKFLOW SYSTEM"
+    },
     "messages": [
-      { "label": "Instagram", "text": "Any availability this evening?" },
-      { "label": "AI reply", "text": "Yes, 6:30 PM is available" },
-      { "label": "CRM", "text": "New lead created" },
-      { "label": "Booking", "text": "Confirmed for 6:30 PM" }
+      { "label": "Instagram", "text": "Can I book for this evening?" },
+      { "label": "AI reply", "text": "Yes. 6:30 PM is available today." },
+      { "label": "CRM", "text": "Contact and conversation saved" },
+      { "label": "Booking", "text": "Today, 6:30 PM · confirmed" }
     ]
   },
   "product": {
     "eyebrow": "One workspace",
-    "title": "Every conversation and action in one context",
-    "description": "{brand} brings messages, calls, sales, support, and CRM together. Every company gets a separate secure workspace with its own AI context, channels, customers, and team.",
+    "title": "Channels, context, and CRM in one place",
+    "description": "{brand} will bring connected channels, an AI assistant, and CRM context into one workspace. The team will see customer history, define permitted actions, and take over when human handoff is needed.",
     "features": [
       {
-        "title": "One AI",
-        "description": "Understands conversation history and company rules."
+        "title": "Assistant with context",
+        "description": "Uses conversation history, company data, and rules."
       },
       {
-        "title": "Connected channels",
-        "description": "Brings customer requests into one workspace."
+        "title": "Unified inbox",
+        "description": "Collects inquiries from connected channels in one queue."
       },
       {
-        "title": "CRM and history",
-        "description": "Keeps customers, leads, bookings, and outcomes."
+        "title": "Customer profile",
+        "description": "Keeps contact details, conversation history, leads, bookings, and tasks."
       },
       {
-        "title": "Actions and handoff",
-        "description": "Performs approved tasks and involves an employee."
+        "title": "Automation under control",
+        "description": "Carries out only permitted actions and hands complex cases to a team member."
       }
     ]
   },
   "channels": {
     "eyebrow": "Channels",
-    "title": "Customers reach you where they already are",
-    "description": "Connections will roll out in stages. Card statuses show the current product plan, not a promise of public availability.",
+    "title": "Customers reach out where it suits them",
+    "description": "Integrations will be connected in stages. Each card shows its current status; the scope and timing may change before launch.",
+    "signature": "Channel map",
     "status": {
       "planned": "Planned",
       "beta": "Closed beta",
@@ -74,67 +96,85 @@
       {
         "id": "instagram",
         "name": "Instagram",
-        "description": "Questions, reactions, and leads from messages.",
+        "description": "Incoming messages and replies to stories.",
         "status": "planned"
       },
       {
         "id": "telegram",
         "name": "Telegram",
-        "description": "Customer conversations through a business bot.",
+        "description": "Inquiries through a Telegram bot.",
         "status": "planned"
       },
       {
         "id": "whatsapp",
         "name": "WhatsApp",
-        "description": "Support and sales in a familiar messenger.",
+        "description": "Incoming inquiries through WhatsApp Business.",
         "status": "planned"
       },
       {
         "id": "phone",
         "name": "Phone calls",
-        "description": "Future voice flows and call history.",
+        "description": "Planned voice workflows and call outcome tracking.",
         "status": "planned"
       },
       {
         "id": "gmail",
         "name": "Gmail",
-        "description": "Handle inbound emails and requests.",
+        "description": "Inbound emails and inquiries from Gmail.",
         "status": "planned"
       },
       {
         "id": "sms",
         "name": "SMS",
-        "description": "Notifications, confirmations, and reminders.",
+        "description": "Confirmations, reminders, and service notifications.",
         "status": "planned"
       },
       {
         "id": "web",
         "name": "Web chat",
-        "description": "Conversations with visitors on your website.",
+        "description": "Inquiries from visitors to your website.",
         "status": "planned"
       }
     ]
   },
   "how": {
     "eyebrow": "How it works",
-    "title": "From the first message to a clear outcome",
-    "description": "AI handles conversations within defined permissions, records the result, and hands complex cases to a person at the right time.",
+    "title": "How an inquiry becomes an outcome",
+    "description": "Each workflow will define its permitted actions and conditions for human handoff. If a request moves outside those boundaries, a team member will receive the conversation together with its context.",
     "steps": [
       {
-        "title": "A customer reaches out",
-        "description": "They message or call through a connected channel."
+        "title": "An inquiry arrives",
+        "description": "The customer messages or calls through a connected channel."
       },
       {
-        "title": "AI understands",
-        "description": "It uses company context and customer history."
+        "title": "Althair AI identifies the request",
+        "description": "It matches the inquiry with customer history, company data, and rules."
       },
       {
-        "title": "It responds or acts",
-        "description": "It answers, creates a lead, or offers a booking."
+        "title": "It replies or carries out an action",
+        "description": "It uses verified company data and, when permitted, creates a lead, booking, or task."
       },
       {
-        "title": "Everything is saved",
-        "description": "Conversation, customer, booking, and result stay in CRM."
+        "title": "It records the outcome in CRM",
+        "description": "It saves the conversation, customer profile, completed action, and assignee."
+      }
+    ],
+    "stageMeta": [
+      {
+        "status": "Inquiry received",
+        "proof": ["Instagram", "Telegram", "Web chat"]
+      },
+      {
+        "status": "Context found",
+        "proof": ["Customer history", "Rules", "Pricing"]
+      },
+      {
+        "status": "Reply or action completed",
+        "proof": ["AI reply", "New lead", "Booking"]
+      },
+      {
+        "status": "Outcome saved",
+        "proof": ["CRM", "Conversation", "Assignee"]
       }
     ],
     "mockup": {
@@ -143,30 +183,47 @@
       "appointments": "Bookings",
       "analytics": "Analytics",
       "conversation": "Customer conversation",
-      "aiMode": "AI is responding",
+      "aiMode": "AI is handling the conversation",
       "customer": "Maria S.",
       "customerInfo": "Customer profile",
       "newLead": "New lead",
       "booking": "Booking: 6:30 PM",
-      "handoff": "Hand off to employee",
-      "history": "3 conversations",
+      "handoff": "Hand off to a team member",
+      "history": "3 inquiries",
       "messages": [
-        "Hi! Can I book something today?",
+        "Hi! Do you have an opening today?",
         "Yes, 6:30 PM is available. Does that work?",
-        "Yes, please confirm it."
+        "Yes, please confirm it.",
+        "Done. Your booking for today at 6:30 PM has been created."
       ]
     }
   },
   "scenario": {
     "eyebrow": "Demo scenarios",
     "title": "One product, different workflows",
-    "description": "This is a pre-scripted visual demonstration. It is not connected to an external AI and does not process real customer data.",
-    "demoLabel": "Demonstration scenario",
+    "description": "These are illustrations of future workflows: the replies are pre-scripted, and no real customer data is used.",
+    "demoLabel": "Demo scenario",
     "result": "Result",
+    "sender": {
+      "client": "Customer",
+      "ai": "Althair AI"
+    },
+    "contextLabel": "Company context",
+    "permissionLabel": "Permitted action",
+    "receipt": {
+      "source": "Source",
+      "customer": "Customer",
+      "status": "Status",
+      "statusValue": "Saved to CRM"
+    },
     "items": [
       {
         "id": "salon",
         "label": "Beauty salon",
+        "context": ["Services and prices", "Available times", "Booking rules"],
+        "permission": "Create a booking",
+        "source": "Instagram",
+        "customer": "Maria S.",
         "messages": [
           {
             "from": "client",
@@ -174,128 +231,177 @@
           },
           {
             "from": "ai",
-            "text": "A haircut is UZS 180,000. We have 6:30 PM today."
+            "text": "A haircut costs UZS 180,000. We have an opening at 6:30 PM today."
           },
-          { "from": "client", "text": "Please book it." }
+          { "from": "client", "text": "Please book it." },
+          {
+            "from": "ai",
+            "text": "Your booking is confirmed for today at 6:30 PM."
+          }
         ],
-        "action": "Booking created · today, 6:30 PM"
+        "action": "Booking created · today, 6:30 PM · conversation saved"
       },
       {
         "id": "clinic",
         "label": "Clinic",
+        "context": ["Doctor schedules", "Booking rules", "Human handoff"],
+        "permission": "Hand off to reception",
+        "source": "Telegram",
+        "customer": "Aziza K.",
         "messages": [
-          { "from": "client", "text": "When is the physician available?" },
+          { "from": "client", "text": "When is the GP available?" },
           {
             "from": "ai",
-            "text": "The doctor is available tomorrow from 10 AM. I can send a request to reception."
+            "text": "The doctor is available tomorrow from 10 AM. I can forward your request to reception."
           },
-          { "from": "client", "text": "Yes, please contact me." }
+          { "from": "client", "text": "Yes, please contact me." },
+          {
+            "from": "ai",
+            "text": "Done. Reception has received the request and will contact you."
+          }
         ],
-        "action": "Appointment request handed to reception"
+        "action": "Request handed off to reception · context saved"
       },
       {
         "id": "store",
         "label": "Online store",
+        "context": ["Product catalog", "Availability", "Notification rules"],
+        "permission": "Create a task",
+        "source": "Web chat",
+        "customer": "Kamil A.",
         "messages": [
           { "from": "client", "text": "Is this item available in green?" },
           {
             "from": "ai",
-            "text": "The green option is expected soon. Shall I notify you?"
+            "text": "The green option is not currently available. Shall I notify you when it returns?"
           },
-          { "from": "client", "text": "Yes, let me know when it arrives." }
+          { "from": "client", "text": "Yes, let me know when it arrives." },
+          {
+            "from": "ai",
+            "text": "Done. Your notification request has been saved."
+          }
         ],
-        "action": "Lead and reminder created"
+        "action": "Notification request and task saved to CRM"
       }
     ]
   },
   "context": {
     "eyebrow": "Company context",
-    "title": "AI that understands your business",
-    "description": "You decide what the assistant knows, how it speaks, and which actions it may take. Each company’s data is isolated in its own workspace.",
-    "workspace": "Secure company workspace",
+    "title": "Answers based on your company’s data and rules",
+    "description": "You define the knowledge sources, tone of voice, permitted actions, and conditions for human handoff. A separate workspace is planned for each company.",
+    "workspace": "Company workspace",
+    "workspaceCaption": "Knowledge, rules, and actions for one company",
+    "workspaceStatus": "Configured by your team",
     "items": [
       "Company description",
       "Services and products",
       "Prices",
-      "Locations and working hours",
+      "Locations and business hours",
       "Booking rules",
       "Delivery and returns",
       "Tone of voice",
-      "Languages",
-      "Allowed AI actions",
-      "Knowledge documents",
-      "Human escalation rules"
-    ]
+      "Supported languages",
+      "Permitted actions",
+      "Documents and answers to common questions",
+      "Human handoff rules"
+    ],
+    "groups": [
+      {
+        "title": "Company knowledge",
+        "items": [
+          "Company description",
+          "Services and products",
+          "Prices",
+          "Locations and business hours",
+          "Booking rules",
+          "Delivery and returns",
+          "Knowledge base"
+        ]
+      },
+      {
+        "title": "Communication style",
+        "items": ["Tone of voice", "Supported languages"]
+      },
+      {
+        "title": "Actions and control",
+        "items": ["Permitted actions", "Human handoff rules"]
+      }
+    ],
+    "decision": {
+      "label": "Workflow boundary",
+      "status": "Response permitted",
+      "detail": "Source found · action permitted by company rules."
+    }
   },
   "outcomes": {
     "eyebrow": "Team outcomes",
-    "title": "Less repetitive work. More attention for customers.",
+    "title": "Less manual work, more control for the team",
     "items": [
       {
         "title": "Respond faster",
-        "description": "Keep common questions from being missed."
+        "description": "Routine questions do not have to wait for an available team member."
       },
       {
-        "title": "Capture every inquiry",
-        "description": "Bring conversations and contacts into one place."
+        "title": "Keep inquiries from slipping through",
+        "description": "Messages from connected channels arrive in one queue."
       },
       {
-        "title": "Keep customer history",
-        "description": "See the right context before every response."
+        "title": "Keep the full history",
+        "description": "The team sees previous conversations and actions before replying."
       },
       {
-        "title": "Automate routine work",
-        "description": "Let AI handle repeatable, approved actions."
+        "title": "Automate with control",
+        "description": "AI carries out only permitted, repeatable actions."
       },
       {
-        "title": "Move toward outcomes",
-        "description": "Turn conversations into leads, bookings, and orders."
+        "title": "Record the outcome",
+        "description": "A lead, booking, or task is created together with the conversation history."
       },
       {
-        "title": "Keep people in control",
-        "description": "Bring an employee into complex cases."
+        "title": "Hand complex cases to the team",
+        "description": "A team member receives the conversation together with the context already collected."
       }
     ]
   },
   "industries": {
     "eyebrow": "Industries",
-    "title": "A universal core, shaped around your business",
-    "description": "The platform is designed for different service teams: context and workflows change while the shared foundation stays consistent.",
+    "title": "One core, workflows shaped around your business",
+    "description": "Knowledge, rules, permitted actions, and human handoff paths change by industry while the overall workflow remains consistent.",
     "items": [
       "Beauty salons and barbershops",
-      "Clinics and dentistry",
+      "Clinics and dental practices",
       "E-commerce",
-      "Education",
-      "Auto services",
-      "Real estate",
-      "Hospitality",
+      "Education centers",
+      "Auto repair shops",
+      "Real-estate agencies",
+      "Hotels and accommodation services",
       "Other service businesses"
     ]
   },
   "security": {
-    "eyebrow": "Security and control",
-    "title": "AI operates within company rules",
-    "description": "The architecture is being designed around data separation and controlled permissions — without unverified certification claims.",
+    "eyebrow": "Control and boundaries",
+    "title": "Automation stays under the team’s control",
+    "description": "The company defines which data the assistant can access, what it may do on its own, and when it must hand a conversation to a team member.",
     "items": [
       {
         "title": "Separate workspace",
-        "description": "Every company’s context and data stay separated."
+        "description": "Each company will have its own data and context."
       },
       {
-        "title": "Employee roles",
-        "description": "Access follows each person’s responsibilities."
+        "title": "Roles and access",
+        "description": "A team member’s access will depend on their role."
       },
       {
-        "title": "Allowed actions",
-        "description": "The company defines automation boundaries."
+        "title": "Automation boundaries",
+        "description": "AI will carry out only actions permitted in advance."
       },
       {
         "title": "Human handoff",
-        "description": "The team can take over at the right moment."
+        "description": "The team will be able to continue the conversation with its collected context."
       },
       {
         "title": "Action history",
-        "description": "A transparent record of important events is planned."
+        "description": "Key replies, actions, and handoffs will be recorded in an activity log."
       }
     ]
   },
@@ -306,55 +412,60 @@
       {
         "id": "what",
         "question": "What is this platform?",
-        "answer": "It is a future unified AI platform for customer communication, approved business actions, and shared CRM context."
+        "answer": "Althair AI is an AI front office in development. It will bring together customer inquiries, assistant replies and permitted actions, human handoff, and CRM outcome tracking."
       },
       {
         "id": "business",
         "question": "Which businesses is it for?",
-        "answer": "It is designed for salons, clinics, stores, education, auto services, real estate, hospitality, and other service companies."
+        "answer": "It is designed for salons, clinics, stores, education centers, auto repair shops, real-estate agencies, hotels, and other service businesses."
       },
       {
         "id": "channels",
         "question": "Which channels will it support?",
-        "answer": "Instagram, Telegram, WhatsApp, Gmail, SMS, web chat, and phone scenarios are planned. Connections will roll out in stages."
+        "answer": "Instagram, Telegram, WhatsApp, Gmail, SMS, web chat, and phone scenarios are planned. Channel integrations will roll out in stages."
       },
       {
         "id": "actions",
         "question": "Can AI create leads and bookings?",
-        "answer": "That is one of the planned capabilities. Each company will define what the AI is allowed to do."
+        "answer": "That is planned when the company permits the action and the connected integration supports it. Automation boundaries will be configured separately for each workflow."
       },
       {
         "id": "handoff",
-        "question": "Can an employee take over?",
-        "answer": "Yes. Human handoff is part of the planned workflow for complex or sensitive situations."
+        "question": "Can a team member take over a conversation?",
+        "answer": "Yes. A team member will be able to continue the conversation with its history and the context already collected."
       },
       {
         "id": "learn",
-        "question": "How does AI learn about the company?",
-        "answer": "The company will provide services, prices, hours, rules, documents, and other knowledge in its workspace."
+        "question": "How does AI get company information?",
+        "answer": "The team will add verified information such as services, prices, hours, rules, and documents to the workspace. The assistant will use it as working context and will not be able to change rules or permissions on its own."
       },
       {
         "id": "separate",
-        "question": "Is every company’s data separated?",
-        "answer": "The product is being designed as a multi-tenant platform with a separate workspace and context for each company."
+        "question": "Is each company’s data kept separate?",
+        "answer": "A separate workspace is planned for each company, so its data and context do not mix with those of other teams."
+      },
+      {
+        "id": "uncertain",
+        "question": "What happens when AI is not confident in an answer?",
+        "answer": "It will ask a clarifying question or hand the conversation to a team member, according to the company’s rules."
       },
       {
         "id": "available",
         "question": "Is the product available now?",
-        "answer": "There is no public launch yet. We are collecting interest from companies for future early access."
+        "answer": "There is no public launch yet. We are accepting applications for a future early-access cohort."
       }
     ]
   },
   "cta": {
     "eyebrow": "Early access",
-    "title": "Help shape {brand} for real work",
-    "description": "Tell us about your business and customer channels. We will get in touch when we are ready to invite the first companies.",
-    "primary": "Get early access",
+    "title": "Tell us which workflow you want to automate",
+    "description": "Tell us where inquiries arrive and which outcome your team needs to record. We will get in touch when your workflow is ready for early access.",
+    "primary": "Submit an application",
     "secondary": "See how it works",
-    "note": "The product is in preparation. Launch terms, timing, and pricing have not been announced."
+    "note": "We will share the timeline, included capabilities, and participation terms before onboarding."
   },
   "footer": {
-    "description": "One workspace for customer conversations, actions, and CRM context.",
+    "description": "One workspace for customer inquiries, permitted actions, and CRM outcomes.",
     "product": "Product",
     "company": "Information",
     "privacy": "Privacy",
@@ -365,25 +476,25 @@
   },
   "form": {
     "title": "Early-access request",
-    "description": "Share your contact details and a little about your company. This is a request, not registration for a finished product.",
+    "description": "Leave your contact details and briefly describe the workflow you want to automate. An application does not create an account automatically.",
     "name": "Full name",
     "company": "Company",
-    "contact": "Email or phone",
+    "contact": "Email or phone number",
     "industry": "Industry",
-    "channel": "Preferred contact channel",
-    "note": "Note (optional)",
-    "consentBefore": "I agree to data processing under the",
-    "consentLink": "draft privacy policy",
+    "channel": "Preferred contact method",
+    "note": "What would you like to automate? (optional)",
+    "consentBefore": "I consent to the processing of my personal data under the",
+    "consentLink": "preliminary privacy policy",
     "submit": "Send request",
     "sending": "Sending…",
     "select": "Select an option",
     "industries": [
-      "Beauty",
-      "Healthcare",
+      "Beauty salon",
+      "Clinic",
       "E-commerce",
-      "Education",
-      "Auto services",
-      "Real estate",
+      "Education center",
+      "Auto repair shop",
+      "Real-estate agency",
       "Hospitality",
       "Other"
     ],
@@ -391,15 +502,15 @@
     "required": "This field is required",
     "invalidContact": "Enter a valid email address or phone number",
     "consentRequired": "Consent is required",
-    "success": "Thank you. Your request was delivered to the team.",
-    "demo": "Demo mode: no lead destination is configured, so your details were not stored. Try again later or contact us directly.",
+    "success": "Thank you. We have received your application and will contact you using the details provided.",
+    "demo": "The form is currently in demo mode and does not store data. Please try again later.",
     "error": "We could not send your request. Please try again later.",
     "close": "Close"
   },
   "legal": {
     "back": "Back to home",
     "draft": "Draft — legal review is required before public launch",
-    "updated": "Version dated August 9, 2026",
+    "updated": "Version dated August 10, 2026",
     "privacy": {
       "title": "Privacy policy",
       "intro": "This preliminary document explains data handling for the early-access form. It is not the final legal policy.",
@@ -418,7 +529,7 @@
         },
         {
           "title": "Questions",
-          "text": "For questions about your data, contact us at the address shown at the bottom of the page."
+          "text": "A contact address for questions about data will be published before applications are collected."
         }
       ]
     },

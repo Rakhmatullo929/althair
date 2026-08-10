@@ -1,6 +1,7 @@
 "use client";
 
 import { BrandMark } from "@workspace/brand/mark";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 type IntroState = "active" | "exiting" | "done";
@@ -8,6 +9,8 @@ type IntroState = "active" | "exiting" | "done";
 const INTRO_STORAGE_KEY = "althair-motion-intro-seen";
 
 export function MotionOrchestrator() {
+  const t = useTranslations("motion.intro");
+  const sources = t.raw("sources") as string[];
   const [introState, setIntroState] = useState<IntroState>("active");
 
   useEffect(() => {
@@ -15,7 +18,12 @@ export function MotionOrchestrator() {
     const reduceMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
-    const introSeen = window.sessionStorage.getItem(INTRO_STORAGE_KEY) === "1";
+    let introSeen = false;
+    try {
+      introSeen = window.sessionStorage.getItem(INTRO_STORAGE_KEY) === "1";
+    } catch {
+      // Storage can be blocked in privacy modes; motion still works without it.
+    }
 
     root.classList.add("motion-ready");
 
@@ -23,7 +31,11 @@ export function MotionOrchestrator() {
       root.classList.add("motion-intro-skipped");
     } else {
       root.classList.add("motion-intro-active");
-      window.sessionStorage.setItem(INTRO_STORAGE_KEY, "1");
+      try {
+        window.sessionStorage.setItem(INTRO_STORAGE_KEY, "1");
+      } catch {
+        // Treat the intro as session-local when storage is unavailable.
+      }
     }
 
     const revealTargets = Array.from(
@@ -129,17 +141,17 @@ export function MotionOrchestrator() {
           <span className="intro-panel intro-panel-right" />
           <div className="intro-blueprint" />
           <div className="intro-core">
-            <p>ALTHAIR / CONTEXT ENGINE</p>
+            <p>{t("kicker")}</p>
             <BrandMark className="intro-mark" />
             <div className="intro-progress">
               <span />
             </div>
-            <strong>SIGNAL → CONTEXT → ACTION</strong>
+            <strong>{t("flow")}</strong>
           </div>
-          <span className="intro-source intro-source-one">INSTAGRAM</span>
-          <span className="intro-source intro-source-two">TELEGRAM</span>
-          <span className="intro-source intro-source-three">WEB CHAT</span>
-          <span className="intro-source intro-source-four">CRM</span>
+          <span className="intro-source intro-source-one">{sources[0]}</span>
+          <span className="intro-source intro-source-two">{sources[1]}</span>
+          <span className="intro-source intro-source-three">{sources[2]}</span>
+          <span className="intro-source intro-source-four">{sources[3]}</span>
         </div>
       ) : null}
       <div className="page-progress-rail" aria-hidden="true">

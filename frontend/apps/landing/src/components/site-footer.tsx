@@ -47,9 +47,11 @@ export function SiteFooter() {
             <div className="mt-4 grid gap-3 text-sm text-emerald-50/55">
               <Link href="/privacy">{t("footer.privacy")}</Link>
               <Link href="/terms">{t("footer.terms")}</Link>
-              <a href={`mailto:${brand.primaryContactEmail}`}>
-                {brand.primaryContactEmail}
-              </a>
+              {brand.primaryContactEmail ? (
+                <a href={`mailto:${brand.primaryContactEmail}`}>
+                  {brand.primaryContactEmail}
+                </a>
+              ) : null}
               {brand.telegramUrl ? (
                 <a href={brand.telegramUrl} rel="noreferrer" target="_blank">
                   Telegram

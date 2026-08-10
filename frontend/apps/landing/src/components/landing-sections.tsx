@@ -2,7 +2,6 @@ import { brand } from "@workspace/brand";
 import { BrandMark } from "@workspace/brand/mark";
 import {
   Accordion,
-  Badge,
   Container,
   Section,
   SectionHeading,
@@ -11,15 +10,11 @@ import {
 } from "@workspace/ui";
 import {
   ArrowRight,
-  BarChart3,
   BookOpen,
   Bot,
-  Box,
   BriefcaseBusiness,
   Building2,
-  CalendarCheck2,
   Car,
-  Check,
   CheckCircle2,
   Clock3,
   ContactRound,
@@ -42,16 +37,14 @@ import {
   SlidersHorizontal,
   Sparkles,
   Store,
-  UserRound,
   UsersRound,
-  Webhook,
   Workflow,
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import type { ComponentType, ReactNode, SVGProps } from "react";
+import type { ReactNode } from "react";
 import { SiGmail, SiInstagram, SiTelegram, SiWhatsapp } from "react-icons/si";
+import { CinematicJourney } from "./cinematic-journey";
 import { EarlyAccessDialog } from "./early-access-dialog";
-import { RobotHeadModel } from "./robot-head-model";
 import { ScenarioDemo } from "./scenario-demo";
 
 type CopyItem = { title: string; description: string };
@@ -63,6 +56,22 @@ type ChannelItem = {
   status: CapabilityStatus;
 };
 type FaqItem = { id: string; question: string; answer: string };
+type StageMeta = { status: string; proof: string[] };
+type SceneCopy = {
+  identityKicker: string;
+  identityProof: string[];
+  identityStatus: string;
+  identityStep: string;
+  loading: string;
+  orbitCue: string;
+  orbitLabel: string;
+  scrollCue: string;
+  stageKicker: string;
+  state: string;
+  telemetry: string;
+};
+type ContextGroup = { title: string; items: string[] };
+type ContextDecision = { label: string; status: string; detail: string };
 
 const featureIcons = [Sparkles, MessagesSquare, ContactRound, Workflow];
 const outcomeIcons = [Clock3, Inbox, RefreshCcw, Bot, CheckCircle2, Handshake];
@@ -83,6 +92,7 @@ const securityIcons = [
   Headphones,
   ShieldCheck,
 ];
+const knowledgeIcons = [BookOpen, Languages, Workflow];
 
 export async function LandingSections() {
   const [
@@ -114,7 +124,8 @@ export async function LandingSections() {
   const features = product.raw("features") as CopyItem[];
   const channelItems = channels.raw("items") as ChannelItem[];
   const steps = how.raw("steps") as CopyItem[];
-  const contextItems = context.raw("items") as string[];
+  const contextGroups = context.raw("groups") as ContextGroup[];
+  const contextDecision = context.raw("decision") as ContextDecision;
   const outcomeItems = outcomes.raw("items") as CopyItem[];
   const industryItems = industries.raw("items") as string[];
   const securityItems = security.raw("items") as CopyItem[];
@@ -122,66 +133,34 @@ export async function LandingSections() {
 
   return (
     <>
-      <section id="top" className="althair-hero">
-        <div className="hero-noise" aria-hidden="true" />
-        <Container className="hero-layout">
-          <div className="hero-copy">
-            <p className="brand-kicker">{brand.name} / AI front office</p>
-            <Badge className="hero-badge">
-              <span className="status-beacon" />
-              {hero("badge")}
-            </Badge>
-            <h1 className="hero-title">
-              <span className="hero-title-line">
-                <span className="hero-title-ink">{hero("titleBefore")}</span>
-              </span>
-              <span className="hero-title-line">
-                <span className="hero-title-highlight">
-                  {hero("titleHighlight")}
-                </span>
-              </span>
-            </h1>
-            <p className="hero-description">{hero("description")}</p>
-            <div className="hero-actions">
-              <EarlyAccessDialog label={hero("primary")} />
-              <a
-                href="#how"
-                className={buttonStyles({
-                  variant: "secondary",
-                  className: "hero-secondary-action",
-                })}
-              >
-                {hero("secondary")}
-                <ArrowRight className="size-4" />
-              </a>
-            </div>
-            <p className="hero-note">
-              <Check className="size-4" />
-              {hero("note")}
-            </p>
-          </div>
-          <RobotHeadModel
-            label={hero("visualLabel")}
-            hub={hero("hub")}
-            messages={hero.raw("messages") as { label: string; text: string }[]}
-          />
-        </Container>
-        <div className="signal-rail" aria-label={channels("eyebrow")}>
-          <Container className="signal-rail-inner">
-            <span className="signal-rail-label">{channels("eyebrow")}</span>
-            {channelItems.slice(0, 5).map((item) => (
-              <span className="signal-rail-item" key={item.id}>
-                <span />
-                {item.name}
-              </span>
-            ))}
-            <span className="signal-rail-item">
-              <span />
-              CRM
-            </span>
-          </Container>
-        </div>
-      </section>
+      <CinematicJourney
+        channelEyebrow={channels("eyebrow")}
+        channelNames={channelItems.map((item) => item.name)}
+        hero={{
+          badge: hero("badge"),
+          description: hero("description"),
+          hub: hero("hub"),
+          identityTitle: hero("identityTitle"),
+          messages: hero.raw("messages") as {
+            label: string;
+            text: string;
+          }[],
+          note: hero("note"),
+          primary: hero("primary"),
+          scene: hero.raw("scene") as SceneCopy,
+          secondary: hero("secondary"),
+          titleBefore: hero("titleBefore"),
+          titleHighlight: hero("titleHighlight"),
+          visualLabel: hero("visualLabel"),
+        }}
+        how={{
+          description: how("description"),
+          eyebrow: how("eyebrow"),
+          stageMeta: how.raw("stageMeta") as StageMeta[],
+          steps,
+          title: how("title"),
+        }}
+      />
 
       <Section id="product" className="product-section">
         <Container>
@@ -207,7 +186,6 @@ export async function LandingSections() {
                   </span>
                   <h3>{feature.title}</h3>
                   <p>{feature.description}</p>
-                  <ArrowRight aria-hidden="true" />
                 </article>
               );
             })}
@@ -224,7 +202,7 @@ export async function LandingSections() {
               description={channels("description")}
               className="section-heading-on-dark"
             />
-            <p className="signal-signature">{brand.shortName} / signal map</p>
+            <p className="signal-signature">{channels("signature")}</p>
           </div>
           <div className="channel-ledger">
             {channelItems.map((item) => (
@@ -242,34 +220,6 @@ export async function LandingSections() {
           </div>
         </Container>
       </section>
-
-      <Section id="how" className="process-section">
-        <Container className="process-layout">
-          <div className="process-intro">
-            <SectionHeading
-              eyebrow={how("eyebrow")}
-              title={how("title")}
-              description={how("description")}
-            />
-          </div>
-          <div>
-            <ol className="process-list">
-              {steps.map((step, index) => (
-                <li className="motion-item" key={step.title}>
-                  <span className="process-index">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <div>
-                    <h3>{step.title}</h3>
-                    <p>{step.description}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-            <CrmMockup copy={how.raw("mockup") as MockupCopy} />
-          </div>
-        </Container>
-      </Section>
 
       <Section className="scenario-section">
         <Container>
@@ -301,25 +251,42 @@ export async function LandingSections() {
                 </span>
                 <div>
                   <p>{context("workspace")}</p>
-                  <span>{brand.name} / private context</span>
+                  <span>{context("workspaceCaption")}</span>
                 </div>
-                <span className="console-live">live</span>
+                <span className="console-live">
+                  {context("workspaceStatus")}
+                </span>
               </div>
-              <div className="knowledge-cloud">
-                {contextItems.map((item, index) => (
-                  <span className="motion-item" key={item}>
-                    {index === contextItems.length - 1 ? (
-                      <Webhook />
-                    ) : index % 3 === 0 ? (
-                      <BookOpen />
-                    ) : index % 3 === 1 ? (
-                      <Box />
-                    ) : (
-                      <Languages />
-                    )}
-                    {item}
-                  </span>
-                ))}
+              <div className="knowledge-groups">
+                {contextGroups.map((group, index) => {
+                  const Icon = knowledgeIcons[index] ?? BookOpen;
+                  return (
+                    <article
+                      className="knowledge-group motion-item"
+                      key={group.title}
+                    >
+                      <div className="knowledge-group-title">
+                        <span aria-hidden="true">
+                          <Icon />
+                        </span>
+                        <h3>{group.title}</h3>
+                      </div>
+                      <div className="knowledge-chips">
+                        {group.items.map((item) => (
+                          <span key={item}>{item}</span>
+                        ))}
+                      </div>
+                    </article>
+                  );
+                })}
+                <div className="knowledge-decision motion-item">
+                  <small>{contextDecision.label}</small>
+                  <div>
+                    <CheckCircle2 aria-hidden="true" />
+                    <strong>{contextDecision.status}</strong>
+                  </div>
+                  <p>{contextDecision.detail}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -454,98 +421,5 @@ function ChannelTile({ id }: { id: ChannelItem["id"] }) {
     >
       {content[id].icon}
     </span>
-  );
-}
-
-type MockupCopy = {
-  inbox: string;
-  customers: string;
-  appointments: string;
-  analytics: string;
-  conversation: string;
-  aiMode: string;
-  customer: string;
-  customerInfo: string;
-  newLead: string;
-  booking: string;
-  handoff: string;
-  history: string;
-  messages: string[];
-};
-
-function CrmMockup({ copy }: { copy: MockupCopy }) {
-  return (
-    <div className="crm-window">
-      <div className="crm-window-bar">
-        <div>
-          <span />
-          <span />
-          <span />
-        </div>
-        <p>{brand.name} / workspace</p>
-      </div>
-      <div className="crm-layout">
-        <aside className="crm-sidebar">
-          <BrandMark className="crm-brand-mark" />
-          <nav aria-label={copy.inbox}>
-            {[
-              [Inbox, copy.inbox, true],
-              [ContactRound, copy.customers],
-              [CalendarCheck2, copy.appointments],
-              [BarChart3, copy.analytics],
-            ].map(([Icon, label, active]) => {
-              const NavIcon = Icon as ComponentType<SVGProps<SVGSVGElement>>;
-              return (
-                <div className={cn(active && "active")} key={String(label)}>
-                  <NavIcon />
-                  <span>{String(label)}</span>
-                </div>
-              );
-            })}
-          </nav>
-        </aside>
-        <div className="crm-conversation">
-          <header>
-            <div>
-              <p>{copy.conversation}</p>
-              <span>
-                <i />
-                {copy.aiMode}
-              </span>
-            </div>
-            <Bot />
-          </header>
-          <div className="crm-messages">
-            {copy.messages.map((message, index) => (
-              <p className={index === 1 ? "ai" : "client"} key={message}>
-                {message}
-              </p>
-            ))}
-            <div className="crm-tags">
-              <span>{copy.newLead}</span>
-              <span>{copy.booking}</span>
-            </div>
-          </div>
-          <footer>
-            <span />
-            <button aria-label={copy.handoff}>
-              <ArrowRight />
-            </button>
-          </footer>
-        </div>
-        <aside className="crm-customer">
-          <span className="crm-avatar">
-            <UserRound />
-          </span>
-          <p>{copy.customer}</p>
-          <small>{copy.history}</small>
-          <div>
-            <span>{copy.customerInfo}</span>
-            <p>{copy.booking}</p>
-          </div>
-          <button>{copy.handoff}</button>
-        </aside>
-      </div>
-    </div>
   );
 }

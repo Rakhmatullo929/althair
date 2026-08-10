@@ -1,8 +1,8 @@
 # AI Front Office workspace
 
 This repository contains the preserved public Landing, the localized customer portal with a real
-CRM workflow, and a tenant-safe Django modular monolith. The legacy MMC vertical is still isolated
-in the backend and remains covered by its regression tests.
+CRM workflow, and a tenant-safe, approval-controlled AI conversation runtime. The legacy MMC
+vertical is still isolated in the backend and remains covered by its regression tests.
 
 ## Local stack
 
@@ -46,6 +46,11 @@ DEBUG=true ENABLE_CRM_TEST_CHANNEL=true python manage.py seed_crm
 The internal development channel is disabled by default and can only be enabled server-side with
 `ENABLE_CRM_TEST_CHANNEL=true`. It never impersonates a real provider connection.
 
+The AI runtime uses the deterministic fake provider by default. Publish AI Context, enable the
+runtime in **Settings → AI Automation**, and allow the internal test channel. Optional internal
+autopilot also requires the server-side `AI_INTERNAL_TEST_AUTOPILOT=true` flag. Real OpenAI
+Responses API calls are opt-in and never required by CI; see the architecture document below.
+
 ## Verification
 
 ```bash
@@ -55,9 +60,10 @@ python manage.py makemigrations --check
 python manage.py migrate --noinput
 python manage.py check
 python manage.py test
-coverage run --source=crm manage.py test crm
-coverage report
+coverage run --source=ai_runtime manage.py test ai_runtime
+coverage report --fail-under=85
 python -m compileall -q .
+python evals/ai_runtime/run_evals.py
 
 cd ../frontend
 pnpm install --frozen-lockfile
@@ -93,12 +99,16 @@ terminates TLS in front of Django. Nginx bootstrap and TLS configs live in `depl
 See [backend/docs/api/multitenant-api.md](backend/docs/api/multitenant-api.md),
 [backend/docs/api/crm-api.md](backend/docs/api/crm-api.md),
 [backend/docs/security/client-authentication.md](backend/docs/security/client-authentication.md),
-and [backend/docs/architecture/crm-core.md](backend/docs/architecture/crm-core.md).
+[backend/docs/architecture/crm-core.md](backend/docs/architecture/crm-core.md),
+[backend/docs/architecture/ai-conversation-runtime.md](backend/docs/architecture/ai-conversation-runtime.md),
+and [backend/docs/api/ai-runtime-api.md](backend/docs/api/ai-runtime-api.md).
 
 ## Current boundary
 
-This stage intentionally does not activate Instagram, Telegram, Gmail, WhatsApp, SMS, or Voice;
-run OpenAI; add booking, billing, or Super Admin; or deploy production infrastructure. CRM content
-is real organization-owned database data, not simulated AI, revenue, sales, or provider state.
+This stage intentionally does not activate Instagram, Telegram, Gmail, WhatsApp, SMS, Voice, or
+public Web Chat; add booking, billing, or Super Admin; or deploy production infrastructure. AI sends
+only on the labelled internal test channel. Real OpenAI calls stay disabled unless explicitly
+enabled server-side. CRM content is real organization-owned database data, not simulated revenue,
+sales, or provider state.
 Password-reset and invitation email delivery use the development console lifecycle only until a
 reliable production mail provider is configured.

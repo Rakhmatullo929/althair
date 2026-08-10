@@ -1,4 +1,11 @@
 import type {
+  AIDraft,
+  AIHandoff,
+  AIRun,
+  AIRuntimeConfig,
+  AIToolCall,
+  AIToolPolicy,
+  AIUsage,
   AssistantContextFields,
   AssistantProfile,
   AssistantRevision,
@@ -554,6 +561,80 @@ export class ApiClient {
     this.request<Paginated<CrmActivity>>(
       `/crm/activity/${queryString(params)}`,
     );
+
+  aiRuntimeConfig = () => this.request<AIRuntimeConfig>("/ai/runtime-config/");
+  updateAIRuntimeConfig = (body: Partial<AIRuntimeConfig>) =>
+    this.request<AIRuntimeConfig>("/ai/runtime-config/", {
+      method: "PATCH",
+      body,
+    });
+  aiToolPolicies = () => this.request<AIToolPolicy[]>("/ai/tool-policies/");
+  updateAIToolPolicies = (
+    policies: Array<
+      Pick<
+        AIToolPolicy,
+        "tool_name" | "enabled" | "execution_mode" | "configuration"
+      >
+    >,
+  ) =>
+    this.request<AIToolPolicy[]>("/ai/tool-policies/", {
+      method: "PATCH",
+      body: { policies },
+    });
+  aiRuns = (params?: Record<string, string | number | undefined>) =>
+    this.request<Paginated<AIRun>>(`/ai/runs/${queryString(params)}`);
+  aiRun = (id: string) => this.request<AIRun>(`/ai/runs/${id}/`);
+  aiUsage = () => this.request<AIUsage>("/ai/usage/");
+  conversationAIRuns = (id: string) =>
+    this.request<Paginated<AIRun>>(`/conversations/${id}/ai/runs/`);
+  generateAIDraft = (id: string, idempotencyKey: string) =>
+    this.request<AIRun>(`/conversations/${id}/ai/generate-draft/`, {
+      method: "POST",
+      headers: { "Idempotency-Key": idempotencyKey },
+    });
+  pauseConversationAI = (id: string) =>
+    this.request<{ ai_state: Conversation["ai_state"] }>(
+      `/conversations/${id}/ai/pause/`,
+      { method: "POST" },
+    );
+  resumeConversationAI = (id: string, mode: "suggest" | "autopilot_test") =>
+    this.request<{ ai_state: Conversation["ai_state"] }>(
+      `/conversations/${id}/ai/resume/`,
+      { method: "POST", body: { mode } },
+    );
+  approveAIDraft = (id: string) =>
+    this.request<AIDraft>(`/ai/drafts/${id}/approve/`, { method: "POST" });
+  editAndSendAIDraft = (id: string, body: string) =>
+    this.request<AIDraft>(`/ai/drafts/${id}/edit-and-send/`, {
+      method: "POST",
+      body: { body },
+    });
+  rejectAIDraft = (id: string, reason = "") =>
+    this.request<AIDraft>(`/ai/drafts/${id}/reject/`, {
+      method: "POST",
+      body: { reason },
+    });
+  approveAIToolCall = (id: string) =>
+    this.request<AIToolCall>(`/ai/tool-calls/${id}/approve/`, {
+      method: "POST",
+    });
+  rejectAIToolCall = (id: string) =>
+    this.request<AIToolCall>(`/ai/tool-calls/${id}/reject/`, {
+      method: "POST",
+    });
+  acknowledgeAIHandoff = (id: string) =>
+    this.request<AIHandoff>(`/ai/handoffs/${id}/acknowledge/`, {
+      method: "POST",
+    });
+  assignAIHandoff = (id: string, membershipId: string) =>
+    this.request<AIHandoff>(`/ai/handoffs/${id}/assign/`, {
+      method: "POST",
+      body: { membership_id: membershipId },
+    });
+  resolveAIHandoff = (id: string) =>
+    this.request<AIHandoff>(`/ai/handoffs/${id}/resolve/`, {
+      method: "POST",
+    });
 }
 
 export function createApiClient(options?: ApiClientOptions) {

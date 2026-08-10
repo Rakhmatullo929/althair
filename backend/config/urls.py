@@ -32,6 +32,12 @@ def health_ready(request):
         checks['redis'] = f'error: {type(e).__name__}'
         healthy = False
 
+    if settings.AI_RUNTIME_ENABLE_REAL_OPENAI and settings.AI_RUNTIME_PROVIDER == 'openai':
+        checks['ai_runtime'] = 'configured' if settings.OPENAI_API_KEY else 'openai_key_missing'
+        healthy = healthy and bool(settings.OPENAI_API_KEY)
+    else:
+        checks['ai_runtime'] = 'fake_or_disabled'
+
     status_code = 200 if healthy else 503
     return JsonResponse({'status': 'ready' if healthy else 'degraded', 'checks': checks}, status=status_code)
 
@@ -48,6 +54,7 @@ urlpatterns = [
         path('channel-connections/', include(('channels.urls', 'channels'), namespace='channels')),
         path('assistant-context/', include(('assistant_context.urls', 'assistant_context'), namespace='assistant_context')),
         path('', include(('crm.urls', 'crm'), namespace='crm')),
+        path('', include(('ai_runtime.urls', 'ai_runtime'), namespace='ai_runtime')),
         path('public/', include(('early_access.urls', 'early_access'), namespace='early_access')),
         path('users/', include(('users.urls', 'users'), namespace='users')),
         path('intake/', include(('intake.urls', 'intake'), namespace='intake')),

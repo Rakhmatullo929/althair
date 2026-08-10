@@ -147,6 +147,8 @@ class MessageSerializer(serializers.ModelSerializer):
             return obj.conversation.contact.display_name
         if obj.sender_type == "system":
             return "System"
+        if obj.sender_type == "ai":
+            return "AI assistant"
         return membership_name(obj.sender_membership)
 
 
@@ -166,6 +168,7 @@ class ConversationSerializer(serializers.ModelSerializer):
             "id", "organization", "channel_connection", "channel_type", "channel_name", "channel_provider",
             "external_thread_id", "contact", "contact_name", "contact_status", "status", "priority",
             "assignment_state", "assigned_membership", "assigned_name", "automation_state", "handoff_reason",
+            "ai_state", "ai_state_updated_at",
             "unread_count", "last_message_preview", "can_send", "last_message_at", "last_inbound_at",
             "last_outbound_at", "subject", "created_at", "updated_at", "resolved_at",
         ]
@@ -174,6 +177,7 @@ class ConversationSerializer(serializers.ModelSerializer):
             "external_thread_id", "contact", "contact_name", "contact_status", "assignment_state",
             "assigned_membership", "assigned_name", "unread_count", "last_message_preview", "can_send",
             "last_message_at", "last_inbound_at", "last_outbound_at", "created_at", "updated_at", "resolved_at",
+            "ai_state_updated_at",
         ]
 
     def get_assigned_name(self, obj):

@@ -29,6 +29,7 @@ import {
 } from "@/lib/crm";
 import { useWorkspace } from "./workspace-provider";
 import { CrmDialog, formatDateTime, PlainText } from "./crm-shared";
+import { ConversationAIPanel } from "./conversation-ai-panel";
 import {
   EmptyState,
   ErrorState,
@@ -42,9 +43,11 @@ type InboxFilter = "all" | "unread" | "unassigned" | "mine";
 function Timeline({
   messages,
   locale,
+  aiLabel,
 }: {
   messages: ConversationMessage[];
   locale: string;
+  aiLabel: string;
 }) {
   const ordered = [...messages].reverse();
   return (
@@ -78,6 +81,12 @@ function Timeline({
                 </time>
               </header>
               <PlainText value={message.body} />
+              {message.metadata.ai_generated ? (
+                <em className="ai-message-label">
+                  <BotOff aria-hidden="true" />
+                  {aiLabel}
+                </em>
+              ) : null}
               <small>{message.status}</small>
             </article>
           </li>
@@ -446,11 +455,22 @@ export function InboxPage() {
                   </select>
                 </label>
               </div>
+              <ConversationAIPanel
+                conversation={selected}
+                organizationId={organizationId}
+                role={membership.role}
+                readOnly={readOnly}
+                onRefresh={refresh}
+              />
               <div className="timeline-scroll">
                 {messages.isLoading ? (
                   <PageSkeleton />
                 ) : messages.data?.results.length ? (
-                  <Timeline messages={messages.data.results} locale={locale} />
+                  <Timeline
+                    messages={messages.data.results}
+                    locale={locale}
+                    aiLabel={t("inbox.aiGenerated")}
+                  />
                 ) : (
                   <EmptyState
                     icon={<MessageSquareText />}

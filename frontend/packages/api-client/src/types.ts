@@ -300,6 +300,13 @@ export type Conversation = {
   assigned_membership: string | null;
   assigned_name: string | null;
   automation_state: "manual" | "ai_paused" | "ai_available";
+  ai_state:
+    | "off"
+    | "suggest"
+    | "autopilot_test"
+    | "paused_by_human"
+    | "handoff_required";
+  ai_state_updated_at: string | null;
   handoff_reason: string;
   unread_count: number;
   last_message_preview: string;
@@ -317,7 +324,7 @@ export type ConversationMessage = {
   id: string;
   conversation: string;
   direction: "inbound" | "outbound" | "system";
-  sender_type: "customer" | "agent" | "system" | "future_ai";
+  sender_type: "customer" | "agent" | "system" | "future_ai" | "ai";
   sender_membership: string | null;
   sender_name: string | null;
   provider_message_id: string | null;
@@ -438,4 +445,162 @@ export type CrmOverview = {
   onboarding_completed_at: string | null;
   ai_context_status: "draft" | "published";
   ai_context_version: number;
+};
+
+export type AIRuntimeMode = "off" | "suggest" | "autopilot_test";
+
+export type AIRuntimeConfig = {
+  id: string;
+  organization: string;
+  enabled: boolean;
+  default_mode: AIRuntimeMode;
+  provider: "fake" | "openai";
+  model: string;
+  max_output_tokens: number;
+  max_tool_rounds: number;
+  timeout_seconds: number;
+  inbound_debounce_seconds: number;
+  daily_run_limit: number;
+  monthly_input_token_limit: number;
+  monthly_output_token_limit: number;
+  allowed_channel_connections: string[];
+  published_context_version: number | null;
+  provider_status:
+    | "fake_ready"
+    | "real_openai_disabled"
+    | "openai_ready"
+    | "openai_key_missing";
+  real_openai_enabled: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AIToolPolicy = {
+  id: string;
+  organization: string;
+  tool_name: string;
+  description: string;
+  mutating: boolean;
+  enabled: boolean;
+  execution_mode: "automatic" | "require_approval" | "disabled";
+  configuration: Record<string, unknown>;
+  version: number;
+  updated_at: string;
+};
+
+export type AIToolCall = {
+  id: string;
+  tool_name: string;
+  provider_call_id: string;
+  input_redacted: Record<string, unknown>;
+  output_redacted: Record<string, unknown>;
+  status:
+    | "proposed"
+    | "awaiting_approval"
+    | "approved"
+    | "running"
+    | "succeeded"
+    | "failed"
+    | "rejected"
+    | "cancelled";
+  requires_approval: boolean;
+  approved_by: string | null;
+  approved_by_name: string | null;
+  approved_at: string | null;
+  error_category: string;
+  duration_ms: number;
+  created_at: string;
+  completed_at: string | null;
+};
+
+export type AIDraft = {
+  id: string;
+  run: string;
+  conversation: string;
+  body: string;
+  language: string;
+  status:
+    | "pending"
+    | "approved"
+    | "edited_and_sent"
+    | "rejected"
+    | "expired"
+    | "superseded";
+  approved_by: string | null;
+  approved_by_name: string | null;
+  rejected_by: string | null;
+  rejected_by_name: string | null;
+  rejection_reason: string;
+  created_at: string;
+  updated_at: string;
+  acted_at: string | null;
+};
+
+export type AIHandoff = {
+  id: string;
+  conversation: string;
+  run: string | null;
+  reason_code: string;
+  safe_summary: string;
+  requested_by: "customer" | "ai" | "policy" | "system";
+  status: "open" | "acknowledged" | "resolved";
+  assigned_membership: string | null;
+  assigned_name: string | null;
+  created_at: string;
+  acknowledged_at: string | null;
+  resolved_at: string | null;
+};
+
+export type AIRun = {
+  id: string;
+  conversation: string;
+  trigger_message: string;
+  status:
+    | "queued"
+    | "running"
+    | "waiting_for_approval"
+    | "completed"
+    | "handoff"
+    | "failed"
+    | "cancelled"
+    | "superseded";
+  mode: AIRuntimeMode;
+  provider: "fake" | "openai";
+  model: string;
+  ai_context_revision: string;
+  prompt_template_version: string;
+  prompt_hash: string;
+  response_id: string;
+  provider_request_id: string;
+  input_tokens: number;
+  output_tokens: number;
+  cached_tokens: number;
+  latency_ms: number;
+  tool_rounds: number;
+  outcome: "" | "draft" | "sent_test_reply" | "handoff" | "no_reply" | "failed";
+  response_language: string;
+  error_category: string;
+  error_code: string;
+  started_at: string | null;
+  completed_at: string | null;
+  created_at: string;
+  tool_calls: AIToolCall[];
+  draft: AIDraft | null;
+  handoffs: AIHandoff[];
+};
+
+export type AIUsage = {
+  date: string;
+  month: string;
+  daily_runs: number;
+  monthly_input_tokens: number;
+  monthly_output_tokens: number;
+  monthly_cached_tokens: number;
+  status_counts: Record<string, number>;
+  outcome_counts: Record<string, number>;
+  draft_status_counts: Record<string, number>;
+  tool_status_counts: Record<string, number>;
+  average_provider_latency_ms: number;
+  handoff_rate: number;
+  stale_run_cancellations: number;
 };

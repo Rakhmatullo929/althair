@@ -1,7 +1,8 @@
 # AI Front Office backend
 
 Django 5.2 modular monolith for secure client authentication, onboarding, versioned AI Context,
-channel configuration status, a tenant-safe CRM, and the preserved legacy intake/job workflows.
+channel configuration status, a tenant-safe CRM, an approval-controlled AI conversation runtime,
+and the preserved legacy intake/job workflows.
 
 ## Local Python setup
 
@@ -33,8 +34,14 @@ unless `DEBUG=true` and `CLIENT_PORTAL_SEED_PASSWORD` is set.
 | `FIELD_ENCRYPTION_KEY` | Fernet key for write-only provider credential storage |
 | `CLIENT_PORTAL_SEED_PASSWORD` | Required local deterministic user password; never printed |
 | `ENABLE_CRM_TEST_CHANNEL` | Enables the internal development-only CRM channel; default false |
+| `AI_RUNTIME_PROVIDER` | `fake` by default; set `openai` only for an explicit live workflow |
+| `AI_RUNTIME_ENABLE_REAL_OPENAI` | Additional server-side gate for all real Responses API calls |
+| `AI_INTERNAL_TEST_AUTOPILOT` | Allows auto-send only on the internal channel in dev/test |
+| `OPENAI_MODEL` | Explicit Responses API model alias; no model is selected in the browser |
+| `OPENAI_REQUEST_TIMEOUT_SECONDS`, `OPENAI_MAX_RETRIES` | Bounded live-provider request policy |
+| `AI_MANUAL_GENERATION_PER_MINUTE`, `AI_MAX_TOOL_CALLS_PER_RUN` | Abuse and action-loop caps |
 | `EARLY_ACCESS_WEBHOOK_SECRET` | Landing server-to-server lead authentication |
-| `OPENAI_API_KEY`, provider credentials/secrets | Reserved legacy/later integrations; never browser-exposed |
+| `OPENAI_API_KEY`, provider credentials/secrets | Server-only; empty for fake-provider/CI workflows |
 | `DEV_*_DESTINATION_*` | Non-secret legacy development destination routing |
 
 Every variable is represented by an empty or fake placeholder in `.env.example`. Never commit a
@@ -47,7 +54,10 @@ python manage.py makemigrations --check
 python manage.py migrate --noinput
 python manage.py check
 python manage.py test
+coverage run --source=ai_runtime manage.py test ai_runtime
+coverage report --fail-under=85
 python -m compileall -q .
+python evals/ai_runtime/run_evals.py
 ```
 
 Architecture and contracts:
@@ -56,13 +66,16 @@ Architecture and contracts:
 - `docs/architecture/multitenancy.md`
 - `docs/architecture/client-onboarding.md`
 - `docs/architecture/crm-core.md`
+- `docs/architecture/ai-conversation-runtime.md`
 - `docs/api/multitenant-api.md`
 - `docs/api/crm-api.md`
+- `docs/api/ai-runtime-api.md`
 - `docs/security/secret-rotation-required.md`
 
 ## Known limitations
 
-Production email delivery, provider activation/OAuth, OpenAI execution, generated prompts, booking,
-billing, Super Admin, RLS, and production deployment are outside this stage. CRM provider adapters
-remain disabled; only the explicit internal development channel is available. The legacy MMC
-vertical is intentionally retained and independently regression-tested.
+Production email delivery, external provider activation/OAuth, public Web Chat, booking, billing,
+Super Admin, RLS, and production deployment are outside this stage. CRM provider adapters remain
+disabled; only the explicit internal development channel is available. The live Responses API
+adapter is opt-in and is never required for tests. The legacy MMC vertical is intentionally retained
+and independently regression-tested.

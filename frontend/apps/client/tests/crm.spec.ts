@@ -124,7 +124,9 @@ test.describe.serial("tenant CRM workflow", () => {
   }) => {
     await login(page);
     await openCustomerConversation(page);
-    await page.getByRole("button", { name: "Create lead" }).click();
+    await page
+      .getByRole("button", { name: "Create lead", exact: true })
+      .click();
     await expect(page.getByText("Changes saved")).toBeVisible();
     await page.getByRole("link", { name: "Leads", exact: true }).click();
     const leadTitle = `Inquiry from ${customerName}`;

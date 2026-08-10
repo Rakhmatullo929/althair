@@ -27,6 +27,8 @@ function conversation(overrides: Partial<Conversation> = {}): Conversation {
     assigned_membership: null,
     assigned_name: null,
     automation_state: "manual",
+    ai_state: "off",
+    ai_state_updated_at: null,
     handoff_reason: "",
     unread_count: 1,
     last_message_preview: "Hello",

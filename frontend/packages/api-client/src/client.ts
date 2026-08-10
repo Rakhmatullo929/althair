@@ -33,6 +33,8 @@ import type {
   Paginated,
   Pipeline,
   PipelineStage,
+  WebChatInstallation,
+  WebChatSessionSummary,
 } from "./types";
 
 function queryString(
@@ -586,7 +588,9 @@ export class ApiClient {
   aiRun = (id: string) => this.request<AIRun>(`/ai/runs/${id}/`);
   aiUsage = () => this.request<AIUsage>("/ai/usage/");
   conversationAIRuns = (id: string) =>
-    this.request<Paginated<AIRun>>(`/conversations/${id}/ai/runs/`);
+    this.request<Paginated<AIRun> & { handoffs: AIHandoff[] }>(
+      `/conversations/${id}/ai/runs/`,
+    );
   generateAIDraft = (id: string, idempotencyKey: string) =>
     this.request<AIRun>(`/conversations/${id}/ai/generate-draft/`, {
       method: "POST",
@@ -635,6 +639,45 @@ export class ApiClient {
     this.request<AIHandoff>(`/ai/handoffs/${id}/resolve/`, {
       method: "POST",
     });
+
+  webChatInstallations = () =>
+    this.request<Paginated<WebChatInstallation>>("/web-chat/installations/");
+  webChatInstallation = (id: string) =>
+    this.request<WebChatInstallation>(`/web-chat/installations/${id}/`);
+  createWebChatInstallation = (body: Partial<WebChatInstallation>) =>
+    this.request<WebChatInstallation>("/web-chat/installations/", {
+      method: "POST",
+      body,
+    });
+  updateWebChatInstallation = (
+    id: string,
+    body: Partial<WebChatInstallation>,
+  ) =>
+    this.request<WebChatInstallation>(`/web-chat/installations/${id}/`, {
+      method: "PATCH",
+      body,
+    });
+  webChatInstallationAction = (
+    id: string,
+    action: "activate" | "pause" | "revoke" | "rotate-key",
+  ) =>
+    this.request<WebChatInstallation>(
+      `/web-chat/installations/${id}/${action}/`,
+      { method: "POST" },
+    );
+  webChatSessions = (id: string) =>
+    this.request<Paginated<WebChatSessionSummary>>(
+      `/web-chat/installations/${id}/sessions/`,
+    );
+  webChatMetrics = (id: string) =>
+    this.request<{ events: Record<string, number> }>(
+      `/web-chat/installations/${id}/metrics/`,
+    );
+  anonymizeWebChatSession = (installationId: string, sessionId: string) =>
+    this.request<WebChatSessionSummary>(
+      `/web-chat/installations/${installationId}/sessions/${sessionId}/anonymize/`,
+      { method: "POST" },
+    );
 }
 
 export function createApiClient(options?: ApiClientOptions) {

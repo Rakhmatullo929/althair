@@ -54,7 +54,9 @@ export function ConversationAIPanel({
   });
   const latest = runs.data?.results[0];
   const draft = latest?.draft?.status === "pending" ? latest.draft : null;
-  const handoff = latest?.handoffs.find((item) => item.status !== "resolved");
+  const handoff =
+    runs.data?.handoffs.find((item) => item.status !== "resolved") ??
+    latest?.handoffs.find((item) => item.status !== "resolved");
   const pending = ["queued", "running"].includes(latest?.status ?? "");
 
   const refresh = async () => {

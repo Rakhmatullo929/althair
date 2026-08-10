@@ -57,8 +57,13 @@ class RuntimeConfigSerializer(serializers.ModelSerializer):
     def validate_allowed_channel_connections(self, values):
         organization = self.context["request"].organization
         for value in values:
-            if value.organization_id != organization.id or not is_internal_test_connection(value):
-                raise serializers.ValidationError("Only this organization's internal test channel is allowed.")
+            is_public_web_chat = value.type == "webchat" and value.provider == "public_web_chat"
+            if value.organization_id != organization.id or not (
+                is_internal_test_connection(value) or is_public_web_chat
+            ):
+                raise serializers.ValidationError(
+                    "Only this organization's internal test and public Web Chat channels are allowed."
+                )
         return values
 
     def validate(self, attrs):

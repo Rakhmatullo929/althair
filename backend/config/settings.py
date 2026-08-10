@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     'assistant_context',
     'crm',
     'ai_runtime',
+    'web_chat',
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -488,9 +489,34 @@ OPENAI_REQUEST_TIMEOUT_SECONDS = int(os.environ.get('OPENAI_REQUEST_TIMEOUT_SECO
 OPENAI_MAX_RETRIES = int(os.environ.get('OPENAI_MAX_RETRIES', '2'))
 AI_RUNTIME_PROVIDER = os.environ.get('AI_RUNTIME_PROVIDER', 'fake').strip().lower()
 AI_RUNTIME_ENABLE_REAL_OPENAI = os.environ.get('AI_RUNTIME_ENABLE_REAL_OPENAI', '').lower() in ('true', '1', 'yes')
+AI_RUNTIME_GLOBAL_KILL_SWITCH = os.environ.get('AI_RUNTIME_GLOBAL_KILL_SWITCH', '').lower() in ('true', '1', 'yes')
 AI_INTERNAL_TEST_AUTOPILOT = os.environ.get('AI_INTERNAL_TEST_AUTOPILOT', '').lower() in ('true', '1', 'yes')
 AI_MANUAL_GENERATION_PER_MINUTE = int(os.environ.get('AI_MANUAL_GENERATION_PER_MINUTE', '5'))
 AI_MAX_TOOL_CALLS_PER_RUN = int(os.environ.get('AI_MAX_TOOL_CALLS_PER_RUN', '8'))
+
+# Public Web Chat is opt-in in every environment. Session tokens are opaque and
+# only HMAC digests are persisted; use a distinct production signing key.
+WEB_CHAT_ENABLE_PUBLIC = os.environ.get('WEB_CHAT_ENABLE_PUBLIC', '').lower() in ('true', '1', 'yes')
+WEB_CHAT_GLOBAL_KILL_SWITCH = os.environ.get('WEB_CHAT_GLOBAL_KILL_SWITCH', '').lower() in ('true', '1', 'yes')
+WEB_CHAT_ALLOW_FAKE_AUTOPILOT = os.environ.get('WEB_CHAT_ALLOW_FAKE_AUTOPILOT', '').lower() in ('true', '1', 'yes')
+WEB_CHAT_SESSION_SIGNING_KEY = os.environ.get('WEB_CHAT_SESSION_SIGNING_KEY', '')
+WEB_CHAT_WIDGET_BASE_URL = os.environ.get('WEB_CHAT_WIDGET_BASE_URL', CLIENT_APP_URL)
+WEB_CHAT_WIDGET_ORIGINS = [
+    value.strip()
+    for value in os.environ.get('WEB_CHAT_WIDGET_ORIGINS', CLIENT_APP_URL).split(',')
+    if value.strip()
+]
+WEB_CHAT_DEMO_INSTALLATION_KEY = os.environ.get('WEB_CHAT_DEMO_INSTALLATION_KEY', 'wc_demo_portal_test')
+WEB_CHAT_SESSION_TTL_HOURS = int(os.environ.get('WEB_CHAT_SESSION_TTL_HOURS', '24'))
+WEB_CHAT_SESSIONS_PER_IP_HOUR = int(os.environ.get('WEB_CHAT_SESSIONS_PER_IP_HOUR', '20'))
+WEB_CHAT_SESSIONS_PER_INSTALLATION_DAY = int(os.environ.get('WEB_CHAT_SESSIONS_PER_INSTALLATION_DAY', '1000'))
+WEB_CHAT_SESSIONS_PER_ORGANIZATION_DAY = int(os.environ.get('WEB_CHAT_SESSIONS_PER_ORGANIZATION_DAY', '5000'))
+WEB_CHAT_MESSAGES_PER_SESSION_MINUTE = int(os.environ.get('WEB_CHAT_MESSAGES_PER_SESSION_MINUTE', '20'))
+WEB_CHAT_MESSAGES_PER_INSTALLATION_MINUTE = int(os.environ.get('WEB_CHAT_MESSAGES_PER_INSTALLATION_MINUTE', '300'))
+WEB_CHAT_MAX_URLS_PER_MESSAGE = int(os.environ.get('WEB_CHAT_MAX_URLS_PER_MESSAGE', '3'))
+WEB_CHAT_BLOCKED_TERMS = [
+    value.strip() for value in os.environ.get('WEB_CHAT_BLOCKED_TERMS', '').split(',') if value.strip()
+]
 
 TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '')
 TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN', '')

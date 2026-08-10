@@ -214,6 +214,181 @@ test("@screenshots client portal evidence", async ({ page }) => {
   });
 });
 
+test("@screenshots public Web Chat evidence", async ({ page }) => {
+  await mkdir(screenshotDir, { recursive: true });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/en/demo");
+  await expect(
+    page.getByRole("button", { name: "Start conversation" }),
+  ).toBeVisible();
+  await page.screenshot({
+    path: resolve(screenshotDir, "web-chat-demo-page.png"),
+    fullPage: true,
+    style: screenshotStyle,
+  });
+  await page.screenshot({
+    path: resolve(screenshotDir, "web-chat-live-preview.png"),
+    fullPage: true,
+    style: screenshotStyle,
+  });
+  await page.locator(".webchat-widget").screenshot({
+    path: resolve(screenshotDir, "web-chat-consent.png"),
+    style: screenshotStyle,
+  });
+
+  await page.evaluate(() => {
+    const directWidget = document.querySelector<HTMLElement>(
+      ".webchat-demo-frame",
+    );
+    if (directWidget) directWidget.hidden = true;
+    const loader = document.createElement("script");
+    loader.src = "/widget.js?v=1";
+    loader.dataset.installationKey = "wc_demo_portal_test";
+    loader.dataset.apiUrl = "http://localhost:8011/api/v1";
+    loader.dataset.appUrl = "http://localhost:3001";
+    loader.dataset.locale = "en";
+    document.body.appendChild(loader);
+  });
+  const launcher = page.getByRole("button", { name: "Open Web Chat" });
+  await expect(launcher).toBeVisible();
+  await page.screenshot({
+    path: resolve(screenshotDir, "web-chat-widget-collapsed.png"),
+    fullPage: true,
+    style: screenshotStyle,
+  });
+  await launcher.click();
+  await expect(page.locator('iframe[title="Web Chat"]')).toBeVisible();
+  await expect(
+    page
+      .frameLocator('iframe[title="Web Chat"]')
+      .getByRole("button", { name: "Start conversation" }),
+  ).toBeVisible({ timeout: 10_000 });
+  await page.screenshot({
+    path: resolve(screenshotDir, "web-chat-widget-open.png"),
+    fullPage: true,
+    style: screenshotStyle,
+  });
+
+  await page.goto("/en/demo");
+  await page.getByLabel("Name").fill("Screenshot Widget Visitor");
+  await page.getByLabel("Email").fill("screenshot-widget@example.test");
+  await page.locator(".webchat-consent input").check();
+  await page.getByRole("button", { name: "Start conversation" }).click();
+  await expect(page.locator(".webchat-composer")).toBeVisible();
+  await page.locator(".webchat-widget").screenshot({
+    path: resolve(screenshotDir, "web-chat-active-conversation.png"),
+    style: screenshotStyle,
+  });
+  await page
+    .getByPlaceholder("Write a message…")
+    .fill("Hello, show me the published information.");
+  await page.getByRole("button", { name: "Send" }).click();
+  await expect(page.getByText(/I received your question/i)).toBeVisible({
+    timeout: 15_000,
+  });
+  await page.locator(".webchat-widget").screenshot({
+    path: resolve(screenshotDir, "web-chat-ai-reply.png"),
+    style: screenshotStyle,
+  });
+  await page.getByRole("button", { name: "Talk to a person" }).click();
+  await expect(
+    page.getByText("A team member will continue here."),
+  ).toBeVisible();
+  await page.locator(".webchat-widget").screenshot({
+    path: resolve(screenshotDir, "web-chat-human-handoff.png"),
+    style: screenshotStyle,
+  });
+
+  await page.context().setOffline(true);
+  await expect(page.getByText("Connection lost. Retrying…")).toBeVisible({
+    timeout: 7_000,
+  });
+  await page.locator(".webchat-widget").screenshot({
+    path: resolve(screenshotDir, "web-chat-offline.png"),
+    style: screenshotStyle,
+  });
+  await page.context().setOffline(false);
+  await expect(page.getByText("Connection lost. Retrying…")).toHaveCount(0, {
+    timeout: 7_000,
+  });
+
+  await page.route("**/public/web-chat/sessions/*/messages/", async (route) => {
+    if (route.request().method() !== "POST") return route.continue();
+    await route.fulfill({
+      status: 429,
+      contentType: "application/json",
+      body: JSON.stringify({ error: { code: "rate_limited" } }),
+    });
+  });
+  await page.getByPlaceholder("Write a message…").fill("One message too many");
+  await page.getByRole("button", { name: "Send" }).click();
+  await expect(page.locator(".webchat-error")).toContainText("rate_limited");
+  await page.locator(".webchat-widget").screenshot({
+    path: resolve(screenshotDir, "web-chat-rate-limited.png"),
+    style: screenshotStyle,
+  });
+  await page.unroute("**/public/web-chat/sessions/*/messages/");
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator(".webchat-widget").screenshot({
+    path: resolve(screenshotDir, "web-chat-mobile-fullscreen.png"),
+    style: screenshotStyle,
+  });
+
+  for (const [locale, name] of [
+    ["ru", "web-chat-ru.png"],
+    ["uz", "web-chat-uz.png"],
+  ] as const) {
+    await page.goto(`/${locale}/demo`);
+    await page.evaluate(() => sessionStorage.clear());
+    await page.reload();
+    await expect(page.locator(".webchat-welcome")).toBeVisible();
+    await page.locator(".webchat-widget").screenshot({
+      path: resolve(screenshotDir, name),
+      style: screenshotStyle,
+    });
+  }
+
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await login(page);
+  await page.goto("/en/app/inbox");
+  await page
+    .getByRole("button", { name: /Screenshot Widget Visitor/ })
+    .first()
+    .click();
+  await expect(page.getByText(/I received your question/i)).toBeVisible();
+  await page.screenshot({
+    path: resolve(screenshotDir, "web-chat-unified-inbox.png"),
+    fullPage: true,
+    style: screenshotStyle,
+  });
+
+  await page.goto("/en/app/settings/channels/web-chat");
+  await expect(
+    page.getByRole("heading", { name: "Public Web Chat" }),
+  ).toBeVisible();
+  await page.screenshot({
+    path: resolve(screenshotDir, "web-chat-client-setup.png"),
+    fullPage: true,
+    style: screenshotStyle,
+  });
+  await page.getByRole("link", { name: "Configure" }).first().click();
+  await expect(
+    page.getByRole("heading", { name: "Visitor experience" }),
+  ).toBeVisible();
+  await page.locator(".webchat-status-strip").screenshot({
+    path: resolve(screenshotDir, "web-chat-installation-health.png"),
+    style: screenshotStyle,
+  });
+  const embedPanel = page.locator("section.panel").filter({
+    has: page.getByRole("heading", { name: "Iframe loader code" }),
+  });
+  await embedPanel.screenshot({
+    path: resolve(screenshotDir, "web-chat-embed-code.png"),
+    style: screenshotStyle,
+  });
+});
+
 test("@screenshots AI runtime evidence", async ({ page }) => {
   await mkdir(screenshotDir, { recursive: true });
   await page.setViewportSize({ width: 1440, height: 1000 });

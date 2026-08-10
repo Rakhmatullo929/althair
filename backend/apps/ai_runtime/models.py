@@ -18,6 +18,7 @@ class RuntimeMode(models.TextChoices):
     OFF = "off", "Off"
     SUGGEST = "suggest", "Suggest"
     AUTOPILOT_TEST = "autopilot_test", "Internal test autopilot"
+    AUTOPILOT_WEB_CHAT = "autopilot_web_chat", "Web Chat autopilot"
 
 
 class RuntimeProvider(models.TextChoices):
@@ -132,6 +133,7 @@ class AIRunOutcome(models.TextChoices):
     NONE = "", "Pending"
     DRAFT = "draft", "Draft"
     SENT_TEST_REPLY = "sent_test_reply", "Sent internal test reply"
+    SENT_WEB_CHAT_REPLY = "sent_web_chat_reply", "Sent Web Chat reply"
     HANDOFF = "handoff", "Handoff"
     NO_REPLY = "no_reply", "No reply"
     FAILED = "failed", "Failed"

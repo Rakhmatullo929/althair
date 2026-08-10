@@ -46,6 +46,13 @@ DEBUG=true ENABLE_CRM_TEST_CHANNEL=true python manage.py seed_crm
 The internal development channel is disabled by default and can only be enabled server-side with
 `ENABLE_CRM_TEST_CHANNEL=true`. It never impersonates a real provider connection.
 
+The opt-in public Web Chat demo is also separate and uses synthetic organization data:
+
+```bash
+DEBUG=true WEB_CHAT_ENABLE_PUBLIC=true WEB_CHAT_ALLOW_FAKE_AUTOPILOT=true \
+  python manage.py seed_web_chat_demo
+```
+
 The AI runtime uses the deterministic fake provider by default. Publish AI Context, enable the
 runtime in **Settings → AI Automation**, and allow the internal test channel. Optional internal
 autopilot also requires the server-side `AI_INTERNAL_TEST_AUTOPILOT=true` flag. Real OpenAI
@@ -101,14 +108,16 @@ See [backend/docs/api/multitenant-api.md](backend/docs/api/multitenant-api.md),
 [backend/docs/security/client-authentication.md](backend/docs/security/client-authentication.md),
 [backend/docs/architecture/crm-core.md](backend/docs/architecture/crm-core.md),
 [backend/docs/architecture/ai-conversation-runtime.md](backend/docs/architecture/ai-conversation-runtime.md),
-and [backend/docs/api/ai-runtime-api.md](backend/docs/api/ai-runtime-api.md).
+[backend/docs/api/ai-runtime-api.md](backend/docs/api/ai-runtime-api.md),
+[backend/docs/architecture/public-web-chat.md](backend/docs/architecture/public-web-chat.md), and
+[backend/docs/api/public-web-chat-api.md](backend/docs/api/public-web-chat-api.md).
 
 ## Current boundary
 
-This stage intentionally does not activate Instagram, Telegram, Gmail, WhatsApp, SMS, Voice, or
-public Web Chat; add booking, billing, or Super Admin; or deploy production infrastructure. AI sends
-only on the labelled internal test channel. Real OpenAI calls stay disabled unless explicitly
-enabled server-side. CRM content is real organization-owned database data, not simulated revenue,
-sales, or provider state.
+This stage intentionally does not activate Instagram, Telegram, Gmail, WhatsApp, SMS, or Voice;
+add booking, billing, or Super Admin; or deploy production infrastructure. Public Web Chat is the
+only production-shaped external channel and remains server-side opt-in. Real OpenAI calls stay
+disabled unless explicitly enabled server-side. CRM content is real organization-owned database
+data, not simulated revenue, sales, or provider state.
 Password-reset and invitation email delivery use the development console lifecycle only until a
 reliable production mail provider is configured.

@@ -201,6 +201,7 @@ class ConversationAIState(models.TextChoices):
     OFF = "off", _("Off")
     SUGGEST = "suggest", _("Suggest")
     AUTOPILOT_TEST = "autopilot_test", _("Internal test autopilot")
+    AUTOPILOT_WEB_CHAT = "autopilot_web_chat", _("Web Chat autopilot")
     PAUSED_BY_HUMAN = "paused_by_human", _("Paused by human")
     HANDOFF_REQUIRED = "handoff_required", _("Handoff required")
 

@@ -38,6 +38,8 @@ def health_ready(request):
     else:
         checks['ai_runtime'] = 'fake_or_disabled'
 
+    checks['web_chat'] = 'disabled' if not settings.WEB_CHAT_ENABLE_PUBLIC else 'enabled'
+
     status_code = 200 if healthy else 503
     return JsonResponse({'status': 'ready' if healthy else 'degraded', 'checks': checks}, status=status_code)
 
@@ -55,6 +57,8 @@ urlpatterns = [
         path('assistant-context/', include(('assistant_context.urls', 'assistant_context'), namespace='assistant_context')),
         path('', include(('crm.urls', 'crm'), namespace='crm')),
         path('', include(('ai_runtime.urls', 'ai_runtime'), namespace='ai_runtime')),
+        path('', include(('web_chat.urls', 'web_chat'), namespace='web_chat')),
+        path('public/web-chat/', include(('web_chat.public_urls', 'web_chat_public'), namespace='web_chat_public')),
         path('public/', include(('early_access.urls', 'early_access'), namespace='early_access')),
         path('users/', include(('users.urls', 'users'), namespace='users')),
         path('intake/', include(('intake.urls', 'intake'), namespace='intake')),

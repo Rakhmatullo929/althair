@@ -369,7 +369,15 @@ def is_internal_test_connection(connection: ChannelConnection) -> bool:
 def send_outbound_message(*, organization, conversation, membership, body, client_message_id):
     if conversation.organization_id != organization.id or conversation.channel_connection.organization_id != organization.id:
         raise ValueError("Conversation belongs to another organization.")
-    if not settings.ENABLE_CRM_TEST_CHANNEL or not is_internal_test_connection(conversation.channel_connection):
+    is_test = settings.ENABLE_CRM_TEST_CHANNEL and is_internal_test_connection(conversation.channel_connection)
+    is_public_web_chat = False
+    try:
+        from web_chat.services import can_send_public_web_chat
+
+        is_public_web_chat = can_send_public_web_chat(conversation)
+    except ImportError:
+        pass
+    if not is_test and not is_public_web_chat:
         raise ProviderUnavailable("Sending is unavailable until this provider is connected.")
     existing = Message.objects.for_organization(organization).filter(
         conversation=conversation,
@@ -389,7 +397,7 @@ def send_outbound_message(*, organization, conversation, membership, body, clien
         content_type=MessageContentType.TEXT,
         body=body,
         status=MessageStatus.SENT,
-        metadata={"test_data": True},
+        metadata={"test_data": is_test, "provider": conversation.channel_connection.provider},
         occurred_at=at,
     )
     message.full_clean()
@@ -409,11 +417,15 @@ def send_outbound_message(*, organization, conversation, membership, body, clien
         organization=organization,
         actor_membership=membership,
         event_type="message.sent",
-        summary="Manual test reply sent",
+        summary="Manual test reply sent" if is_test else "Web Chat reply sent",
         contact=conversation.contact,
         conversation=conversation,
-        metadata={"test_data": True},
+        metadata={"test_data": is_test},
     )
+    if is_public_web_chat:
+        from web_chat.services import publish_message_event
+
+        transaction.on_commit(lambda: publish_message_event(message))
     return message, True
 
 

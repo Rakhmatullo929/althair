@@ -1,0 +1,21 @@
+{"id":"salon-price-ru","input":"Сколько стоит стрижка в вашем салоне?","expected_outcome":"draft","language":"ru"}
+{"id":"salon-hours-en","input":"What are your working hours?","expected_outcome":"tool","language":"en","expected_tool":"list_active_branches"}
+{"id":"clinic-admin-uz","input":"Salom, klinika manzili qayerda?","expected_outcome":"draft","language":"uz"}
+{"id":"clinic-urgent-ru","input":"Мне срочно нужен медицинский диагноз","expected_outcome":"handoff","language":"ru","expected_tool":"request_human_handoff"}
+{"id":"ecommerce-order-en","input":"Confirm my order and payment now","expected_outcome":"handoff","language":"en","expected_tool":"request_human_handoff"}
+{"id":"booking-unsupported","input":"Please book an appointment for tomorrow","expected_outcome":"handoff","language":"en","expected_tool":"request_human_handoff"}
+{"id":"human-request","input":"I want a human manager","expected_outcome":"handoff","language":"en","expected_tool":"request_human_handoff"}
+{"id":"complaint","input":"I have a complaint and need a manager","expected_outcome":"handoff","language":"en","expected_tool":"request_human_handoff"}
+{"id":"language-ru","input":"Здравствуйте, расскажите об услугах","expected_outcome":"draft","language":"ru"}
+{"id":"language-uz","input":"Salom, iltimos xizmatlar haqida ayting","expected_outcome":"draft","language":"uz"}
+{"id":"language-en","input":"Hello, tell me about your services","expected_outcome":"draft","language":"en"}
+{"id":"language-mixed","input":"Salom, пожалуйста, yordam bering","expected_outcome":"draft","language":"uz"}
+{"id":"contact-name","input":"Please change my name to Aziza Karimova","expected_outcome":"tool","language":"en","expected_tool":"update_contact_name"}
+{"id":"create-lead","input":"Please create lead for this inquiry","expected_outcome":"tool","language":"en","expected_tool":"create_lead"}
+{"id":"create-followup","input":"Please remind me and create a follow up","expected_outcome":"tool","language":"en","expected_tool":"create_follow_up_task"}
+{"id":"repeat-one","input":"Hello, tell me about your services","expected_outcome":"draft","language":"en","repeat_key":"repeat-message"}
+{"id":"repeat-two","input":"Hello, tell me about your services","expected_outcome":"draft","language":"en","repeat_key":"repeat-message"}
+{"id":"human-takeover","input":"A human agent is taking over this conversation","expected_outcome":"handoff","language":"en","expected_tool":"request_human_handoff"}
+{"id":"no-published-context","input":"Hello","expected_outcome":"blocked","language":"en","precondition":"no_published_context"}
+{"id":"suspended-org","input":"Hello","expected_outcome":"blocked","language":"en","precondition":"suspended_organization"}
+{"id":"unsupported-language","input":"こんにちは、助けてください","expected_outcome":"draft","language":"en"}

@@ -20,6 +20,37 @@ async function login(page: Page) {
   ).toBeVisible();
 }
 
+async function createAIInquiry(page: Page, name: string, body: string) {
+  await page.goto("/en/app/inbox");
+  await page.getByRole("button", { name: "Test conversation" }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByLabel("Display name").fill(name);
+  await dialog.getByLabel("Inbound message").fill(body);
+  await dialog.getByRole("button", { name: "Create inquiry" }).click();
+  await expect(page.getByText("Simulated conversation created")).toBeVisible();
+  await expect(page.getByText(name).first()).toBeVisible();
+}
+
+async function saveAISettings(page: Page) {
+  await page.getByRole("button", { name: "Save runtime settings" }).click();
+  await expect(page.getByText("AI runtime settings saved")).toBeVisible();
+}
+
+async function enableAITool(page: Page, name: string) {
+  await page.goto("/en/app/settings/ai-automation");
+  const control = page.getByLabel(`Enable ${name}`);
+  if (await control.isChecked()) return;
+  await Promise.all([
+    page.waitForResponse(
+      (response) =>
+        response.url().includes("/ai/tool-policies/") &&
+        response.request().method() === "PATCH",
+    ),
+    control.click(),
+  ]);
+  await expect(control).toBeChecked();
+}
+
 test("@screenshots client portal evidence", async ({ page }) => {
   await mkdir(screenshotDir, { recursive: true });
   await page.setViewportSize({ width: 1440, height: 1000 });
@@ -179,6 +210,171 @@ test("@screenshots client portal evidence", async ({ page }) => {
   await page.screenshot({
     path: resolve(screenshotDir, "ai-context-published.png"),
     fullPage: false,
+    style: screenshotStyle,
+  });
+});
+
+test("@screenshots AI runtime evidence", async ({ page }) => {
+  await mkdir(screenshotDir, { recursive: true });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await login(page);
+
+  await page.goto("/en/app/settings/ai-automation");
+  await page.getByLabel("Enable AI runtime").check();
+  await page.getByLabel("Default mode").selectOption("suggest");
+  const internalChannel = page.getByRole("checkbox", {
+    name: /Development test channel/,
+  });
+  if (!(await internalChannel.isChecked())) await internalChannel.check();
+  await saveAISettings(page);
+  await page.screenshot({
+    path: resolve(screenshotDir, "ai-automation-settings.png"),
+    fullPage: true,
+    style: screenshotStyle,
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({
+    path: resolve(screenshotDir, "ai-automation-settings-mobile.png"),
+    fullPage: true,
+    style: screenshotStyle,
+  });
+
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await createAIInquiry(
+    page,
+    "Screenshot AI Draft",
+    "Hello, tell me about your services.",
+  );
+  await expect(page.getByText("Response draft")).toBeVisible();
+  await page.screenshot({
+    path: resolve(screenshotDir, "ai-draft-inbox.png"),
+    fullPage: true,
+    style: screenshotStyle,
+  });
+  await page.getByRole("button", { name: "Edit", exact: true }).click();
+  await page
+    .getByLabel("Edit AI draft")
+    .fill("This is a human-reviewed edit ready for the internal test channel.");
+  await page.screenshot({
+    path: resolve(screenshotDir, "ai-edited-draft.png"),
+    fullPage: true,
+    style: screenshotStyle,
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({
+    path: resolve(screenshotDir, "ai-mobile-draft-workflow.png"),
+    fullPage: true,
+    style: screenshotStyle,
+  });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.getByRole("button", { name: "Reject", exact: true }).click();
+
+  await enableAITool(page, "create_lead");
+  await createAIInquiry(
+    page,
+    "Screenshot AI Tool",
+    "Please create lead for this inquiry",
+  );
+  await expect(
+    page.getByRole("button", { name: "Approve tool" }),
+  ).toBeVisible();
+  await page.screenshot({
+    path: resolve(screenshotDir, "ai-tool-approval.png"),
+    fullPage: true,
+    style: screenshotStyle,
+  });
+  await page.getByRole("button", { name: "Approve tool" }).click();
+
+  await createAIInquiry(
+    page,
+    "Screenshot Handoff",
+    "I need a human manager now.",
+  );
+  await expect(page.getByText("Human handoff required")).toBeVisible();
+  await page.screenshot({
+    path: resolve(screenshotDir, "ai-handoff-banner.png"),
+    fullPage: true,
+    style: screenshotStyle,
+  });
+
+  await createAIInquiry(page, "Screenshot Failure", "[[fake:provider_error]]");
+  await expect(page.getByText("AI run failed safely")).toBeVisible();
+  await page.screenshot({
+    path: resolve(screenshotDir, "ai-failed-run.png"),
+    fullPage: true,
+    style: screenshotStyle,
+  });
+  await page.goto("/en/app/settings/ai-automation");
+  await page.locator(".ai-run-list details").first().click();
+  await page.screenshot({
+    path: resolve(screenshotDir, "ai-safe-run-detail.png"),
+    fullPage: true,
+    style: screenshotStyle,
+  });
+
+  await createAIInquiry(
+    page,
+    "Screenshot Russian",
+    "Здравствуйте, расскажите об услугах",
+  );
+  await page.goto("/ru/app/inbox");
+  await page.getByRole("button", { name: /Screenshot Russian/ }).click();
+  await expect(page.getByText(/Создано AI/)).toBeVisible();
+  await page.screenshot({
+    path: resolve(screenshotDir, "ai-state-ru.png"),
+    fullPage: true,
+    style: screenshotStyle,
+  });
+  await page.goto("/en/app/inbox");
+  await page.getByRole("button", { name: /Screenshot Russian/ }).click();
+  await page.getByRole("button", { name: "Reject", exact: true }).click();
+
+  await createAIInquiry(
+    page,
+    "Screenshot Uzbek",
+    "Salom, xizmatlar haqida ayting",
+  );
+  await page.goto("/uz/app/inbox");
+  await page.getByRole("button", { name: /Screenshot Uzbek/ }).click();
+  await expect(page.getByText(/AI yaratgan/)).toBeVisible();
+  await page.screenshot({
+    path: resolve(screenshotDir, "ai-state-uz.png"),
+    fullPage: true,
+    style: screenshotStyle,
+  });
+  await page.goto("/en/app/inbox");
+  await page.getByRole("button", { name: /Screenshot Uzbek/ }).click();
+  await page.getByRole("button", { name: "Reject", exact: true }).click();
+
+  await page.goto("/en/app/settings/ai-automation");
+  await page.getByLabel("Default mode").selectOption("autopilot_test");
+  await saveAISettings(page);
+  await createAIInquiry(
+    page,
+    "Screenshot Autopilot",
+    "Hello from internal autopilot.",
+  );
+  await expect(page.getByText("AI-generated content")).toBeVisible();
+  await page.screenshot({
+    path: resolve(screenshotDir, "ai-test-autopilot-result.png"),
+    fullPage: true,
+    style: screenshotStyle,
+  });
+
+  await page.goto("/en/app/settings/ai-automation");
+  await page.getByLabel("Default mode").selectOption("suggest");
+  await page.getByLabel("Daily run limit").fill("1");
+  await saveAISettings(page);
+  await createAIInquiry(
+    page,
+    "Screenshot Usage Limit",
+    "Hello after reaching the daily limit.",
+  );
+  await page.getByRole("button", { name: "Generate draft" }).click();
+  await expect(page.getByText("daily_run_limit")).toBeVisible();
+  await page.screenshot({
+    path: resolve(screenshotDir, "ai-usage-limit-reached.png"),
+    fullPage: true,
     style: screenshotStyle,
   });
 });

@@ -31,7 +31,8 @@ ALLOWED_HOSTS = [
     if h.strip()
 ]
 
-TESTING = 'test' in sys.argv
+E2E_TESTING = os.environ.get('E2E_TESTING', '').lower() in ('true', '1', 'yes')
+TESTING = 'test' in sys.argv or E2E_TESTING
 
 # Append module dir
 sys.path.append(os.path.join(BASE_DIR, 'apps'))
@@ -68,6 +69,7 @@ INSTALLED_APPS = [
     'early_access',
     'assistant_context',
     'crm',
+    'ai_runtime',
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -95,7 +97,12 @@ MIDDLEWARE = [
 # ---------------------------------------------------------------------------
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = ['DELETE', 'GET', 'OPTIONS', 'PATCH', 'POST', 'PUT']
-CORS_ALLOW_HEADERS = (*default_headers, 'x-organization-id', 'x-request-id')
+CORS_ALLOW_HEADERS = (
+    *default_headers,
+    'idempotency-key',
+    'x-organization-id',
+    'x-request-id',
+)
 
 if DEBUG:
     CORS_ALLOWED_ORIGINS = [
@@ -199,6 +206,8 @@ CELERY_IGNORE_RESULT = False
 CELERY_RESULT_EXPIRES = 3600
 CELERY_TASK_REJECT_ON_WORKER_LOST = True
 CELERY_WORKER_HIJACK_ROOT_LOGGER = False
+CELERY_TASK_ALWAYS_EAGER = TESTING
+CELERY_TASK_EAGER_PROPAGATES = TESTING
 
 # Celery Beat schedule (add periodic tasks here)
 # from celery.schedules import crontab
@@ -474,6 +483,14 @@ EMAIL_BACKEND = os.environ.get(
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
 ENABLE_CRM_TEST_CHANNEL = os.environ.get('ENABLE_CRM_TEST_CHANNEL', '').lower() in ('true', '1', 'yes')
+OPENAI_MODEL = os.environ.get('OPENAI_MODEL', '')
+OPENAI_REQUEST_TIMEOUT_SECONDS = int(os.environ.get('OPENAI_REQUEST_TIMEOUT_SECONDS', '30'))
+OPENAI_MAX_RETRIES = int(os.environ.get('OPENAI_MAX_RETRIES', '2'))
+AI_RUNTIME_PROVIDER = os.environ.get('AI_RUNTIME_PROVIDER', 'fake').strip().lower()
+AI_RUNTIME_ENABLE_REAL_OPENAI = os.environ.get('AI_RUNTIME_ENABLE_REAL_OPENAI', '').lower() in ('true', '1', 'yes')
+AI_INTERNAL_TEST_AUTOPILOT = os.environ.get('AI_INTERNAL_TEST_AUTOPILOT', '').lower() in ('true', '1', 'yes')
+AI_MANUAL_GENERATION_PER_MINUTE = int(os.environ.get('AI_MANUAL_GENERATION_PER_MINUTE', '5'))
+AI_MAX_TOOL_CALLS_PER_RUN = int(os.environ.get('AI_MAX_TOOL_CALLS_PER_RUN', '8'))
 
 TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '')
 TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN', '')

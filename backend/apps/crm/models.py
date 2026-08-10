@@ -197,6 +197,14 @@ class AutomationState(models.TextChoices):
     AI_AVAILABLE = "ai_available", _("AI available")
 
 
+class ConversationAIState(models.TextChoices):
+    OFF = "off", _("Off")
+    SUGGEST = "suggest", _("Suggest")
+    AUTOPILOT_TEST = "autopilot_test", _("Internal test autopilot")
+    PAUSED_BY_HUMAN = "paused_by_human", _("Paused by human")
+    HANDOFF_REQUIRED = "handoff_required", _("Handoff required")
+
+
 class Conversation(OrganizationOwnedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     channel_connection = models.ForeignKey(ChannelConnection, on_delete=models.PROTECT, related_name="conversations")
@@ -210,6 +218,13 @@ class Conversation(OrganizationOwnedModel):
         OrganizationMembership, on_delete=models.SET_NULL, null=True, blank=True, related_name="assigned_conversations"
     )
     automation_state = models.CharField(max_length=20, choices=AutomationState.choices, default=AutomationState.MANUAL)
+    ai_state = models.CharField(
+        max_length=24,
+        choices=ConversationAIState.choices,
+        default=ConversationAIState.OFF,
+        db_index=True,
+    )
+    ai_state_updated_at = models.DateTimeField(null=True, blank=True)
     handoff_reason = models.CharField(max_length=500, blank=True, validators=[validate_plain_text])
     unread_count = models.PositiveIntegerField(default=0)
     last_message_at = models.DateTimeField(null=True, blank=True, db_index=True)
@@ -253,6 +268,7 @@ class MessageSenderType(models.TextChoices):
     AGENT = "agent", _("Agent")
     SYSTEM = "system", _("System")
     FUTURE_AI = "future_ai", _("Future AI")
+    AI = "ai", _("AI")
 
 
 class MessageContentType(models.TextChoices):

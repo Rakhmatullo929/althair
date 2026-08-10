@@ -13,6 +13,7 @@ import {
   ListTodo,
   LogOut,
   Radio,
+  Sparkles,
   Settings2,
   UserRoundSearch,
   Users,
@@ -35,6 +36,7 @@ const navItems = [
   ["team", "/app/settings/team", Users],
   ["channels", "/app/settings/channels", Radio],
   ["aiContext", "/app/settings/ai-context", Bot],
+  ["aiAutomation", "/app/settings/ai-automation", Sparkles],
 ] as const;
 
 function Navigation() {

@@ -18,6 +18,7 @@ from crm.models import (
     ContactStatus,
     ContactTag,
     Conversation,
+    ConversationAIState,
     ConversationStatus,
     CrmActivity,
     FollowUpTask,
@@ -245,6 +246,14 @@ def resolve_contact_identity(*, organization, channel_connection, identity_type,
 
 
 def open_or_find_conversation(*, organization, channel_connection, contact, external_thread_id):
+    ai_state = ConversationAIState.OFF
+    try:
+        from ai_runtime.services import default_ai_state_for_connection
+
+        ai_state = default_ai_state_for_connection(organization, channel_connection)
+    except ImportError:
+        # Keeps the CRM independently usable during a rolling migration.
+        pass
     conversation, _ = Conversation.objects.get_or_create(
         organization=organization,
         channel_connection=channel_connection,
@@ -253,6 +262,8 @@ def open_or_find_conversation(*, organization, channel_connection, contact, exte
             "contact": contact,
             "channel_type": channel_connection.type,
             "status": ConversationStatus.OPEN,
+            "ai_state": ai_state,
+            "ai_state_updated_at": timezone.now(),
         },
     )
     return conversation
@@ -335,8 +346,19 @@ def ingest_inbound_message(
         conversation=conversation,
         metadata={"test_data": is_test},
     )
+    transaction.on_commit(lambda: _enqueue_ai_inbound(message.id))
     conversation.refresh_from_db()
     return message, True
+
+
+def _enqueue_ai_inbound(message_id):
+    """Import lazily so CRM ingestion never depends on provider initialization."""
+    try:
+        from ai_runtime.tasks import evaluate_inbound_message
+
+        evaluate_inbound_message.delay(str(message_id))
+    except ImportError:
+        return
 
 
 def is_internal_test_connection(connection: ChannelConnection) -> bool:
@@ -373,6 +395,16 @@ def send_outbound_message(*, organization, conversation, membership, body, clien
     message.full_clean()
     message.save()
     Conversation.objects.filter(pk=conversation.pk).update(last_message_at=at, last_outbound_at=at)
+    Conversation.objects.filter(pk=conversation.pk).update(
+        ai_state=ConversationAIState.PAUSED_BY_HUMAN,
+        ai_state_updated_at=at,
+    )
+    try:
+        from ai_runtime.services import supersede_active_runs
+
+        supersede_active_runs(conversation=conversation, reason="human_reply")
+    except ImportError:
+        pass
     record_activity(
         organization=organization,
         actor_membership=membership,

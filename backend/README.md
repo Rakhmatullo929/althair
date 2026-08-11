@@ -44,6 +44,10 @@ unless `DEBUG=true` and `CLIENT_PORTAL_SEED_PASSWORD` is set.
 | `META_INSTAGRAM_GRAPH_API_VERSION`, `META_INSTAGRAM_REDIRECT_URI` | Explicit current Graph version and exact OAuth callback |
 | `META_INSTAGRAM_ENABLE_LIVE`, `META_INSTAGRAM_ENABLE_HUMAN_AGENT` | Fail-closed live-provider and separately approved human-only extension gates |
 | `META_INSTAGRAM_FAKE_PROVIDER` | Deterministic debug/test/E2E adapter; forced off in production compose |
+| `TELEGRAM_ENABLE_LIVE`, `TELEGRAM_FAKE_PROVIDER` | Explicit live gate and debug/test-only deterministic adapter |
+| `TELEGRAM_MANAGER_BOT_TOKEN`, `TELEGRAM_MANAGER_BOT_USERNAME` | Server-only manager bot used for official managed-bot APIs |
+| `TELEGRAM_MANAGER_WEBHOOK_URL`, `TELEGRAM_MANAGER_WEBHOOK_SECRET` | Signed manager updates; HTTPS is required live |
+| `TELEGRAM_BOT_WEBHOOK_BASE_URL` | HTTPS base for opaque per-bot webhook paths |
 | `EARLY_ACCESS_WEBHOOK_SECRET` | Landing server-to-server lead authentication |
 | `OPENAI_API_KEY`, provider credentials/secrets | Server-only; empty for fake-provider/CI workflows |
 | `DEV_*_DESTINATION_*` | Non-secret legacy development destination routing |
@@ -72,16 +76,19 @@ Architecture and contracts:
 - `docs/architecture/crm-core.md`
 - `docs/architecture/ai-conversation-runtime.md`
 - `docs/architecture/instagram-messaging.md`
+- `docs/architecture/telegram-managed-bots.md`
 - `docs/api/multitenant-api.md`
 - `docs/api/crm-api.md`
 - `docs/api/ai-runtime-api.md`
 - `docs/api/instagram-messaging-api.md`
+- `docs/api/telegram-managed-bots-api.md`
 - `docs/integrations/instagram-app-review.md`
+- `docs/integrations/telegram-managed-bots.md`
 - `docs/security/secret-rotation-required.md`
 
 ## Known limitations
 
-Production email delivery, Telegram and other external providers, booking, billing, Super Admin,
+Production email delivery, Gmail/WhatsApp/SMS/Voice, booking, billing, Super Admin,
 RLS, and production deployment are outside this stage. Instagram live access remains gated by real
 Meta configuration and App Review; local/CI coverage uses the deterministic fake adapter. The live
 Responses API remains opt-in and is never required for tests. The legacy MMC vertical is retained

@@ -106,7 +106,8 @@ export function AIAutomationPage() {
     channels.data?.results.filter(
       (item) =>
         (item.provider === "internal_test" && item.type === "webchat") ||
-        (item.provider === "meta_instagram" && item.type === "instagram"),
+        (item.provider === "meta_instagram" && item.type === "instagram") ||
+        (item.provider === "telegram_bot_api" && item.type === "telegram"),
     ) ?? [];
   const current = { ...config.data!, ...form } as AIRuntimeConfig;
 

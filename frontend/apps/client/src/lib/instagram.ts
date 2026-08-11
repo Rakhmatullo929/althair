@@ -17,7 +17,7 @@ export function instagramComposerState(
   if (conversation.channel_type !== "instagram") return null;
   const state = conversation.provider_context.state;
   if (state === "can_reply") return "enabled";
-  return state ?? "provider_unavailable";
+  return (state ?? "provider_unavailable") as InstagramComposerState;
 }
 
 export function instagramNeedsAttention(connection: InstagramConnection) {

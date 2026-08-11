@@ -53,6 +53,19 @@ def health_ready(request):
     else:
         checks['instagram'] = 'fake_or_disabled'
 
+    if settings.TELEGRAM_ENABLE_LIVE:
+        telegram_ready = all([
+            settings.TELEGRAM_MANAGER_BOT_TOKEN,
+            settings.TELEGRAM_MANAGER_BOT_USERNAME,
+            settings.TELEGRAM_MANAGER_WEBHOOK_URL,
+            settings.TELEGRAM_MANAGER_WEBHOOK_SECRET,
+            settings.TELEGRAM_BOT_WEBHOOK_BASE_URL,
+        ])
+        checks['telegram'] = 'configured' if telegram_ready else 'configuration_incomplete'
+        healthy = healthy and telegram_ready
+    else:
+        checks['telegram'] = 'fake_or_disabled'
+
     status_code = 200 if healthy else 503
     return JsonResponse({'status': 'ready' if healthy else 'degraded', 'checks': checks}, status=status_code)
 
@@ -72,7 +85,9 @@ urlpatterns = [
         path('', include(('ai_runtime.urls', 'ai_runtime'), namespace='ai_runtime')),
         path('', include(('web_chat.urls', 'web_chat'), namespace='web_chat')),
         path('', include(('instagram.urls', 'instagram'), namespace='instagram')),
+        path('', include(('telegram.urls', 'telegram'), namespace='telegram')),
         path('webhooks/', include(('instagram.webhook_urls', 'instagram_webhooks'), namespace='instagram_webhooks')),
+        path('webhooks/', include(('telegram.webhook_urls', 'telegram_webhooks'), namespace='telegram_webhooks')),
         path('public/web-chat/', include(('web_chat.public_urls', 'web_chat_public'), namespace='web_chat_public')),
         path('public/', include(('early_access.urls', 'early_access'), namespace='early_access')),
         path('users/', include(('users.urls', 'users'), namespace='users')),

@@ -58,6 +58,9 @@ class ContactIdentitySerializer(serializers.ModelSerializer):
             "created_at", "updated_at",
         ]
         read_only_fields = ["id", "organization", "contact", "normalized_value", "created_at", "updated_at"]
+        extra_kwargs = {
+            "channel_connection": {"required": False, "allow_null": True},
+        }
 
     def validate_channel_connection(self, value):
         if value and value.organization_id != self.context["request"].organization.id:
@@ -195,6 +198,10 @@ class ConversationSerializer(serializers.ModelSerializer):
 
             policy = window_eligibility(obj)
             return bool(policy.get("can_send") or policy.get("human_agent_available"))
+        if obj.channel_type == "telegram":
+            from telegram.services import can_send_telegram
+
+            return can_send_telegram(obj)
         try:
             from web_chat.services import can_send_public_web_chat
 
@@ -207,6 +214,10 @@ class ConversationSerializer(serializers.ModelSerializer):
             from instagram.services import serialize_conversation_policy
 
             return serialize_conversation_policy(obj)
+        if obj.channel_type == "telegram":
+            from telegram.services import conversation_policy
+
+            return conversation_policy(obj)
         return {}
 
 

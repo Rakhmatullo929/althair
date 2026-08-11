@@ -28,6 +28,11 @@ export META_INSTAGRAM_REDIRECT_URI="http://127.0.0.1:8011/api/v1/integrations/in
 export META_INSTAGRAM_ENABLE_LIVE=False
 export META_INSTAGRAM_ENABLE_HUMAN_AGENT=True
 export META_INSTAGRAM_FAKE_PROVIDER=True
+export TELEGRAM_ENABLE_LIVE=False
+export TELEGRAM_FAKE_PROVIDER=True
+export TELEGRAM_MANAGER_BOT_USERNAME="AlthairManagerBot"
+export TELEGRAM_MANAGER_WEBHOOK_SECRET="test-only-telegram-manager-secret"
+export TELEGRAM_BOT_WEBHOOK_BASE_URL="http://127.0.0.1:8011/api/v1/webhooks/telegram/bots"
 FIELD_ENCRYPTION_KEY="$(../../../backend/.venv/bin/python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')"
 export FIELD_ENCRYPTION_KEY
 export CLIENT_PORTAL_SEED_PASSWORD="client-portal-development-only-password"

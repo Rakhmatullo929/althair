@@ -80,6 +80,7 @@ test.describe.serial("Instagram Messaging", () => {
     await login(page);
     const tenant = await tenantContext(page.request);
     const connected = await connection(page.request, tenant.id);
+    const inboundTimestamp = Date.now();
     const event = await page.request.post(
       `${api}/integrations/instagram/${connected.id}/test-event/`,
       {
@@ -88,7 +89,7 @@ test.describe.serial("Instagram Messaging", () => {
           event_type: "story_reply",
           sender_id: "ig_e2e_customer",
           message_id: "ig_e2e_first",
-          timestamp: 1786370000000,
+          timestamp: inboundTimestamp,
           text: "Replying to your story",
         },
       },
@@ -102,7 +103,7 @@ test.describe.serial("Instagram Messaging", () => {
           event_type: "story_reply",
           sender_id: "ig_e2e_customer",
           message_id: "ig_e2e_first",
-          timestamp: 1786370000000,
+          timestamp: inboundTimestamp,
           text: "Replying to your story",
         },
       },

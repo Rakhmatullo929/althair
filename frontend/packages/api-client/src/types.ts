@@ -306,6 +306,7 @@ export type Conversation = {
     | "autopilot_test"
     | "autopilot_web_chat"
     | "autopilot_instagram"
+    | "autopilot_telegram"
     | "paused_by_human"
     | "handoff_required";
   ai_state_updated_at: string | null;
@@ -323,7 +324,12 @@ export type Conversation = {
       | "permission_missing"
       | "provider_degraded"
       | "provider_unavailable"
-      | "organization_read_only";
+      | "organization_read_only"
+      | "token_invalid"
+      | "webhook_degraded"
+      | "connection_paused"
+      | "bot_blocked"
+      | "user_not_started";
     professional_account?: string;
     connection_status?: string;
     connection_health?: string;
@@ -333,6 +339,11 @@ export type Conversation = {
     last_customer_message_at?: string;
     standard_window_expires_at?: string;
     human_agent_window_expires_at?: string;
+    bot_username?: string;
+    bot_name?: string;
+    webhook_status?: string;
+    automation_mode?: "manual" | "suggest" | "autopilot";
+    safe_chat_id?: string;
   };
   last_message_at: string | null;
   last_inbound_at: string | null;
@@ -529,7 +540,8 @@ export type AIRuntimeMode =
   | "suggest"
   | "autopilot_test"
   | "autopilot_web_chat"
-  | "autopilot_instagram";
+  | "autopilot_instagram"
+  | "autopilot_telegram";
 
 export type AIRuntimeConfig = {
   id: string;
@@ -664,6 +676,8 @@ export type AIRun = {
     | "draft"
     | "sent_test_reply"
     | "sent_web_chat_reply"
+    | "sent_instagram_reply"
+    | "sent_telegram_reply"
     | "handoff"
     | "no_reply"
     | "failed";
@@ -692,6 +706,85 @@ export type AIUsage = {
   average_provider_latency_ms: number;
   handoff_rate: number;
   stale_run_cancellations: number;
+};
+
+export type TelegramReadiness = {
+  enabled: boolean;
+  fake_provider: boolean;
+  ready: boolean;
+  status: string;
+  can_manage_bots: boolean;
+  manager_username: string;
+  reachable?: boolean;
+};
+
+export type TelegramUserLink = {
+  id?: string;
+  telegram_user_id?: number | null;
+  telegram_username?: string;
+  status: "not_linked" | "pending" | "linked" | "expired" | "revoked";
+  expires_at?: string;
+  linked_at?: string | null;
+  created_at?: string;
+  telegram_url?: string;
+};
+
+export type TelegramManagedBotRequest = {
+  id: string;
+  organization: string;
+  linked_telegram_user_id: number;
+  suggested_username: string;
+  suggested_name: string;
+  status: string;
+  expires_at: string;
+  created_bot_user_id: number | null;
+  created_bot_username: string;
+  error_code: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type TelegramHealth = {
+  status: string;
+  webhook_status: string;
+  has_encrypted_token: boolean;
+  provider_reachable: boolean | null;
+  bot_matches: boolean | null;
+  webhook_matches: boolean | null;
+  pending_updates: number | null;
+  last_error_code: string;
+};
+
+export type TelegramBotConnection = {
+  id: string;
+  organization: string;
+  channel_connection: string;
+  connection_type: "managed" | "existing";
+  bot_user_id: number;
+  bot_username: string;
+  bot_name: string;
+  owner_telegram_user_id: number | null;
+  status: string;
+  token_version: number;
+  webhook_status: string;
+  allowed_updates: string[];
+  access_restricted: boolean;
+  permitted_telegram_user_ids: number[];
+  default_language: Locale;
+  supported_languages: Locale[];
+  privacy_url: string;
+  automation_mode: "manual" | "suggest" | "autopilot";
+  last_update_at: string | null;
+  last_send_at: string | null;
+  last_health_check_at: string | null;
+  last_error_code: string;
+  connected_at: string | null;
+  disconnected_at: string | null;
+  has_encrypted_token: boolean;
+  health: TelegramHealth;
+  customer_start_url: string;
+  created_at: string;
+  updated_at: string;
 };
 
 export type WebChatInstallation = {

@@ -423,11 +423,18 @@ class ConversationMessagesView(CrmBaseView):
         except ProviderUnavailable as exc:
             raise ProviderNotConnected(str(exc)) from exc
         except ImportError as exc:
-            raise ProviderNotConnected("Instagram integration is unavailable.") from exc
+            raise ProviderNotConnected("Provider integration is unavailable.") from exc
         except Exception as exc:
             from instagram.services import InstagramError
 
             if isinstance(exc, InstagramError):
+                error = ProviderNotConnected(exc.code)
+                error.status_code = exc.status_code
+                error.machine_code = exc.code
+                raise error from exc
+            from telegram.services import TelegramError
+
+            if isinstance(exc, TelegramError):
                 error = ProviderNotConnected(exc.code)
                 error.status_code = exc.status_code
                 error.machine_code = exc.code

@@ -168,6 +168,54 @@
   }
 }
 
+/* Telegram Managed Bots extends the Client Portal without touching Landing. */
+.telegram-policy-banner {
+  border-color: color-mix(in srgb, #229ed9 32%, var(--line));
+}
+.telegram-policy-banner .status-badge {
+  margin-left: auto;
+}
+.telegram-gradient {
+  color: #fff;
+  background: linear-gradient(145deg, #38bdf8, #168acd);
+}
+.telegram-setup-grid,
+.telegram-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.telegram-setup-grid .panel,
+.telegram-detail-grid .panel {
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+}
+.telegram-existing-panel,
+.telegram-access-panel {
+  grid-column: 1 / -1;
+}
+.telegram-existing-panel summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+.telegram-inbox-policy {
+  border-color: color-mix(in srgb, #229ed9 35%, var(--line));
+}
+@media (max-width: 760px) {
+  .telegram-setup-grid,
+  .telegram-detail-grid {
+    grid-template-columns: 1fr;
+  }
+  .telegram-policy-banner {
+    align-items: flex-start;
+  }
+  .telegram-policy-banner .status-badge {
+    margin-left: 0;
+  }
+}
+
 /* Public Web Chat lives only in the Client app; the Landing remains untouched. */
 .webchat-installation-grid,
 .webchat-ops-grid {

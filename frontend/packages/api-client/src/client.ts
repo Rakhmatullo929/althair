@@ -35,6 +35,11 @@ import type {
   Paginated,
   Pipeline,
   PipelineStage,
+  TelegramBotConnection,
+  TelegramHealth,
+  TelegramManagedBotRequest,
+  TelegramReadiness,
+  TelegramUserLink,
   WebChatInstallation,
   WebChatSessionSummary,
 } from "./types";
@@ -618,7 +623,8 @@ export class ApiClient {
       | "suggest"
       | "autopilot_test"
       | "autopilot_web_chat"
-      | "autopilot_instagram",
+      | "autopilot_instagram"
+      | "autopilot_telegram",
   ) =>
     this.request<{ ai_state: Conversation["ai_state"] }>(
       `/conversations/${id}/ai/resume/`,
@@ -720,6 +726,93 @@ export class ApiClient {
         method: "POST",
         body: { action },
       },
+    );
+
+  telegramReadiness = (refresh = false) =>
+    this.request<TelegramReadiness>("/integrations/telegram/readiness/", {
+      method: refresh ? "POST" : "GET",
+    });
+  telegramIdentity = () =>
+    this.request<TelegramUserLink>("/integrations/telegram/identity/");
+  createTelegramIdentityLink = () =>
+    this.request<TelegramUserLink>("/integrations/telegram/identity/", {
+      method: "POST",
+    });
+  revokeTelegramIdentity = () =>
+    this.request<{ revoked: number }>("/integrations/telegram/identity/", {
+      method: "DELETE",
+    });
+  telegramManagedRequests = () =>
+    this.request<TelegramManagedBotRequest[]>(
+      "/integrations/telegram/managed-requests/",
+    );
+  createTelegramManagedRequest = (body: {
+    suggested_name: string;
+    suggested_username: string;
+  }) =>
+    this.request<{
+      request: TelegramManagedBotRequest;
+      creation_url: string;
+    }>("/integrations/telegram/managed-requests/", { method: "POST", body });
+  connectExistingTelegramBot = (token: string) =>
+    this.request<TelegramBotConnection>(
+      "/integrations/telegram/existing-bot/",
+      { method: "POST", body: { token } },
+    );
+  telegramConnections = () =>
+    this.request<Paginated<TelegramBotConnection>>("/integrations/telegram/");
+  telegramConnection = (id: string) =>
+    this.request<TelegramBotConnection>(`/integrations/telegram/${id}/`);
+  updateTelegramConnection = (
+    id: string,
+    body: Partial<
+      Pick<
+        TelegramBotConnection,
+        | "automation_mode"
+        | "default_language"
+        | "supported_languages"
+        | "privacy_url"
+      >
+    >,
+  ) =>
+    this.request<TelegramBotConnection>(`/integrations/telegram/${id}/`, {
+      method: "PATCH",
+      body,
+    });
+  telegramHealth = (id: string, refresh = false) =>
+    this.request<TelegramHealth>(`/integrations/telegram/${id}/health/`, {
+      method: refresh ? "POST" : "GET",
+    });
+  rotateTelegramToken = (id: string, replacementToken = "") =>
+    this.request<TelegramBotConnection>(
+      `/integrations/telegram/${id}/rotate-token/`,
+      { method: "POST", body: { replacement_token: replacementToken } },
+    );
+  updateTelegramAccess = (
+    id: string,
+    body: {
+      access_restricted: boolean;
+      permitted_telegram_user_ids: number[];
+    },
+  ) =>
+    this.request<TelegramBotConnection>(
+      `/integrations/telegram/${id}/access-settings/`,
+      { method: "POST", body },
+    );
+  telegramAction = (id: string, action: "pause" | "reconnect" | "disconnect") =>
+    this.request<TelegramBotConnection>(
+      `/integrations/telegram/${id}/${action}/`,
+      { method: "POST" },
+    );
+  telegramTestManagerEvent = (body: Record<string, unknown>) =>
+    this.request<{ accepted: number; duplicates: number }>(
+      "/integrations/telegram/test-manager-event/",
+      { method: "POST", body },
+    );
+  telegramTestEvent = (id: string, body: Record<string, unknown>) =>
+    this.request<{ accepted: number; duplicates: number }>(
+      `/integrations/telegram/${id}/test-event/`,
+      { method: "POST", body },
     );
 
   webChatInstallations = () =>

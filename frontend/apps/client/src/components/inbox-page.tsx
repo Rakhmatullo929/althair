@@ -492,6 +492,26 @@ export function InboxPage() {
                   </div>
                 </div>
               ) : null}
+              {selected.channel_type === "telegram" ? (
+                <div
+                  className={`instagram-inbox-policy telegram-inbox-policy state-${selected.provider_context.state ?? "provider_unavailable"}`}
+                  role="status"
+                >
+                  <Send aria-hidden="true" />
+                  <div>
+                    <strong>
+                      {selected.provider_context.bot_username
+                        ? `@${selected.provider_context.bot_username}`
+                        : selected.channel_name}
+                    </strong>
+                    <p>
+                      {t(
+                        `telegramStates.${selected.provider_context.state ?? "provider_unavailable"}`,
+                      )}
+                    </p>
+                  </div>
+                </div>
+              ) : null}
               <ConversationAIPanel
                 conversation={selected}
                 organizationId={organizationId}

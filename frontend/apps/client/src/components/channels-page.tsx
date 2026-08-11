@@ -162,7 +162,7 @@ export function ChannelsPage() {
           const primary = connections[0];
           const state =
             primary?.status ??
-            (type === "webchat" || type === "instagram"
+            (type === "webchat" || type === "instagram" || type === "telegram"
               ? "not_connected"
               : "planned");
           return (
@@ -179,7 +179,9 @@ export function ChannelsPage() {
               <p>
                 {primary
                   ? t("configuredRecord", { provider: primary.provider })
-                  : type === "webchat" || type === "instagram"
+                  : type === "webchat" ||
+                      type === "instagram" ||
+                      type === "telegram"
                     ? t("notConnected")
                     : t("planned")}
               </p>
@@ -203,7 +205,14 @@ export function ChannelsPage() {
                   </div>
                 </dl>
               ) : null}
-              {type === "instagram" ? (
+              {type === "telegram" ? (
+                <Link
+                  className="button secondary"
+                  href="/app/settings/channels/telegram"
+                >
+                  {t("configureTelegram")}
+                </Link>
+              ) : type === "instagram" ? (
                 <Link
                   className="button secondary"
                   href="/app/settings/channels/instagram"

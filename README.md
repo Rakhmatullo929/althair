@@ -1,7 +1,8 @@
 # AI Front Office workspace
 
 This repository contains the preserved public Landing, the localized customer portal with a real
-CRM workflow, and a tenant-safe, approval-controlled AI conversation runtime. The legacy MMC
+CRM workflow, tenant-owned Web Chat, Instagram and Telegram messaging, and a tenant-safe,
+approval-controlled AI conversation runtime. The legacy MMC
 vertical is still isolated in the backend and remains covered by its regression tests.
 
 ## Local stack
@@ -110,13 +111,15 @@ See [backend/docs/api/multitenant-api.md](backend/docs/api/multitenant-api.md),
 [backend/docs/architecture/ai-conversation-runtime.md](backend/docs/architecture/ai-conversation-runtime.md),
 [backend/docs/api/ai-runtime-api.md](backend/docs/api/ai-runtime-api.md),
 [backend/docs/architecture/public-web-chat.md](backend/docs/architecture/public-web-chat.md), and
-[backend/docs/api/public-web-chat-api.md](backend/docs/api/public-web-chat-api.md).
+[backend/docs/api/public-web-chat-api.md](backend/docs/api/public-web-chat-api.md),
+[backend/docs/architecture/telegram-managed-bots.md](backend/docs/architecture/telegram-managed-bots.md), and
+[backend/docs/api/telegram-managed-bots-api.md](backend/docs/api/telegram-managed-bots-api.md).
 
 ## Current boundary
 
-This stage intentionally does not activate Instagram, Telegram, Gmail, WhatsApp, SMS, or Voice;
-add booking, billing, or Super Admin; or deploy production infrastructure. Public Web Chat is the
-only production-shaped external channel and remains server-side opt-in. Real OpenAI calls stay
+This stage intentionally does not activate Gmail, WhatsApp, SMS, or Voice; add booking, billing,
+or Super Admin; or deploy production infrastructure. Public Web Chat, Instagram Messaging, and
+Telegram Managed Bots remain server-side opt-in. Real OpenAI calls stay
 disabled unless explicitly enabled server-side. CRM content is real organization-owned database
 data, not simulated revenue, sales, or provider state.
 Password-reset and invitation email delivery use the development console lifecycle only until a

@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     'ai_runtime',
     'web_chat',
     'instagram',
+    'telegram',
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -356,6 +357,8 @@ REST_FRAMEWORK = {
         'crm_search': '120/min',
         'crm_message': '60/min',
         'instagram_webhook': '600/min',
+        'telegram_manager_webhook': '300/min',
+        'telegram_bot_webhook': '1200/min',
     },
     'EXCEPTION_HANDLER': 'core.api.exception_handler.api_exception_handler',
     'DEFAULT_RENDERER_CLASSES': (
@@ -376,6 +379,8 @@ if os.environ.get('E2E_TESTING', '').lower() in ('true', '1', 'yes'):
         'crm_search': '1000/min',
         'crm_message': '1000/min',
         'instagram_webhook': '5000/min',
+        'telegram_manager_webhook': '5000/min',
+        'telegram_bot_webhook': '5000/min',
     })
 
 # ---------------------------------------------------------------------------
@@ -546,6 +551,26 @@ META_INSTAGRAM_HEALTH_BATCH_SIZE = int(os.environ.get('META_INSTAGRAM_HEALTH_BAT
 META_INSTAGRAM_TOKEN_WARNING_DAYS = int(os.environ.get('META_INSTAGRAM_TOKEN_WARNING_DAYS', '7'))
 META_INSTAGRAM_BACKFILL_MAX_ITEMS = int(os.environ.get('META_INSTAGRAM_BACKFILL_MAX_ITEMS', '100'))
 
+# Telegram Bot API 10.x Managed Bots. Tokens remain server-side; live mode is
+# fail-closed until the manager bot and HTTPS webhook configuration are present.
+TELEGRAM_ENABLE_LIVE = os.environ.get('TELEGRAM_ENABLE_LIVE', '').lower() in ('true', '1', 'yes')
+TELEGRAM_FAKE_PROVIDER = os.environ.get('TELEGRAM_FAKE_PROVIDER', 'true').lower() in ('true', '1', 'yes')
+TELEGRAM_MANAGER_BOT_TOKEN = os.environ.get('TELEGRAM_MANAGER_BOT_TOKEN', '')
+TELEGRAM_MANAGER_BOT_USERNAME = os.environ.get('TELEGRAM_MANAGER_BOT_USERNAME', '')
+TELEGRAM_MANAGER_WEBHOOK_URL = os.environ.get('TELEGRAM_MANAGER_WEBHOOK_URL', '')
+TELEGRAM_MANAGER_WEBHOOK_SECRET = os.environ.get('TELEGRAM_MANAGER_WEBHOOK_SECRET', '')
+TELEGRAM_BOT_WEBHOOK_BASE_URL = os.environ.get('TELEGRAM_BOT_WEBHOOK_BASE_URL', '')
+TELEGRAM_LINK_TTL_MINUTES = int(os.environ.get('TELEGRAM_LINK_TTL_MINUTES', '10'))
+TELEGRAM_MANAGED_REQUEST_TTL_MINUTES = int(os.environ.get('TELEGRAM_MANAGED_REQUEST_TTL_MINUTES', '30'))
+TELEGRAM_MAX_WEBHOOK_BYTES = int(os.environ.get('TELEGRAM_MAX_WEBHOOK_BYTES', '1048576'))
+TELEGRAM_MAX_MEDIA_BYTES = int(os.environ.get('TELEGRAM_MAX_MEDIA_BYTES', '10485760'))
+TELEGRAM_MAX_TEXT_LENGTH = int(os.environ.get('TELEGRAM_MAX_TEXT_LENGTH', '4096'))
+TELEGRAM_ORG_SENDS_PER_MINUTE = int(os.environ.get('TELEGRAM_ORG_SENDS_PER_MINUTE', '120'))
+TELEGRAM_SEND_LOCK_SECONDS = int(os.environ.get('TELEGRAM_SEND_LOCK_SECONDS', '15'))
+TELEGRAM_MAX_SEND_ATTEMPTS = int(os.environ.get('TELEGRAM_MAX_SEND_ATTEMPTS', '3'))
+TELEGRAM_MAX_EVENT_ATTEMPTS = int(os.environ.get('TELEGRAM_MAX_EVENT_ATTEMPTS', '3'))
+TELEGRAM_HEALTH_BATCH_SIZE = int(os.environ.get('TELEGRAM_HEALTH_BATCH_SIZE', '100'))
+
 CELERY_BEAT_SCHEDULE.update({
     'instagram-health-every-15-minutes': {
         'task': 'instagram.tasks.check_instagram_connections',
@@ -558,6 +583,17 @@ CELERY_BEAT_SCHEDULE.update({
     'instagram-subscription-health-hourly': {
         'task': 'instagram.tasks.verify_instagram_subscriptions',
         'schedule': 3600.0,
+    },
+})
+
+CELERY_BEAT_SCHEDULE.update({
+    'telegram-health-every-15-minutes': {
+        'task': 'telegram.tasks.check_telegram_connections',
+        'schedule': 900.0,
+    },
+    'telegram-request-expiry-every-5-minutes': {
+        'task': 'telegram.tasks.expire_telegram_requests',
+        'schedule': 300.0,
     },
 })
 

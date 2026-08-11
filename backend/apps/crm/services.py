@@ -274,6 +274,7 @@ def ingest_inbound_message(
     *, organization, channel_connection, identity_type, sender_value,
     sender_display_name, external_thread_id, provider_message_id, body,
     occurred_at=None, metadata=None, actor_membership=None, is_test=False,
+    enqueue_ai=True,
 ):
     if channel_connection.organization_id != organization.id:
         raise ValueError("Channel connection belongs to another organization.")
@@ -346,7 +347,8 @@ def ingest_inbound_message(
         conversation=conversation,
         metadata={"test_data": is_test},
     )
-    transaction.on_commit(lambda: _enqueue_ai_inbound(message.id))
+    if enqueue_ai:
+        transaction.on_commit(lambda: _enqueue_ai_inbound(message.id))
     conversation.refresh_from_db()
     return message, True
 
@@ -378,6 +380,15 @@ def send_outbound_message(*, organization, conversation, membership, body, clien
             client_message_id=client_message_id,
             membership=membership,
             human_agent=human_agent,
+        )
+    if conversation.channel_connection.type == ChannelType.TELEGRAM:
+        from telegram.services import send_telegram_message
+
+        return send_telegram_message(
+            conversation=conversation,
+            body=body,
+            client_message_id=client_message_id,
+            membership=membership,
         )
     is_test = settings.ENABLE_CRM_TEST_CHANNEL and is_internal_test_connection(conversation.channel_connection)
     is_public_web_chat = False

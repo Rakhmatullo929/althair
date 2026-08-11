@@ -366,9 +366,19 @@ def is_internal_test_connection(connection: ChannelConnection) -> bool:
 
 
 @transaction.atomic
-def send_outbound_message(*, organization, conversation, membership, body, client_message_id):
+def send_outbound_message(*, organization, conversation, membership, body, client_message_id, human_agent=False):
     if conversation.organization_id != organization.id or conversation.channel_connection.organization_id != organization.id:
         raise ValueError("Conversation belongs to another organization.")
+    if conversation.channel_connection.type == ChannelType.INSTAGRAM:
+        from instagram.services import send_instagram_message
+
+        return send_instagram_message(
+            conversation=conversation,
+            body=body,
+            client_message_id=client_message_id,
+            membership=membership,
+            human_agent=human_agent,
+        )
     is_test = settings.ENABLE_CRM_TEST_CHANNEL and is_internal_test_connection(conversation.channel_connection)
     is_public_web_chat = False
     try:
@@ -434,7 +444,7 @@ def record_delivery_update(*, organization, channel_connection, message_id, stat
     """Apply a verified provider delivery update without retaining provider payloads."""
     if channel_connection.organization_id != organization.id:
         raise ValueError("Channel connection belongs to another organization.")
-    if status not in {MessageStatus.SENT, MessageStatus.DELIVERED, MessageStatus.FAILED}:
+    if status not in {MessageStatus.SENT, MessageStatus.DELIVERED, MessageStatus.READ, MessageStatus.FAILED}:
         raise ValueError("Unsupported outbound delivery status.")
     safe_error = str(error_code or "").strip()
     if safe_error and (len(safe_error) > 80 or not re.fullmatch(r"[a-zA-Z0-9_.:-]+", safe_error)):

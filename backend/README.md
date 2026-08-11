@@ -40,6 +40,10 @@ unless `DEBUG=true` and `CLIENT_PORTAL_SEED_PASSWORD` is set.
 | `OPENAI_MODEL` | Explicit Responses API model alias; no model is selected in the browser |
 | `OPENAI_REQUEST_TIMEOUT_SECONDS`, `OPENAI_MAX_RETRIES` | Bounded live-provider request policy |
 | `AI_MANUAL_GENERATION_PER_MINUTE`, `AI_MAX_TOOL_CALLS_PER_RUN` | Abuse and action-loop caps |
+| `META_APP_ID`, `META_APP_SECRET`, `META_INSTAGRAM_VERIFY_TOKEN` | Server-only Instagram Business Login and signed webhook configuration |
+| `META_INSTAGRAM_GRAPH_API_VERSION`, `META_INSTAGRAM_REDIRECT_URI` | Explicit current Graph version and exact OAuth callback |
+| `META_INSTAGRAM_ENABLE_LIVE`, `META_INSTAGRAM_ENABLE_HUMAN_AGENT` | Fail-closed live-provider and separately approved human-only extension gates |
+| `META_INSTAGRAM_FAKE_PROVIDER` | Deterministic debug/test/E2E adapter; forced off in production compose |
 | `EARLY_ACCESS_WEBHOOK_SECRET` | Landing server-to-server lead authentication |
 | `OPENAI_API_KEY`, provider credentials/secrets | Server-only; empty for fake-provider/CI workflows |
 | `DEV_*_DESTINATION_*` | Non-secret legacy development destination routing |
@@ -67,15 +71,18 @@ Architecture and contracts:
 - `docs/architecture/client-onboarding.md`
 - `docs/architecture/crm-core.md`
 - `docs/architecture/ai-conversation-runtime.md`
+- `docs/architecture/instagram-messaging.md`
 - `docs/api/multitenant-api.md`
 - `docs/api/crm-api.md`
 - `docs/api/ai-runtime-api.md`
+- `docs/api/instagram-messaging-api.md`
+- `docs/integrations/instagram-app-review.md`
 - `docs/security/secret-rotation-required.md`
 
 ## Known limitations
 
-Production email delivery, external provider activation/OAuth, public Web Chat, booking, billing,
-Super Admin, RLS, and production deployment are outside this stage. CRM provider adapters remain
-disabled; only the explicit internal development channel is available. The live Responses API
-adapter is opt-in and is never required for tests. The legacy MMC vertical is intentionally retained
+Production email delivery, Telegram and other external providers, booking, billing, Super Admin,
+RLS, and production deployment are outside this stage. Instagram live access remains gated by real
+Meta configuration and App Review; local/CI coverage uses the deterministic fake adapter. The live
+Responses API remains opt-in and is never required for tests. The legacy MMC vertical is retained
 and independently regression-tested.

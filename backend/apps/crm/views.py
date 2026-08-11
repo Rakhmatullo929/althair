@@ -418,9 +418,21 @@ class ConversationMessagesView(CrmBaseView):
                 membership=request.organization_membership,
                 body=body,
                 client_message_id=client_id,
+                human_agent=bool(request.data.get("human_agent", False)),
             )
         except ProviderUnavailable as exc:
             raise ProviderNotConnected(str(exc)) from exc
+        except ImportError as exc:
+            raise ProviderNotConnected("Instagram integration is unavailable.") from exc
+        except Exception as exc:
+            from instagram.services import InstagramError
+
+            if isinstance(exc, InstagramError):
+                error = ProviderNotConnected(exc.code)
+                error.status_code = exc.status_code
+                error.machine_code = exc.code
+                raise error from exc
+            raise
         return Response(MessageSerializer(message).data, status=201 if created else 200)
 
 

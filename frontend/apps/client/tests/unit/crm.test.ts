@@ -33,6 +33,7 @@ function conversation(overrides: Partial<Conversation> = {}): Conversation {
     unread_count: 1,
     last_message_preview: "Hello",
     can_send: true,
+    provider_context: {},
     last_message_at: "2026-08-10T10:00:00Z",
     last_inbound_at: "2026-08-10T10:00:00Z",
     last_outbound_at: null,
@@ -77,6 +78,26 @@ describe("CRM tenant and role state", () => {
     );
     expect(composerState(conversation(), "owner", "suspended")).toBe(
       "read_only",
+    );
+  });
+
+  it("uses server-owned Instagram window states", () => {
+    const expired = conversation({
+      channel_type: "instagram",
+      can_send: false,
+      provider_context: { state: "window_expired" },
+    });
+    const extended = conversation({
+      channel_type: "instagram",
+      can_send: true,
+      provider_context: {
+        state: "human_agent_available",
+        human_agent_available: true,
+      },
+    });
+    expect(composerState(expired, "agent", "active")).toBe("window_expired");
+    expect(composerState(extended, "agent", "active")).toBe(
+      "human_agent_available",
     );
   });
 

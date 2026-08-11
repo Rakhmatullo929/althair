@@ -94,6 +94,23 @@ def ensure_runtime_config(organization):
 
 def default_ai_state_for_connection(organization, connection):
     try:
+        from instagram.services import ai_state_for_connection
+
+        instagram_state = ai_state_for_connection(organization, connection)
+        if instagram_state is not None:
+            if instagram_state == ConversationAIState.OFF:
+                return instagram_state
+            config = ensure_runtime_config(organization)
+            if not config.enabled:
+                return ConversationAIState.OFF
+            if config.allowed_channel_connections.exists() and not config.allowed_channel_connections.filter(
+                pk=connection.pk
+            ).exists():
+                return ConversationAIState.OFF
+            return instagram_state
+    except ImportError:
+        pass
+    try:
         from web_chat.services import ai_state_for_installation
 
         public_state = ai_state_for_installation(organization, connection)
@@ -154,7 +171,12 @@ def _validate_channel(config, conversation):
     internal_allowed = settings.ENABLE_CRM_TEST_CHANNEL and is_internal_test_connection(
         conversation.channel_connection
     )
-    if not internal_allowed and not public_allowed:
+    instagram_allowed = conversation.channel_connection.type == "instagram"
+    if instagram_allowed:
+        from instagram.services import window_eligibility
+
+        instagram_allowed = window_eligibility(conversation).get("state") == "can_reply"
+    if not internal_allowed and not public_allowed and not instagram_allowed:
         raise AIRuntimeUnavailable("internal_test_channel_only")
     if config.allowed_channel_connections.exists() and not config.allowed_channel_connections.filter(
         pk=conversation.channel_connection_id
@@ -181,7 +203,12 @@ def create_queued_run(*, message, task_key, mode=None):
         raise AIRuntimeUnavailable("runtime_disabled")
     _validate_channel(config, conversation)
     selected_mode = mode or conversation.ai_state
-    if selected_mode not in {RuntimeMode.SUGGEST, RuntimeMode.AUTOPILOT_TEST, RuntimeMode.AUTOPILOT_WEB_CHAT}:
+    if selected_mode not in {
+        RuntimeMode.SUGGEST,
+        RuntimeMode.AUTOPILOT_TEST,
+        RuntimeMode.AUTOPILOT_WEB_CHAT,
+        RuntimeMode.AUTOPILOT_INSTAGRAM,
+    }:
         raise AIRuntimeUnavailable("conversation_ai_paused")
     if selected_mode == RuntimeMode.AUTOPILOT_TEST and not _autopilot_environment_allowed():
         selected_mode = RuntimeMode.SUGGEST
@@ -317,6 +344,7 @@ def process_run(run_id):
             ConversationAIState.SUGGEST,
             ConversationAIState.AUTOPILOT_TEST,
             ConversationAIState.AUTOPILOT_WEB_CHAT,
+            ConversationAIState.AUTOPILOT_INSTAGRAM,
         } or _stale_after_human_reply(run):
             run.status = AIRunStatus.SUPERSEDED
             run.error_category = "stale_context"
@@ -387,6 +415,18 @@ def process_run(run_id):
         )
         run.refresh_from_db()
         return run
+    except AIRuntimeUnavailable as exc:
+        if run.conversation.channel_connection.type == "instagram":
+            create_handoff(
+                conversation=run.conversation,
+                run=run,
+                reason_code="instagram_send_unavailable",
+                safe_summary="Instagram could not accept the governed reply, so a team member needs to continue.",
+                requested_by=HandoffRequestedBy.POLICY,
+            )
+            run.refresh_from_db()
+            return run
+        return _fail_run(run, category="policy", code=str(exc))
     except Exception:
         logger.exception(
             "ai_run_failed organization_id=%s conversation_id=%s run_id=%s provider=%s model=%s",
@@ -542,18 +582,23 @@ def _complete_text(*, run, text, context):
             requested_by=HandoffRequestedBy.POLICY,
         )
         return run
-    if run.mode in {RuntimeMode.AUTOPILOT_TEST, RuntimeMode.AUTOPILOT_WEB_CHAT} and _can_autopilot(run):
+    if run.mode in {
+        RuntimeMode.AUTOPILOT_TEST,
+        RuntimeMode.AUTOPILOT_WEB_CHAT,
+        RuntimeMode.AUTOPILOT_INSTAGRAM,
+    } and _can_autopilot(run):
         _create_ai_message(
             run=run,
             body=safe_text,
             client_message_id=f"ai-run:{run.id}",
             metadata={"ai_run_id": str(run.id), "mode": run.mode},
         )
-        run.outcome = (
-            AIRunOutcome.SENT_TEST_REPLY
-            if run.mode == RuntimeMode.AUTOPILOT_TEST
-            else AIRunOutcome.SENT_WEB_CHAT_REPLY
-        )
+        if run.mode == RuntimeMode.AUTOPILOT_TEST:
+            run.outcome = AIRunOutcome.SENT_TEST_REPLY
+        elif run.mode == RuntimeMode.AUTOPILOT_WEB_CHAT:
+            run.outcome = AIRunOutcome.SENT_WEB_CHAT_REPLY
+        else:
+            run.outcome = AIRunOutcome.SENT_INSTAGRAM_REPLY
     else:
         AIDraft.objects.update_or_create(
             organization=run.organization,
@@ -575,6 +620,8 @@ def _complete_text(*, run, text, context):
             else "AI internal test reply sent"
             if run.outcome == AIRunOutcome.SENT_TEST_REPLY
             else "AI Web Chat reply sent"
+            if run.outcome == AIRunOutcome.SENT_WEB_CHAT_REPLY
+            else "AI Instagram reply sent"
         ),
         contact=run.conversation.contact,
         conversation=run.conversation,
@@ -598,6 +645,13 @@ def _can_autopilot(run):
             channel_allowed = web_chat_autopilot_allowed(conversation.channel_connection.web_chat_installation)
     except (ImportError, AttributeError):
         pass
+    if conversation.ai_state == ConversationAIState.AUTOPILOT_INSTAGRAM:
+        try:
+            from instagram.services import instagram_autopilot_allowed
+
+            channel_allowed = instagram_autopilot_allowed(conversation)
+        except ImportError:
+            channel_allowed = False
     return bool(
         channel_allowed
         and not _stale_after_human_reply(run)
@@ -617,6 +671,22 @@ def _create_ai_message(*, run, body, client_message_id, metadata):
     ).first()
     if existing:
         return existing, False
+    if run.conversation.channel_connection.type == "instagram":
+        from instagram.services import send_ai_message
+
+        try:
+            return send_ai_message(
+                run=run,
+                body=body,
+                client_message_id=client_message_id,
+                metadata=metadata,
+            )
+        except Exception as exc:
+            from instagram.services import InstagramError
+
+            if isinstance(exc, InstagramError):
+                raise AIRuntimeUnavailable(exc.code) from exc
+            raise
     is_test = settings.ENABLE_CRM_TEST_CHANNEL and is_internal_test_connection(run.conversation.channel_connection)
     is_public = False
     try:
@@ -865,6 +935,7 @@ def set_conversation_ai_state(*, conversation, actor, state):
         ConversationAIState.SUGGEST,
         ConversationAIState.AUTOPILOT_TEST,
         ConversationAIState.AUTOPILOT_WEB_CHAT,
+        ConversationAIState.AUTOPILOT_INSTAGRAM,
     }:
         raise AIRuntimeConflict("invalid_ai_state")
     config = ensure_runtime_config(conversation.organization)
@@ -881,6 +952,14 @@ def set_conversation_ai_state(*, conversation, actor, state):
             if not web_chat_autopilot_allowed(conversation.channel_connection.web_chat_installation):
                 raise AIRuntimeUnavailable("autopilot_not_enabled")
         except AttributeError as exc:
+            raise AIRuntimeUnavailable("autopilot_not_enabled") from exc
+    if state == ConversationAIState.AUTOPILOT_INSTAGRAM:
+        try:
+            from instagram.services import instagram_autopilot_allowed
+
+            if not instagram_autopilot_allowed(conversation):
+                raise AIRuntimeUnavailable("autopilot_not_enabled")
+        except ImportError as exc:
             raise AIRuntimeUnavailable("autopilot_not_enabled") from exc
     conversation.ai_state = state
     conversation.ai_state_updated_at = timezone.now()

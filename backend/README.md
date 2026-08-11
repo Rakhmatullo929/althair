@@ -48,6 +48,10 @@ unless `DEBUG=true` and `CLIENT_PORTAL_SEED_PASSWORD` is set.
 | `TELEGRAM_MANAGER_BOT_TOKEN`, `TELEGRAM_MANAGER_BOT_USERNAME` | Server-only manager bot used for official managed-bot APIs |
 | `TELEGRAM_MANAGER_WEBHOOK_URL`, `TELEGRAM_MANAGER_WEBHOOK_SECRET` | Signed manager updates; HTTPS is required live |
 | `TELEGRAM_BOT_WEBHOOK_BASE_URL` | HTTPS base for opaque per-bot webhook paths |
+| `GOOGLE_GMAIL_ENABLE_LIVE`, `GOOGLE_GMAIL_FAKE_PROVIDER` | Fail-closed live Gmail gate and deterministic debug/test provider |
+| `GOOGLE_GMAIL_CLIENT_ID`, `GOOGLE_GMAIL_CLIENT_SECRET`, `GOOGLE_GMAIL_REDIRECT_URI` | Server-only Google OAuth web application values |
+| `GOOGLE_GMAIL_PUBSUB_TOPIC`, `GOOGLE_GMAIL_PUBSUB_SUBSCRIPTION` | Exact Gmail watch topic and push subscription resources |
+| `GOOGLE_GMAIL_PUBSUB_AUDIENCE`, `GOOGLE_GMAIL_PUBSUB_SERVICE_ACCOUNT` | Authenticated Pub/Sub OIDC identity constraints |
 | `EARLY_ACCESS_WEBHOOK_SECRET` | Landing server-to-server lead authentication |
 | `OPENAI_API_KEY`, provider credentials/secrets | Server-only; empty for fake-provider/CI workflows |
 | `DEV_*_DESTINATION_*` | Non-secret legacy development destination routing |
@@ -77,18 +81,21 @@ Architecture and contracts:
 - `docs/architecture/ai-conversation-runtime.md`
 - `docs/architecture/instagram-messaging.md`
 - `docs/architecture/telegram-managed-bots.md`
+- `docs/architecture/gmail-email-integration.md`
 - `docs/api/multitenant-api.md`
 - `docs/api/crm-api.md`
 - `docs/api/ai-runtime-api.md`
 - `docs/api/instagram-messaging-api.md`
 - `docs/api/telegram-managed-bots-api.md`
+- `docs/api/gmail-email-api.md`
 - `docs/integrations/instagram-app-review.md`
 - `docs/integrations/telegram-managed-bots.md`
+- `docs/integrations/google-gmail-setup.md`
 - `docs/security/secret-rotation-required.md`
 
 ## Known limitations
 
-Production email delivery, Gmail/WhatsApp/SMS/Voice, booking, billing, Super Admin,
+Generic email/IMAP, Outlook, WhatsApp/SMS/Voice, booking, billing, Super Admin,
 RLS, and production deployment are outside this stage. Instagram live access remains gated by real
 Meta configuration and App Review; local/CI coverage uses the deterministic fake adapter. The live
 Responses API remains opt-in and is never required for tests. The legacy MMC vertical is retained

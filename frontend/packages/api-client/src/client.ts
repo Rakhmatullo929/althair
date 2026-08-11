@@ -22,6 +22,10 @@ import type {
   CurrentUser,
   CursorPaginated,
   FollowUpTask,
+  GmailConnection,
+  GmailHealth,
+  GmailPrivacyExport,
+  GmailReadiness,
   Invitation,
   InstagramConnection,
   InstagramHealth,
@@ -486,6 +490,7 @@ export class ApiClient {
     body: string,
     clientMessageId: string,
     humanAgent = false,
+    cc: string[] = [],
   ) =>
     this.request<ConversationMessage>(`/conversations/${id}/messages/`, {
       method: "POST",
@@ -493,6 +498,7 @@ export class ApiClient {
         body,
         client_message_id: clientMessageId,
         ...(humanAgent ? { human_agent: true } : {}),
+        ...(cc.length ? { cc } : {}),
       },
     });
   addConversationNote = (id: string, body: string) =>
@@ -624,7 +630,8 @@ export class ApiClient {
       | "autopilot_test"
       | "autopilot_web_chat"
       | "autopilot_instagram"
-      | "autopilot_telegram",
+      | "autopilot_telegram"
+      | "autopilot_gmail",
   ) =>
     this.request<{ ai_state: Conversation["ai_state"] }>(
       `/conversations/${id}/ai/resume/`,
@@ -812,6 +819,114 @@ export class ApiClient {
   telegramTestEvent = (id: string, body: Record<string, unknown>) =>
     this.request<{ accepted: number; duplicates: number }>(
       `/integrations/telegram/${id}/test-event/`,
+      { method: "POST", body },
+    );
+
+  gmailReadiness = () =>
+    this.request<GmailReadiness>("/integrations/gmail/readiness/");
+  gmailConnections = () =>
+    this.request<Paginated<GmailConnection>>("/integrations/gmail/");
+  gmailConnection = (id: string) =>
+    this.request<GmailConnection>(`/integrations/gmail/${id}/`);
+  startGmailOAuth = (
+    redirect: string,
+    initialSyncMode: "from_now" | "recent" = "recent",
+    initialSyncMaxMessages = 100,
+  ) =>
+    this.request<{
+      authorization_url: string;
+      state: string | null;
+      expires_in: number;
+      mode: "development" | "live";
+      scope: string;
+      initial_sync_mode: "from_now" | "recent";
+      initial_sync_max_messages: number;
+    }>(
+      `/integrations/gmail/oauth/start/${queryString({
+        redirect,
+        initial_sync_mode: initialSyncMode,
+        initial_sync_max_messages: initialSyncMaxMessages,
+      })}`,
+    );
+  completeGmailOAuth = (state: string, code: string) =>
+    this.request<{ connection: GmailConnection; redirect: string }>(
+      `/integrations/gmail/oauth/callback/${queryString({ state, code })}`,
+      { scope: "authenticated" },
+    );
+  updateGmailConnection = (
+    id: string,
+    body: Partial<
+      Pick<
+        GmailConnection,
+        | "automation_mode"
+        | "initial_sync_mode"
+        | "initial_sync_max_messages"
+        | "included_label_ids"
+        | "excluded_label_ids"
+        | "retention_days"
+      >
+    >,
+  ) =>
+    this.request<GmailConnection>(`/integrations/gmail/${id}/`, {
+      method: "PATCH",
+      body,
+    });
+  gmailHealth = (id: string, refresh = false) =>
+    this.request<GmailHealth>(`/integrations/gmail/${id}/health/`, {
+      method: refresh ? "POST" : "GET",
+    });
+  renewGmailWatch = (id: string) =>
+    this.request<GmailConnection>(`/integrations/gmail/${id}/watch/renew/`, {
+      method: "POST",
+    });
+  resyncGmail = (id: string) =>
+    this.request<{ status: string; sync_run_id: string; imported: number }>(
+      `/integrations/gmail/${id}/resync/`,
+      { method: "POST" },
+    );
+  disconnectGmail = (id: string) =>
+    this.request<GmailConnection>(`/integrations/gmail/${id}/disconnect/`, {
+      method: "POST",
+    });
+  reconnectGmail = (id: string, redirect: string) =>
+    this.request<{
+      authorization_url: string;
+      state: string | null;
+      expires_in: number;
+      mode: "development" | "live";
+      scope: string;
+    }>(`/integrations/gmail/${id}/reconnect/`, {
+      method: "POST",
+      body: { redirect },
+    });
+  cancelGmailInitialSync = (id: string) =>
+    this.request<GmailConnection>(`/integrations/gmail/${id}/sync/cancel/`, {
+      method: "POST",
+    });
+  gmailPrivacyExport = (id: string, contactId: string) =>
+    this.request<GmailPrivacyExport>(
+      `/integrations/gmail/${id}/privacy/${queryString({ contact_id: contactId })}`,
+    );
+  gmailPrivacyErase = (
+    id: string,
+    contactId: string,
+    mode: "anonymize" | "delete",
+  ) =>
+    this.request<{ mode: string; messages_affected: number }>(
+      `/integrations/gmail/${id}/privacy/`,
+      {
+        method: "POST",
+        body: { contact_id: contactId, mode, confirm: true },
+      },
+    );
+  gmailTestState = (id: string, state: string) =>
+    this.request<GmailConnection>(`/integrations/gmail/${id}/test-state/`, {
+      method: "POST",
+      body: { state },
+    });
+  gmailTestInbound = (id: string, body: Record<string, unknown>) =>
+    this.request<{ status: string; imported: number; message_id: string }>(
+      `/integrations/gmail/${id}/test-inbound/`,
       { method: "POST", body },
     );
 

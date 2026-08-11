@@ -107,7 +107,8 @@ export function AIAutomationPage() {
       (item) =>
         (item.provider === "internal_test" && item.type === "webchat") ||
         (item.provider === "meta_instagram" && item.type === "instagram") ||
-        (item.provider === "telegram_bot_api" && item.type === "telegram"),
+        (item.provider === "telegram_bot_api" && item.type === "telegram") ||
+        (item.provider === "google_gmail" && item.type === "gmail"),
     ) ?? [];
   const current = { ...config.data!, ...form } as AIRuntimeConfig;
 

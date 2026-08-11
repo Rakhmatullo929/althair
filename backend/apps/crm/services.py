@@ -368,7 +368,16 @@ def is_internal_test_connection(connection: ChannelConnection) -> bool:
 
 
 @transaction.atomic
-def send_outbound_message(*, organization, conversation, membership, body, client_message_id, human_agent=False):
+def send_outbound_message(
+    *,
+    organization,
+    conversation,
+    membership,
+    body,
+    client_message_id,
+    human_agent=False,
+    cc=None,
+):
     if conversation.organization_id != organization.id or conversation.channel_connection.organization_id != organization.id:
         raise ValueError("Conversation belongs to another organization.")
     if conversation.channel_connection.type == ChannelType.INSTAGRAM:
@@ -389,6 +398,16 @@ def send_outbound_message(*, organization, conversation, membership, body, clien
             body=body,
             client_message_id=client_message_id,
             membership=membership,
+        )
+    if conversation.channel_connection.type == ChannelType.GMAIL:
+        from gmail_integration.services import send_gmail_message
+
+        return send_gmail_message(
+            conversation=conversation,
+            body=body,
+            client_message_id=client_message_id,
+            membership=membership,
+            cc=cc,
         )
     is_test = settings.ENABLE_CRM_TEST_CHANNEL and is_internal_test_connection(conversation.channel_connection)
     is_public_web_chat = False

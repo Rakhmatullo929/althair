@@ -58,11 +58,18 @@ class RuntimeConfigSerializer(serializers.ModelSerializer):
         organization = self.context["request"].organization
         for value in values:
             is_public_web_chat = value.type == "webchat" and value.provider == "public_web_chat"
+            is_supported_external = (value.type, value.provider) in {
+                ("instagram", "meta_instagram"),
+                ("telegram", "telegram_bot_api"),
+                ("gmail", "google_gmail"),
+            }
             if value.organization_id != organization.id or not (
-                is_internal_test_connection(value) or is_public_web_chat
+                is_internal_test_connection(value)
+                or is_public_web_chat
+                or is_supported_external
             ):
                 raise serializers.ValidationError(
-                    "Only this organization's internal test and public Web Chat channels are allowed."
+                    "Only this organization's supported CRM messaging channels are allowed."
                 )
         return values
 

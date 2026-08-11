@@ -307,6 +307,7 @@ export type Conversation = {
     | "autopilot_web_chat"
     | "autopilot_instagram"
     | "autopilot_telegram"
+    | "autopilot_gmail"
     | "paused_by_human"
     | "handoff_required";
   ai_state_updated_at: string | null;
@@ -329,7 +330,13 @@ export type Conversation = {
       | "webhook_degraded"
       | "connection_paused"
       | "bot_blocked"
-      | "user_not_started";
+      | "user_not_started"
+      | "reauthorization_required"
+      | "connection_degraded"
+      | "thread_context_missing"
+      | "watch_expired"
+      | "automated_message"
+      | "encrypted_message";
     professional_account?: string;
     connection_status?: string;
     connection_health?: string;
@@ -344,6 +351,14 @@ export type Conversation = {
     webhook_status?: string;
     automation_mode?: "manual" | "suggest" | "autopilot";
     safe_chat_id?: string;
+    mailbox?: string;
+    participants?: string[];
+    labels?: string[];
+    has_attachments?: boolean;
+    thread_url?: string;
+    subject?: string;
+    watch_expiration_at?: string;
+    last_sync_at?: string;
   };
   last_message_at: string | null;
   last_inbound_at: string | null;
@@ -541,7 +556,8 @@ export type AIRuntimeMode =
   | "autopilot_test"
   | "autopilot_web_chat"
   | "autopilot_instagram"
-  | "autopilot_telegram";
+  | "autopilot_telegram"
+  | "autopilot_gmail";
 
 export type AIRuntimeConfig = {
   id: string;
@@ -678,6 +694,7 @@ export type AIRun = {
     | "sent_web_chat_reply"
     | "sent_instagram_reply"
     | "sent_telegram_reply"
+    | "sent_gmail_reply"
     | "handoff"
     | "no_reply"
     | "failed";
@@ -785,6 +802,116 @@ export type TelegramBotConnection = {
   customer_start_url: string;
   created_at: string;
   updated_at: string;
+};
+
+export type GmailHealth = {
+  status: string;
+  has_encrypted_access_token: boolean;
+  has_encrypted_refresh_token: boolean;
+  watch_active: boolean;
+  watch_expiration_at: string | null;
+  last_sync_at: string | null;
+  last_error_code: string;
+  provider_reachable: boolean | null;
+  mailbox_matches: boolean | null;
+  scope_valid: boolean;
+};
+
+export type GmailSyncRun = {
+  id: string;
+  sync_type: "initial" | "incremental" | "full" | "reconciliation";
+  status: "running" | "succeeded" | "failed" | "cancelled";
+  start_history_id: string;
+  end_history_id: string;
+  imported_count: number;
+  ignored_count: number;
+  fallback_reason: string;
+  safe_error_code: string;
+  started_at: string;
+  completed_at: string | null;
+};
+
+export type GmailConnection = {
+  id: string;
+  organization: string;
+  channel_connection: string;
+  mailbox_email: string;
+  mailbox_name: string;
+  google_user_id: string;
+  scope_snapshot: string[];
+  connection_status:
+    | "syncing"
+    | "connected"
+    | "degraded"
+    | "reauth_required"
+    | "revoked"
+    | "permission_missing"
+    | "watch_expired"
+    | "disconnected";
+  automation_mode: "manual" | "suggest" | "autopilot";
+  initial_sync_mode: "from_now" | "recent";
+  initial_sync_status:
+    | "pending"
+    | "running"
+    | "succeeded"
+    | "failed"
+    | "cancelled";
+  initial_sync_max_messages: number;
+  included_label_ids: string[];
+  excluded_label_ids: string[];
+  sync_start_at: string | null;
+  initial_sync_cancel_requested_at: string | null;
+  retention_days: number;
+  history_id: string;
+  watch_expiration_at: string | null;
+  last_notification_at: string | null;
+  last_incremental_sync_at: string | null;
+  last_full_sync_at: string | null;
+  last_successful_send_at: string | null;
+  last_health_check_at: string | null;
+  last_error_code: string;
+  connected_at: string;
+  disconnected_at: string | null;
+  has_encrypted_access_token: boolean;
+  has_encrypted_refresh_token: boolean;
+  health: GmailHealth;
+  verification_checklist: {
+    approval_claimed: false;
+    items: Array<{ key: string; ready: boolean }>;
+  };
+  recent_sync_runs: GmailSyncRun[];
+  operations: {
+    failed_notifications: number;
+    queued_sends: number;
+    failed_sends: number;
+  };
+  created_at: string;
+  updated_at: string;
+};
+
+export type GmailReadiness = {
+  mode: "development" | "live";
+  enabled: boolean;
+  live_ready: boolean;
+  fake_provider: boolean;
+  scope: string;
+  missing_live_configuration: string[];
+};
+
+export type GmailPrivacyExport = {
+  export_version: number;
+  generated_at: string;
+  organization_id: string;
+  connection_id: string;
+  contact: {
+    id: string;
+    display_name: string;
+    company_name: string;
+    email_identities: string[];
+  };
+  conversations: Array<Record<string, unknown>>;
+  messages: Array<Record<string, unknown>>;
+  truncated: boolean;
 };
 
 export type WebChatInstallation = {

@@ -409,6 +409,9 @@ class ConversationMessagesView(CrmBaseView):
         conversation = self.get_conversation(request, conversation_id)
         body = str(request.data.get("body", "")).strip()
         client_id = str(request.data.get("client_message_id", "")).strip()
+        cc = request.data.get("cc", [])
+        if not isinstance(cc, list):
+            return Response({"cc": ["Cc must be a list of email addresses."]}, status=400)
         if not body or not client_id:
             return Response({"body": ["Body and client_message_id are required."]}, status=400)
         try:
@@ -419,6 +422,7 @@ class ConversationMessagesView(CrmBaseView):
                 body=body,
                 client_message_id=client_id,
                 human_agent=bool(request.data.get("human_agent", False)),
+                cc=cc,
             )
         except ProviderUnavailable as exc:
             raise ProviderNotConnected(str(exc)) from exc
@@ -435,6 +439,13 @@ class ConversationMessagesView(CrmBaseView):
             from telegram.services import TelegramError
 
             if isinstance(exc, TelegramError):
+                error = ProviderNotConnected(exc.code)
+                error.status_code = exc.status_code
+                error.machine_code = exc.code
+                raise error from exc
+            from gmail_integration.services import GmailError
+
+            if isinstance(exc, GmailError):
                 error = ProviderNotConnected(exc.code)
                 error.status_code = exc.status_code
                 error.machine_code = exc.code

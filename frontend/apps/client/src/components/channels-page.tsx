@@ -162,7 +162,10 @@ export function ChannelsPage() {
           const primary = connections[0];
           const state =
             primary?.status ??
-            (type === "webchat" || type === "instagram" || type === "telegram"
+            (type === "webchat" ||
+            type === "instagram" ||
+            type === "telegram" ||
+            type === "gmail"
               ? "not_connected"
               : "planned");
           return (
@@ -211,6 +214,13 @@ export function ChannelsPage() {
                   href="/app/settings/channels/telegram"
                 >
                   {t("configureTelegram")}
+                </Link>
+              ) : type === "gmail" ? (
+                <Link
+                  className="button secondary"
+                  href="/app/settings/channels/gmail"
+                >
+                  {t("configureGmail")}
                 </Link>
               ) : type === "instagram" ? (
                 <Link

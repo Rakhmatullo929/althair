@@ -66,6 +66,25 @@ def build_runtime_context(*, organization, conversation, allowed_tools):
         .filter(status=FollowUpTaskStatus.OPEN, related_contact=conversation.contact)
         .values("id", "title", "due_at")[:10]
     )
+    provider_context = {"subject": conversation.subject}
+    if conversation.channel_type == "gmail":
+        try:
+            from gmail_integration.models import GmailMessageRecord
+
+            gmail_record = GmailMessageRecord.objects.for_organization(organization).filter(
+                message__conversation=conversation,
+                message__direction="inbound",
+            ).order_by("-message__occurred_at").first()
+            if gmail_record:
+                provider_context.update(
+                    {
+                        "participants": gmail_record.participants[:20],
+                        "automated": gmail_record.is_automated,
+                        "historical": gmail_record.is_historical,
+                    }
+                )
+        except ImportError:
+            pass
     payload = {
         "published_ai_context": {"version": revision.version, **revision.snapshot},
         "organization_public_profile": {
@@ -79,6 +98,7 @@ def build_runtime_context(*, organization, conversation, allowed_tools):
             "id": str(conversation.id),
             "channel_type": conversation.channel_type,
             "internal_test": conversation.channel_connection.provider == "internal_test",
+            "provider_context": provider_context,
         },
         "contact": {
             "id": str(conversation.contact_id),

@@ -62,6 +62,8 @@ class RuntimeConfigSerializer(serializers.ModelSerializer):
                 ("instagram", "meta_instagram"),
                 ("telegram", "telegram_bot_api"),
                 ("gmail", "google_gmail"),
+                ("sms", "fake_sms"),
+                ("sms", "twilio"),
             }
             if value.organization_id != organization.id or not (
                 is_internal_test_connection(value)

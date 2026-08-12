@@ -22,6 +22,7 @@ class RuntimeMode(models.TextChoices):
     AUTOPILOT_INSTAGRAM = "autopilot_instagram", "Instagram autopilot"
     AUTOPILOT_TELEGRAM = "autopilot_telegram", "Telegram autopilot"
     AUTOPILOT_GMAIL = "autopilot_gmail", "Gmail autopilot"
+    AUTOPILOT_SMS = "autopilot_sms", "SMS autopilot"
 
 
 class RuntimeProvider(models.TextChoices):
@@ -140,6 +141,7 @@ class AIRunOutcome(models.TextChoices):
     SENT_INSTAGRAM_REPLY = "sent_instagram_reply", "Sent Instagram reply"
     SENT_TELEGRAM_REPLY = "sent_telegram_reply", "Sent Telegram reply"
     SENT_GMAIL_REPLY = "sent_gmail_reply", "Sent Gmail reply"
+    SENT_SMS_REPLY = "sent_sms_reply", "Sent SMS reply"
     HANDOFF = "handoff", "Handoff"
     NO_REPLY = "no_reply", "No reply"
     FAILED = "failed", "Failed"

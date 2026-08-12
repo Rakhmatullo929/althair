@@ -308,6 +308,7 @@ export type Conversation = {
     | "autopilot_instagram"
     | "autopilot_telegram"
     | "autopilot_gmail"
+    | "autopilot_sms"
     | "paused_by_human"
     | "handoff_required";
   ai_state_updated_at: string | null;
@@ -336,7 +337,9 @@ export type Conversation = {
       | "thread_context_missing"
       | "watch_expired"
       | "automated_message"
-      | "encrypted_message";
+      | "encrypted_message"
+      | "consent_required"
+      | "opted_out";
     professional_account?: string;
     connection_status?: string;
     connection_health?: string;
@@ -359,6 +362,14 @@ export type Conversation = {
     subject?: string;
     watch_expiration_at?: string;
     last_sync_at?: string;
+    sender_address?: string;
+    sms_connection_id?: string;
+    consent_state?: SMSConsentState;
+    ai_mode?: "manual" | "suggest" | "autopilot";
+    encoding?: "GSM-7" | "UCS-2";
+    max_segments?: number;
+    confirm_above_segments?: number;
+    supports_read_receipts?: false;
   };
   last_message_at: string | null;
   last_inbound_at: string | null;
@@ -380,7 +391,16 @@ export type ConversationMessage = {
   client_message_id: string | null;
   content_type: "text" | "note" | "event" | "media";
   body: string;
-  status: "queued" | "sent" | "delivered" | "read" | "failed" | "received";
+  status:
+    | "queued"
+    | "sending"
+    | "sent"
+    | "delivered"
+    | "undelivered"
+    | "failed"
+    | "canceled"
+    | "read"
+    | "received";
   error_code: string;
   reply_to: string | null;
   metadata: Record<string, unknown>;
@@ -557,7 +577,8 @@ export type AIRuntimeMode =
   | "autopilot_web_chat"
   | "autopilot_instagram"
   | "autopilot_telegram"
-  | "autopilot_gmail";
+  | "autopilot_gmail"
+  | "autopilot_sms";
 
 export type AIRuntimeConfig = {
   id: string;
@@ -896,6 +917,103 @@ export type GmailReadiness = {
   fake_provider: boolean;
   scope: string;
   missing_live_configuration: string[];
+};
+
+export type SMSConsentState =
+  | "unknown"
+  | "implied_support"
+  | "opted_in"
+  | "opted_out"
+  | "blocked"
+  | "invalid";
+
+export type SMSHealth = {
+  status: string;
+  account_reachable: boolean | null;
+  sender_active: boolean | null;
+  messaging_service_active: boolean | null;
+  inbound_webhook_url: string;
+  status_callback_url: string;
+  signature_validation_ready: boolean;
+  public_https_ready: boolean;
+  inbound_webhook_status: string;
+  status_callback_status: string;
+  advanced_opt_out_enabled: boolean;
+  last_inbound_at: string | null;
+  last_send_at: string | null;
+  last_status_callback_at: string | null;
+  last_health_check_at: string | null;
+  last_error_code: string;
+  failed_webhook_receipts: number;
+  failed_outbound_attempts: number;
+  limits: SMSLimits;
+  allowed_country_codes: string[];
+  blocked_country_codes: string[];
+};
+
+export type SMSLimits = {
+  human_max_segments: number;
+  ai_max_segments: number;
+  confirm_above_segments: number;
+  organization_sends_per_minute: number;
+  recipient_sends_per_minute: number;
+  daily_messages: number;
+  daily_segments: number;
+};
+
+export type SMSConnection = {
+  id: string;
+  organization: string;
+  channel_connection: string;
+  provider: "fake" | "twilio";
+  ownership_mode: "platform_managed" | "customer_owned";
+  status:
+    | "draft"
+    | "connected"
+    | "degraded"
+    | "paused"
+    | "credential_invalid"
+    | "sender_unavailable"
+    | "webhook_error"
+    | "disconnected";
+  account_sid: string;
+  messaging_service_sid: string;
+  phone_number_sid: string;
+  sender_address: string;
+  sender_country: string;
+  sender_capabilities: string[];
+  api_key_sid: string;
+  inbound_webhook_status: string;
+  status_callback_status: string;
+  advanced_opt_out_enabled: boolean;
+  allow_inbound_support: boolean;
+  default_language: Locale;
+  supported_languages: Locale[];
+  ai_mode: "manual" | "suggest" | "autopilot";
+  last_inbound_at: string | null;
+  last_send_at: string | null;
+  last_status_callback_at: string | null;
+  last_health_check_at: string | null;
+  last_error_code: string;
+  connected_at: string | null;
+  disconnected_at: string | null;
+  created_at: string;
+  updated_at: string;
+  has_auth_token: boolean;
+  has_api_key_secret: boolean;
+  webhook_urls: { inbound: string; status: string };
+  health: SMSHealth;
+};
+
+export type SMSReadiness = {
+  mode: "development" | "live";
+  enabled: boolean;
+  fake_provider: boolean;
+  live_ready: boolean;
+  missing_live_configuration: string[];
+  limits: SMSLimits;
+  allowed_country_codes: string[];
+  blocked_country_codes: string[];
 };
 
 export type GmailPrivacyExport = {

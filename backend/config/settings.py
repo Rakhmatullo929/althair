@@ -74,6 +74,7 @@ INSTALLED_APPS = [
     'instagram',
     'telegram',
     'gmail_integration',
+    'sms',
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -361,6 +362,7 @@ REST_FRAMEWORK = {
         'telegram_manager_webhook': '300/min',
         'telegram_bot_webhook': '1200/min',
         'gmail_pubsub': '1200/min',
+        'sms_webhook': '1200/min',
     },
     'EXCEPTION_HANDLER': 'core.api.exception_handler.api_exception_handler',
     'DEFAULT_RENDERER_CLASSES': (
@@ -384,6 +386,7 @@ if os.environ.get('E2E_TESTING', '').lower() in ('true', '1', 'yes'):
         'telegram_manager_webhook': '5000/min',
         'telegram_bot_webhook': '5000/min',
         'gmail_pubsub': '5000/min',
+        'sms_webhook': '5000/min',
     })
 
 # ---------------------------------------------------------------------------
@@ -604,6 +607,38 @@ GOOGLE_GMAIL_CIRCUIT_BREAKER_MINUTES = int(os.environ.get('GOOGLE_GMAIL_CIRCUIT_
 GOOGLE_GMAIL_OPERATIONAL_RETENTION_DAYS = int(os.environ.get('GOOGLE_GMAIL_OPERATIONAL_RETENTION_DAYS', '30'))
 GOOGLE_GMAIL_RETENTION_BATCH_SIZE = int(os.environ.get('GOOGLE_GMAIL_RETENTION_BATCH_SIZE', '200'))
 
+# SMS messaging is fake-first and opt-in. Twilio webhooks are validated against
+# the externally visible HTTPS URL; credentials are never returned by APIs.
+SMS_PROVIDER = os.environ.get('SMS_PROVIDER', 'fake').strip().lower()
+SMS_ENABLE_LIVE = os.environ.get('SMS_ENABLE_LIVE', '').lower() in ('true', '1', 'yes')
+SMS_FAKE_PROVIDER = os.environ.get('SMS_FAKE_PROVIDER', 'true').lower() in ('true', '1', 'yes')
+SMS_PUBLIC_BASE_URL = os.environ.get('TWILIO_PUBLIC_BASE_URL') or os.environ.get('SMS_PUBLIC_BASE_URL', '')
+TWILIO_API_KEY_SID = os.environ.get('TWILIO_API_KEY_SID', '')
+TWILIO_API_KEY_SECRET = os.environ.get('TWILIO_API_KEY_SECRET', '')
+TWILIO_MESSAGING_SERVICE_SID = os.environ.get('TWILIO_MESSAGING_SERVICE_SID', '')
+SMS_MAX_WEBHOOK_BYTES = int(os.environ.get('SMS_MAX_WEBHOOK_BYTES', '131072'))
+SMS_MAX_MEDIA_ITEMS = int(os.environ.get('SMS_MAX_MEDIA_ITEMS', '10'))
+SMS_ORG_SENDS_PER_MINUTE = int(os.environ.get('SMS_ORG_SENDS_PER_MINUTE', '120'))
+SMS_RECIPIENT_SENDS_PER_MINUTE = int(os.environ.get('SMS_RECIPIENT_SENDS_PER_MINUTE', '10'))
+SMS_INBOUND_PER_RECIPIENT_MINUTE = int(os.environ.get('SMS_INBOUND_PER_RECIPIENT_MINUTE', '60'))
+SMS_DAILY_MESSAGE_LIMIT = int(os.environ.get('SMS_DAILY_MESSAGE_LIMIT', '10000'))
+SMS_DAILY_SEGMENT_LIMIT = int(os.environ.get('SMS_DAILY_SEGMENT_LIMIT', '20000'))
+SMS_SEND_LOCK_SECONDS = int(os.environ.get('SMS_SEND_LOCK_SECONDS', '30'))
+SMS_REPEAT_WINDOW_SECONDS = int(os.environ.get('SMS_REPEAT_WINDOW_SECONDS', '60'))
+SMS_MAX_SEND_ATTEMPTS = int(os.environ.get('SMS_MAX_SEND_ATTEMPTS', '3'))
+SMS_RETRY_BASE_SECONDS = int(os.environ.get('SMS_RETRY_BASE_SECONDS', '5'))
+SMS_HUMAN_MAX_SEGMENTS = int(os.environ.get('SMS_HUMAN_MAX_SEGMENTS', '10'))
+SMS_AI_MAX_SEGMENTS = int(os.environ.get('SMS_AI_MAX_SEGMENTS', '3'))
+SMS_CONFIRM_ABOVE_SEGMENTS = int(os.environ.get('SMS_CONFIRM_ABOVE_SEGMENTS', '3'))
+SMS_CIRCUIT_BREAKER_FAILURES = int(os.environ.get('SMS_CIRCUIT_BREAKER_FAILURES', '3'))
+SMS_CIRCUIT_BREAKER_SECONDS = int(os.environ.get('SMS_CIRCUIT_BREAKER_SECONDS', '120'))
+SMS_ALLOWED_COUNTRY_CODES = [
+    value.strip().upper() for value in os.environ.get('SMS_ALLOWED_COUNTRY_CODES', '').split(',') if value.strip()
+]
+SMS_BLOCKED_COUNTRY_CODES = [
+    value.strip().upper() for value in os.environ.get('SMS_BLOCKED_COUNTRY_CODES', '').split(',') if value.strip()
+]
+
 CELERY_BEAT_SCHEDULE.update({
     'instagram-health-every-15-minutes': {
         'task': 'instagram.tasks.check_instagram_connections',
@@ -616,6 +651,17 @@ CELERY_BEAT_SCHEDULE.update({
     'instagram-subscription-health-hourly': {
         'task': 'instagram.tasks.verify_instagram_subscriptions',
         'schedule': 3600.0,
+    },
+})
+
+CELERY_BEAT_SCHEDULE.update({
+    'sms-health-every-15-minutes': {
+        'task': 'sms.tasks.check_sms_connections',
+        'schedule': 900.0,
+    },
+    'sms-failed-webhook-retry-every-5-minutes': {
+        'task': 'sms.tasks.retry_failed_sms_webhooks',
+        'schedule': 300.0,
     },
 })
 

@@ -81,6 +81,17 @@ def health_ready(request):
     else:
         checks['gmail'] = 'fake_or_disabled'
 
+    if settings.SMS_ENABLE_LIVE:
+        sms_ready = all([
+            settings.TWILIO_ACCOUNT_SID,
+            settings.TWILIO_AUTH_TOKEN,
+            settings.SMS_PUBLIC_BASE_URL.startswith('https://'),
+        ])
+        checks['sms'] = 'configured' if sms_ready else 'configuration_incomplete'
+        healthy = healthy and sms_ready
+    else:
+        checks['sms'] = 'fake_or_disabled'
+
     status_code = 200 if healthy else 503
     return JsonResponse({'status': 'ready' if healthy else 'degraded', 'checks': checks}, status=status_code)
 
@@ -102,9 +113,11 @@ urlpatterns = [
         path('', include(('instagram.urls', 'instagram'), namespace='instagram')),
         path('', include(('telegram.urls', 'telegram'), namespace='telegram')),
         path('', include(('gmail_integration.urls', 'gmail_integration'), namespace='gmail_integration')),
+        path('', include(('sms.urls', 'sms'), namespace='sms')),
         path('webhooks/', include(('instagram.webhook_urls', 'instagram_webhooks'), namespace='instagram_webhooks')),
         path('webhooks/', include(('telegram.webhook_urls', 'telegram_webhooks'), namespace='telegram_webhooks')),
         path('webhooks/', include(('gmail_integration.webhook_urls', 'gmail_webhooks'), namespace='gmail_webhooks')),
+        path('webhooks/', include(('sms.webhook_urls', 'sms_webhooks'), namespace='sms_webhooks')),
         path('public/web-chat/', include(('web_chat.public_urls', 'web_chat_public'), namespace='web_chat_public')),
         path('public/', include(('early_access.urls', 'early_access'), namespace='early_access')),
         path('users/', include(('users.urls', 'users'), namespace='users')),

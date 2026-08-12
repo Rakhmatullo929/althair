@@ -101,6 +101,31 @@ describe("CRM tenant and role state", () => {
     );
   });
 
+  it("uses authoritative SMS consent states", () => {
+    expect(
+      composerState(
+        conversation({
+          channel_type: "sms",
+          provider_context: { state: "opted_out" },
+          can_send: false,
+        }),
+        "agent",
+        "active",
+      ),
+    ).toBe("opted_out");
+    expect(
+      composerState(
+        conversation({
+          channel_type: "sms",
+          provider_context: { state: "can_reply" },
+          can_send: true,
+        }),
+        "agent",
+        "active",
+      ),
+    ).toBe("enabled");
+  });
+
   it("keeps merge, pipeline, and lead moves behind explicit validation", () => {
     expect(canManageCrm("manager")).toBe(true);
     expect(canManageCrm("agent")).toBe(false);

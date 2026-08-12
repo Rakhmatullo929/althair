@@ -94,6 +94,21 @@ def ensure_runtime_config(organization):
 
 def default_ai_state_for_connection(organization, connection):
     try:
+        from sms.services import ai_state_for_connection as sms_ai_state
+
+        state = sms_ai_state(organization, connection)
+        if state is not None:
+            if state == ConversationAIState.OFF:
+                return state
+            config = ensure_runtime_config(organization)
+            if not config.enabled:
+                return ConversationAIState.OFF
+            if config.allowed_channel_connections.exists() and not config.allowed_channel_connections.filter(pk=connection.pk).exists():
+                return ConversationAIState.OFF
+            return state
+    except ImportError:
+        pass
+    try:
         from gmail_integration.services import ai_state_for_connection as gmail_ai_state
 
         state = gmail_ai_state(organization, connection)
@@ -216,7 +231,12 @@ def _validate_channel(config, conversation):
         from gmail_integration.services import can_send_gmail
 
         gmail_allowed = can_send_gmail(conversation)
-    if not internal_allowed and not public_allowed and not instagram_allowed and not telegram_allowed and not gmail_allowed:
+    sms_allowed = conversation.channel_connection.type == "sms"
+    if sms_allowed:
+        from sms.services import can_send_sms
+
+        sms_allowed = can_send_sms(conversation)
+    if not internal_allowed and not public_allowed and not instagram_allowed and not telegram_allowed and not gmail_allowed and not sms_allowed:
         raise AIRuntimeUnavailable("internal_test_channel_only")
     if config.allowed_channel_connections.exists() and not config.allowed_channel_connections.filter(
         pk=conversation.channel_connection_id
@@ -250,6 +270,7 @@ def create_queued_run(*, message, task_key, mode=None):
         RuntimeMode.AUTOPILOT_INSTAGRAM,
         RuntimeMode.AUTOPILOT_TELEGRAM,
         RuntimeMode.AUTOPILOT_GMAIL,
+        RuntimeMode.AUTOPILOT_SMS,
     }:
         raise AIRuntimeUnavailable("conversation_ai_paused")
     if selected_mode == RuntimeMode.AUTOPILOT_TEST and not _autopilot_environment_allowed():
@@ -389,6 +410,7 @@ def process_run(run_id):
             ConversationAIState.AUTOPILOT_INSTAGRAM,
             ConversationAIState.AUTOPILOT_TELEGRAM,
             ConversationAIState.AUTOPILOT_GMAIL,
+            ConversationAIState.AUTOPILOT_SMS,
         } or _stale_after_human_reply(run):
             run.status = AIRunStatus.SUPERSEDED
             run.error_category = "stale_context"
@@ -652,13 +674,21 @@ def _complete_text(*, run, text, context):
         RuntimeMode.AUTOPILOT_INSTAGRAM,
         RuntimeMode.AUTOPILOT_TELEGRAM,
         RuntimeMode.AUTOPILOT_GMAIL,
+        RuntimeMode.AUTOPILOT_SMS,
     } and _can_autopilot(run):
-        _create_ai_message(
+        ai_message, _ = _create_ai_message(
             run=run,
             body=safe_text,
             client_message_id=f"ai-run:{run.id}",
             metadata={"ai_run_id": str(run.id), "mode": run.mode},
         )
+        if ai_message.status == MessageStatus.FAILED:
+            return _fail_run(
+                run,
+                status=AIRunStatus.FAILED,
+                category="provider_unavailable",
+                code=ai_message.error_code or "send_failed",
+            )
         if run.mode == RuntimeMode.AUTOPILOT_TEST:
             run.outcome = AIRunOutcome.SENT_TEST_REPLY
         elif run.mode == RuntimeMode.AUTOPILOT_WEB_CHAT:
@@ -667,6 +697,8 @@ def _complete_text(*, run, text, context):
             run.outcome = AIRunOutcome.SENT_INSTAGRAM_REPLY
         elif run.mode == RuntimeMode.AUTOPILOT_TELEGRAM:
             run.outcome = AIRunOutcome.SENT_TELEGRAM_REPLY
+        elif run.mode == RuntimeMode.AUTOPILOT_SMS:
+            run.outcome = AIRunOutcome.SENT_SMS_REPLY
         else:
             run.outcome = AIRunOutcome.SENT_GMAIL_REPLY
     else:
@@ -695,6 +727,8 @@ def _complete_text(*, run, text, context):
             if run.outcome == AIRunOutcome.SENT_INSTAGRAM_REPLY
             else "AI Telegram reply sent"
             if run.outcome == AIRunOutcome.SENT_TELEGRAM_REPLY
+            else "AI SMS reply sent"
+            if run.outcome == AIRunOutcome.SENT_SMS_REPLY
             else "AI Gmail reply sent"
         ),
         contact=run.conversation.contact,
@@ -738,6 +772,13 @@ def _can_autopilot(run):
             from gmail_integration.services import gmail_autopilot_allowed
 
             channel_allowed = gmail_autopilot_allowed(conversation)
+        except ImportError:
+            channel_allowed = False
+    if conversation.ai_state == ConversationAIState.AUTOPILOT_SMS:
+        try:
+            from sms.services import sms_autopilot_allowed
+
+            channel_allowed = sms_autopilot_allowed(conversation)
         except ImportError:
             channel_allowed = False
     return bool(
@@ -788,6 +829,13 @@ def _create_ai_message(*, run, body, client_message_id, metadata):
         try:
             return send_ai_message(run=run, body=body, client_message_id=client_message_id, metadata=metadata)
         except GmailError as exc:
+            raise AIRuntimeUnavailable(exc.code) from exc
+    if run.conversation.channel_connection.type == "sms":
+        from sms.services import SMSError, send_ai_message
+
+        try:
+            return send_ai_message(run=run, body=body, client_message_id=client_message_id, metadata=metadata)
+        except SMSError as exc:
             raise AIRuntimeUnavailable(exc.code) from exc
     is_test = settings.ENABLE_CRM_TEST_CHANNEL and is_internal_test_connection(run.conversation.channel_connection)
     is_public = False
@@ -1040,6 +1088,7 @@ def set_conversation_ai_state(*, conversation, actor, state):
         ConversationAIState.AUTOPILOT_INSTAGRAM,
         ConversationAIState.AUTOPILOT_TELEGRAM,
         ConversationAIState.AUTOPILOT_GMAIL,
+        ConversationAIState.AUTOPILOT_SMS,
     }:
         raise AIRuntimeConflict("invalid_ai_state")
     config = ensure_runtime_config(conversation.organization)
@@ -1078,6 +1127,15 @@ def set_conversation_ai_state(*, conversation, actor, state):
             from gmail_integration.services import gmail_autopilot_allowed
 
             if not gmail_autopilot_allowed(conversation):
+                raise AIRuntimeUnavailable("autopilot_not_enabled")
+        except ImportError as exc:
+            raise AIRuntimeUnavailable("autopilot_not_enabled") from exc
+    if state == ConversationAIState.AUTOPILOT_SMS:
+        try:
+            from sms.services import sms_autopilot_allowed
+
+            conversation.ai_state = state
+            if not sms_autopilot_allowed(conversation):
                 raise AIRuntimeUnavailable("autopilot_not_enabled")
         except ImportError as exc:
             raise AIRuntimeUnavailable("autopilot_not_enabled") from exc

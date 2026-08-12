@@ -8,10 +8,13 @@ import {
   BotOff,
   CheckCheck,
   CircleAlert,
+  ExternalLink,
   Inbox,
   ListPlus,
+  Mail,
   MessageSquareText,
   NotebookPen,
+  Paperclip,
   Plus,
   RotateCcw,
   Search,
@@ -82,6 +85,31 @@ function Timeline({
                 </time>
               </header>
               <PlainText value={message.body} />
+              {Array.isArray(message.metadata.attachments) &&
+              message.metadata.attachments.length ? (
+                <div className="gmail-attachment-list">
+                  <Paperclip aria-hidden="true" />
+                  {message.metadata.attachments.map((item, attachmentIndex) => {
+                    const attachment = item as {
+                      filename?: string;
+                      size?: number;
+                      download_path?: string;
+                    };
+                    return attachment.download_path ? (
+                      <a
+                        key={`${message.id}-${attachmentIndex}`}
+                        href={`/api/v1${attachment.download_path}`}
+                      >
+                        {attachment.filename || "Attachment"}
+                      </a>
+                    ) : (
+                      <span key={`${message.id}-${attachmentIndex}`}>
+                        {attachment.filename || "Attachment"}
+                      </span>
+                    );
+                  })}
+                </div>
+              ) : null}
               {message.metadata.ai_generated ? (
                 <em className="ai-message-label">
                   <BotOff aria-hidden="true" />
@@ -109,6 +137,7 @@ export function InboxPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [noteMode, setNoteMode] = useState(false);
   const [draft, setDraft] = useState("");
+  const [ccDraft, setCcDraft] = useState("");
   const [useHumanAgent, setUseHumanAgent] = useState(false);
   const [testOpen, setTestOpen] = useState(false);
   const [testName, setTestName] = useState("Test customer");
@@ -195,7 +224,12 @@ export function InboxPage() {
   const submitComposer = () => {
     if (!selected || !draft.trim()) return;
     const body = draft.trim();
+    const cc = ccDraft
+      .split(/[\s,;]+/)
+      .map((item) => item.trim())
+      .filter(Boolean);
     setDraft("");
+    setCcDraft("");
     mutation.mutate(() =>
       noteMode
         ? workspace.api.addConversationNote(selected.id, body)
@@ -204,6 +238,7 @@ export function InboxPage() {
             body,
             crypto.randomUUID(),
             useHumanAgent,
+            cc,
           ),
     );
   };
@@ -512,6 +547,56 @@ export function InboxPage() {
                   </div>
                 </div>
               ) : null}
+              {selected.channel_type === "gmail" ? (
+                <div
+                  className={`instagram-inbox-policy gmail-inbox-policy state-${selected.provider_context.state ?? "provider_unavailable"}`}
+                  role="status"
+                >
+                  <Mail aria-hidden="true" />
+                  <div>
+                    <strong>
+                      {selected.provider_context.mailbox ??
+                        selected.channel_name}
+                    </strong>
+                    <p>
+                      {t(
+                        `gmailStates.${selected.provider_context.state ?? "provider_unavailable"}`,
+                      )}
+                    </p>
+                    {selected.subject ? (
+                      <small>{selected.subject}</small>
+                    ) : null}
+                    {selected.provider_context.participants?.length ? (
+                      <small>
+                        {t("inbox.gmailParticipants")}:{" "}
+                        {selected.provider_context.participants.join(", ")}
+                      </small>
+                    ) : null}
+                    {selected.provider_context.labels?.length ? (
+                      <small>
+                        {t("inbox.gmailLabels")}:{" "}
+                        {selected.provider_context.labels.join(", ")}
+                      </small>
+                    ) : null}
+                    {selected.provider_context.has_attachments ? (
+                      <small>
+                        <Paperclip aria-hidden="true" />{" "}
+                        {t("inbox.gmailAttachments")}
+                      </small>
+                    ) : null}
+                    {selected.provider_context.thread_url ? (
+                      <a
+                        href={selected.provider_context.thread_url}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                      >
+                        {t("inbox.openGmailThread")}{" "}
+                        <ExternalLink aria-hidden="true" />
+                      </a>
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
               <ConversationAIPanel
                 conversation={selected}
                 organizationId={organizationId}
@@ -584,6 +669,18 @@ export function InboxPage() {
                       <strong>{t("inbox.humanAgentSend")}</strong>
                       <small>{t("inbox.humanAgentSendHint")}</small>
                     </span>
+                  </label>
+                ) : null}
+                {!noteMode && selected.channel_type === "gmail" ? (
+                  <label className="gmail-cc-field">
+                    <span>{t("inbox.gmailCc")}</span>
+                    <input
+                      type="text"
+                      value={ccDraft}
+                      onChange={(event) => setCcDraft(event.target.value)}
+                      placeholder={t("inbox.gmailCcPlaceholder")}
+                      disabled={readOnly || state !== "enabled"}
+                    />
                   </label>
                 ) : null}
                 <textarea

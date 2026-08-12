@@ -66,6 +66,21 @@ def health_ready(request):
     else:
         checks['telegram'] = 'fake_or_disabled'
 
+    if settings.GOOGLE_GMAIL_ENABLE_LIVE:
+        gmail_ready = all([
+            settings.GOOGLE_GMAIL_CLIENT_ID,
+            settings.GOOGLE_GMAIL_CLIENT_SECRET,
+            settings.GOOGLE_GMAIL_REDIRECT_URI,
+            settings.GOOGLE_GMAIL_PUBSUB_TOPIC,
+            settings.GOOGLE_GMAIL_PUBSUB_AUDIENCE,
+            settings.GOOGLE_GMAIL_PUBSUB_SERVICE_ACCOUNT,
+            settings.GOOGLE_GMAIL_PUBSUB_SUBSCRIPTION,
+        ])
+        checks['gmail'] = 'configured' if gmail_ready else 'configuration_incomplete'
+        healthy = healthy and gmail_ready
+    else:
+        checks['gmail'] = 'fake_or_disabled'
+
     status_code = 200 if healthy else 503
     return JsonResponse({'status': 'ready' if healthy else 'degraded', 'checks': checks}, status=status_code)
 
@@ -86,8 +101,10 @@ urlpatterns = [
         path('', include(('web_chat.urls', 'web_chat'), namespace='web_chat')),
         path('', include(('instagram.urls', 'instagram'), namespace='instagram')),
         path('', include(('telegram.urls', 'telegram'), namespace='telegram')),
+        path('', include(('gmail_integration.urls', 'gmail_integration'), namespace='gmail_integration')),
         path('webhooks/', include(('instagram.webhook_urls', 'instagram_webhooks'), namespace='instagram_webhooks')),
         path('webhooks/', include(('telegram.webhook_urls', 'telegram_webhooks'), namespace='telegram_webhooks')),
+        path('webhooks/', include(('gmail_integration.webhook_urls', 'gmail_webhooks'), namespace='gmail_webhooks')),
         path('public/web-chat/', include(('web_chat.public_urls', 'web_chat_public'), namespace='web_chat_public')),
         path('public/', include(('early_access.urls', 'early_access'), namespace='early_access')),
         path('users/', include(('users.urls', 'users'), namespace='users')),

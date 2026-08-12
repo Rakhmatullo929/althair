@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     'web_chat',
     'instagram',
     'telegram',
+    'gmail_integration',
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -359,6 +360,7 @@ REST_FRAMEWORK = {
         'instagram_webhook': '600/min',
         'telegram_manager_webhook': '300/min',
         'telegram_bot_webhook': '1200/min',
+        'gmail_pubsub': '1200/min',
     },
     'EXCEPTION_HANDLER': 'core.api.exception_handler.api_exception_handler',
     'DEFAULT_RENDERER_CLASSES': (
@@ -381,6 +383,7 @@ if os.environ.get('E2E_TESTING', '').lower() in ('true', '1', 'yes'):
         'instagram_webhook': '5000/min',
         'telegram_manager_webhook': '5000/min',
         'telegram_bot_webhook': '5000/min',
+        'gmail_pubsub': '5000/min',
     })
 
 # ---------------------------------------------------------------------------
@@ -571,6 +574,36 @@ TELEGRAM_MAX_SEND_ATTEMPTS = int(os.environ.get('TELEGRAM_MAX_SEND_ATTEMPTS', '3
 TELEGRAM_MAX_EVENT_ATTEMPTS = int(os.environ.get('TELEGRAM_MAX_EVENT_ATTEMPTS', '3'))
 TELEGRAM_HEALTH_BATCH_SIZE = int(os.environ.get('TELEGRAM_HEALTH_BATCH_SIZE', '100'))
 
+# Gmail uses the Google OAuth web-server flow, Gmail API and authenticated
+# Pub/Sub push. Live mode is fail-closed; deterministic fake mode is test-only.
+GOOGLE_GMAIL_ENABLE_LIVE = os.environ.get('GOOGLE_GMAIL_ENABLE_LIVE', '').lower() in ('true', '1', 'yes')
+GOOGLE_GMAIL_FAKE_PROVIDER = os.environ.get('GOOGLE_GMAIL_FAKE_PROVIDER', 'true').lower() in ('true', '1', 'yes')
+GOOGLE_GMAIL_CLIENT_ID = os.environ.get('GOOGLE_GMAIL_CLIENT_ID', '')
+GOOGLE_GMAIL_CLIENT_SECRET = os.environ.get('GOOGLE_GMAIL_CLIENT_SECRET', '')
+GOOGLE_GMAIL_REDIRECT_URI = os.environ.get('GOOGLE_GMAIL_REDIRECT_URI', '')
+GOOGLE_GMAIL_PUBSUB_TOPIC = os.environ.get('GOOGLE_GMAIL_PUBSUB_TOPIC', '')
+GOOGLE_GMAIL_PUBSUB_SUBSCRIPTION = os.environ.get('GOOGLE_GMAIL_PUBSUB_SUBSCRIPTION', '')
+GOOGLE_GMAIL_PUBSUB_AUDIENCE = os.environ.get('GOOGLE_GMAIL_PUBSUB_AUDIENCE', '')
+GOOGLE_GMAIL_PUBSUB_SERVICE_ACCOUNT = os.environ.get('GOOGLE_GMAIL_PUBSUB_SERVICE_ACCOUNT', '')
+GOOGLE_GMAIL_FAKE_PUBSUB_TOKEN = os.environ.get('GOOGLE_GMAIL_FAKE_PUBSUB_TOKEN', 'test-only-google-pubsub-oidc')
+GOOGLE_GMAIL_OAUTH_STATE_MINUTES = int(os.environ.get('GOOGLE_GMAIL_OAUTH_STATE_MINUTES', '10'))
+GOOGLE_GMAIL_MAX_NOTIFICATION_BYTES = int(os.environ.get('GOOGLE_GMAIL_MAX_NOTIFICATION_BYTES', '65536'))
+GOOGLE_GMAIL_MAX_ATTACHMENT_BYTES = int(os.environ.get('GOOGLE_GMAIL_MAX_ATTACHMENT_BYTES', '10485760'))
+GOOGLE_GMAIL_FULL_SYNC_MAX_MESSAGES = int(os.environ.get('GOOGLE_GMAIL_FULL_SYNC_MAX_MESSAGES', '100'))
+GOOGLE_GMAIL_INITIAL_SYNC_DAYS = int(os.environ.get('GOOGLE_GMAIL_INITIAL_SYNC_DAYS', '30'))
+GOOGLE_GMAIL_INCREMENTAL_MAX_MESSAGES = int(os.environ.get('GOOGLE_GMAIL_INCREMENTAL_MAX_MESSAGES', '500'))
+GOOGLE_GMAIL_MAX_SYNC_ATTEMPTS = int(os.environ.get('GOOGLE_GMAIL_MAX_SYNC_ATTEMPTS', '3'))
+GOOGLE_GMAIL_MAX_SEND_ATTEMPTS = int(os.environ.get('GOOGLE_GMAIL_MAX_SEND_ATTEMPTS', '3'))
+GOOGLE_GMAIL_MAX_SEND_TEXT = int(os.environ.get('GOOGLE_GMAIL_MAX_SEND_TEXT', '100000'))
+GOOGLE_GMAIL_ORG_SENDS_PER_MINUTE = int(os.environ.get('GOOGLE_GMAIL_ORG_SENDS_PER_MINUTE', '120'))
+GOOGLE_GMAIL_SEND_LOCK_SECONDS = int(os.environ.get('GOOGLE_GMAIL_SEND_LOCK_SECONDS', '30'))
+GOOGLE_GMAIL_WATCH_RENEWAL_DAYS = int(os.environ.get('GOOGLE_GMAIL_WATCH_RENEWAL_DAYS', '2'))
+GOOGLE_GMAIL_HEALTH_BATCH_SIZE = int(os.environ.get('GOOGLE_GMAIL_HEALTH_BATCH_SIZE', '100'))
+GOOGLE_GMAIL_CIRCUIT_BREAKER_FAILURES = int(os.environ.get('GOOGLE_GMAIL_CIRCUIT_BREAKER_FAILURES', '3'))
+GOOGLE_GMAIL_CIRCUIT_BREAKER_MINUTES = int(os.environ.get('GOOGLE_GMAIL_CIRCUIT_BREAKER_MINUTES', '15'))
+GOOGLE_GMAIL_OPERATIONAL_RETENTION_DAYS = int(os.environ.get('GOOGLE_GMAIL_OPERATIONAL_RETENTION_DAYS', '30'))
+GOOGLE_GMAIL_RETENTION_BATCH_SIZE = int(os.environ.get('GOOGLE_GMAIL_RETENTION_BATCH_SIZE', '200'))
+
 CELERY_BEAT_SCHEDULE.update({
     'instagram-health-every-15-minutes': {
         'task': 'instagram.tasks.check_instagram_connections',
@@ -583,6 +616,25 @@ CELERY_BEAT_SCHEDULE.update({
     'instagram-subscription-health-hourly': {
         'task': 'instagram.tasks.verify_instagram_subscriptions',
         'schedule': 3600.0,
+    },
+})
+
+CELERY_BEAT_SCHEDULE.update({
+    'gmail-watch-renewal-daily': {
+        'task': 'gmail_integration.tasks.renew_gmail_watches',
+        'schedule': 86400.0,
+    },
+    'gmail-reconciliation-every-15-minutes': {
+        'task': 'gmail_integration.tasks.reconcile_gmail_history',
+        'schedule': 900.0,
+    },
+    'gmail-health-hourly': {
+        'task': 'gmail_integration.tasks.check_gmail_connections',
+        'schedule': 3600.0,
+    },
+    'gmail-operational-cleanup-daily': {
+        'task': 'gmail_integration.tasks.cleanup_gmail_operational_data',
+        'schedule': 86400.0,
     },
 })
 

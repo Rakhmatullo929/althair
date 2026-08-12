@@ -55,7 +55,9 @@ test.describe.serial("safe AI conversation runtime", () => {
       page.getByRole("heading", { name: "AI Automation" }),
     ).toBeVisible();
     await expect(
-      page.getByText("Allowed test, Instagram, and Telegram channels"),
+      page.getByText(
+        "Allowed test, Web Chat, Instagram, Telegram, and Gmail channels",
+      ),
     ).toBeVisible();
     await page.getByLabel("Enable AI runtime").check();
     await page.getByLabel("Default mode").selectOption("suggest");

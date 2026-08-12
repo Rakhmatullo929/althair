@@ -202,6 +202,10 @@ class ConversationSerializer(serializers.ModelSerializer):
             from telegram.services import can_send_telegram
 
             return can_send_telegram(obj)
+        if obj.channel_type == "gmail":
+            from gmail_integration.services import can_send_gmail
+
+            return can_send_gmail(obj)
         try:
             from web_chat.services import can_send_public_web_chat
 
@@ -216,6 +220,10 @@ class ConversationSerializer(serializers.ModelSerializer):
             return serialize_conversation_policy(obj)
         if obj.channel_type == "telegram":
             from telegram.services import conversation_policy
+
+            return conversation_policy(obj)
+        if obj.channel_type == "gmail":
+            from gmail_integration.services import conversation_policy
 
             return conversation_policy(obj)
         return {}

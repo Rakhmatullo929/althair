@@ -1,6 +1,7 @@
 import type { Conversation, OrganizationRole } from "@workspace/api-client";
 import { instagramComposerState } from "./instagram";
 import { telegramComposerState } from "./telegram";
+import { gmailComposerState } from "./gmail";
 
 export const crmQueryKeys = {
   root: (organizationId: string) => ["crm", organizationId] as const,
@@ -53,6 +54,8 @@ export function composerState(
   if (instagramState) return instagramState;
   const telegramState = telegramComposerState(conversation);
   if (telegramState) return telegramState;
+  const gmailState = gmailComposerState(conversation);
+  if (gmailState) return gmailState;
   if (!conversation.can_send) return "provider_unavailable" as const;
   return "enabled" as const;
 }

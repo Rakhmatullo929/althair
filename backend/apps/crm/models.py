@@ -204,6 +204,7 @@ class ConversationAIState(models.TextChoices):
     AUTOPILOT_WEB_CHAT = "autopilot_web_chat", _("Web Chat autopilot")
     AUTOPILOT_INSTAGRAM = "autopilot_instagram", _("Instagram autopilot")
     AUTOPILOT_TELEGRAM = "autopilot_telegram", _("Telegram autopilot")
+    AUTOPILOT_GMAIL = "autopilot_gmail", _("Gmail autopilot")
     PAUSED_BY_HUMAN = "paused_by_human", _("Paused by human")
     HANDOFF_REQUIRED = "handoff_required", _("Handoff required")
 

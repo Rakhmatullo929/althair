@@ -168,6 +168,137 @@
   }
 }
 
+/* Gmail integration reuses the portal system and remains independent of Landing. */
+.gmail-gradient {
+  color: #fff;
+  background: linear-gradient(
+    145deg,
+    #4285f4,
+    #34a853 45%,
+    #fbbc04 72%,
+    #ea4335
+  );
+}
+.gmail-policy-banner {
+  border-color: color-mix(in srgb, #4285f4 30%, var(--line));
+}
+.gmail-policy-banner .status-badge {
+  margin-left: auto;
+}
+.gmail-inbox-policy > svg {
+  flex: 0 0 auto;
+}
+.gmail-inbox-policy > div {
+  display: grid;
+  min-width: 0;
+  gap: 0.25rem;
+}
+.gmail-inbox-policy p {
+  margin: 0;
+}
+.gmail-inbox-policy small {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  overflow-wrap: anywhere;
+}
+.gmail-connect-options,
+.gmail-sync-settings {
+  margin-bottom: 1rem;
+}
+.gmail-review-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+.gmail-review-grid > * {
+  min-width: 0;
+}
+.gmail-verification-list,
+.privacy-summary-list,
+.gmail-attachment-list {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.gmail-verification-list li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.6rem;
+  border-bottom: 1px solid var(--line);
+  padding: 0.55rem 0;
+  color: var(--secondary);
+}
+.gmail-verification-list li.ready svg {
+  color: var(--success);
+}
+.gmail-verification-list li.pending svg {
+  color: var(--muted);
+}
+.privacy-summary-list {
+  margin-bottom: 1rem;
+  padding-left: 1.15rem;
+  list-style: disc;
+  color: var(--secondary);
+  line-height: 1.5;
+}
+.gmail-cc-field {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0 1rem 0.75rem;
+}
+.gmail-cc-field span {
+  color: var(--secondary);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.gmail-attachment-list {
+  margin-top: 0.5rem;
+}
+.gmail-attachment-list a,
+.gmail-inbox-policy a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  overflow-wrap: anywhere;
+}
+.gmail-health-grid,
+.gmail-health-grid > *,
+.gmail-health-grid + .panel {
+  min-width: 0;
+}
+.gmail-health-grid .detail-list > div {
+  display: grid;
+  grid-template-columns: minmax(88px, 0.8fr) minmax(0, 1.2fr);
+  gap: 0.75rem;
+}
+.gmail-health-grid .detail-list dt,
+.gmail-health-grid .detail-list dd {
+  min-width: 0;
+}
+.table-shell {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+@media (max-width: 800px) {
+  .gmail-review-grid {
+    grid-template-columns: 1fr;
+  }
+  .gmail-policy-banner {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .gmail-policy-banner .status-badge {
+    margin-left: 0;
+  }
+}
+
 /* Telegram Managed Bots extends the Client Portal without touching Landing. */
 .telegram-policy-banner {
   border-color: color-mix(in srgb, #229ed9 32%, var(--line));
@@ -1336,6 +1467,7 @@ svg {
   margin: 0;
   font-size: clamp(2rem, 3vw, 3rem);
   letter-spacing: -0.05em;
+  overflow-wrap: anywhere;
 }
 .page-heading p {
   max-width: 760px;

@@ -115,7 +115,11 @@ test.describe.serial("Instagram Messaging", () => {
       .getByRole("button", { name: /Instagram user stomer/ })
       .first()
       .click();
-    await expect(page.getByText("Replying to your story")).toBeVisible();
+    await expect(
+      page
+        .getByLabel("Active conversation")
+        .getByText("Replying to your story"),
+    ).toBeVisible();
     await expect(
       page.getByText("Can reply inside the standard window"),
     ).toBeVisible();

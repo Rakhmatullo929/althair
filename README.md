@@ -1,7 +1,7 @@
 # AI Front Office workspace
 
 This repository contains the preserved public Landing, the localized customer portal with a real
-CRM workflow, tenant-owned Web Chat, Instagram and Telegram messaging, and a tenant-safe,
+CRM workflow, tenant-owned Web Chat, Instagram, Telegram and Gmail messaging, and a tenant-safe,
 approval-controlled AI conversation runtime. The legacy MMC
 vertical is still isolated in the backend and remains covered by its regression tests.
 
@@ -113,13 +113,15 @@ See [backend/docs/api/multitenant-api.md](backend/docs/api/multitenant-api.md),
 [backend/docs/architecture/public-web-chat.md](backend/docs/architecture/public-web-chat.md), and
 [backend/docs/api/public-web-chat-api.md](backend/docs/api/public-web-chat-api.md),
 [backend/docs/architecture/telegram-managed-bots.md](backend/docs/architecture/telegram-managed-bots.md), and
-[backend/docs/api/telegram-managed-bots-api.md](backend/docs/api/telegram-managed-bots-api.md).
+[backend/docs/api/telegram-managed-bots-api.md](backend/docs/api/telegram-managed-bots-api.md),
+[backend/docs/architecture/gmail-email-integration.md](backend/docs/architecture/gmail-email-integration.md), and
+[backend/docs/api/gmail-email-api.md](backend/docs/api/gmail-email-api.md).
 
 ## Current boundary
 
-This stage intentionally does not activate Gmail, WhatsApp, SMS, or Voice; add booking, billing,
+This stage intentionally does not activate generic IMAP, Outlook, WhatsApp, SMS, or Voice; add booking, billing,
 or Super Admin; or deploy production infrastructure. Public Web Chat, Instagram Messaging, and
-Telegram Managed Bots remain server-side opt-in. Real OpenAI calls stay
+Telegram Managed Bots and Gmail remain server-side opt-in. Real OpenAI calls stay
 disabled unless explicitly enabled server-side. CRM content is real organization-owned database
 data, not simulated revenue, sales, or provider state.
 Password-reset and invitation email delivery use the development console lifecycle only until a

@@ -33,6 +33,14 @@ export TELEGRAM_FAKE_PROVIDER=True
 export TELEGRAM_MANAGER_BOT_USERNAME="AlthairManagerBot"
 export TELEGRAM_MANAGER_WEBHOOK_SECRET="test-only-telegram-manager-secret"
 export TELEGRAM_BOT_WEBHOOK_BASE_URL="http://127.0.0.1:8011/api/v1/webhooks/telegram/bots"
+export GOOGLE_GMAIL_ENABLE_LIVE=False
+export GOOGLE_GMAIL_FAKE_PROVIDER=True
+export GOOGLE_GMAIL_REDIRECT_URI="http://127.0.0.1:8011/api/v1/integrations/gmail/oauth/callback/"
+export GOOGLE_GMAIL_PUBSUB_TOPIC="projects/e2e/topics/gmail-notifications"
+export GOOGLE_GMAIL_PUBSUB_SUBSCRIPTION="projects/e2e/subscriptions/gmail-push"
+export GOOGLE_GMAIL_PUBSUB_AUDIENCE="http://127.0.0.1:8011/api/v1/webhooks/google/gmail-pubsub/"
+export GOOGLE_GMAIL_PUBSUB_SERVICE_ACCOUNT="gmail-push@e2e.iam.gserviceaccount.com"
+export GOOGLE_GMAIL_FAKE_PUBSUB_TOKEN="test-only-google-pubsub-oidc"
 FIELD_ENCRYPTION_KEY="$(../../../backend/.venv/bin/python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')"
 export FIELD_ENCRYPTION_KEY
 export CLIENT_PORTAL_SEED_PASSWORD="client-portal-development-only-password"

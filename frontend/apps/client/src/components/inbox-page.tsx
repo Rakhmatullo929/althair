@@ -19,6 +19,7 @@ import {
   RotateCcw,
   Search,
   Send,
+  Smartphone,
   UserCheck,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -31,6 +32,7 @@ import {
   crmQueryKeys,
   relativeTime,
 } from "@/lib/crm";
+import { estimateSMSSegments } from "@/lib/sms";
 import { useWorkspace } from "./workspace-provider";
 import { CrmDialog, formatDateTime, PlainText } from "./crm-shared";
 import { ConversationAIPanel } from "./conversation-ai-panel";
@@ -48,10 +50,12 @@ function Timeline({
   messages,
   locale,
   aiLabel,
+  statusLabel,
 }: {
   messages: ConversationMessage[];
   locale: string;
   aiLabel: string;
+  statusLabel: (status: string) => string;
 }) {
   const ordered = [...messages].reverse();
   return (
@@ -116,7 +120,14 @@ function Timeline({
                   {aiLabel}
                 </em>
               ) : null}
-              <small>{message.status}</small>
+              <small>
+                {statusLabel(
+                  message.metadata.provider === "sms" &&
+                    message.status === "read"
+                    ? "sent"
+                    : message.status,
+                )}
+              </small>
             </article>
           </li>
         );
@@ -139,6 +150,7 @@ export function InboxPage() {
   const [draft, setDraft] = useState("");
   const [ccDraft, setCcDraft] = useState("");
   const [useHumanAgent, setUseHumanAgent] = useState(false);
+  const [confirmSmsSegments, setConfirmSmsSegments] = useState(false);
   const [testOpen, setTestOpen] = useState(false);
   const [testName, setTestName] = useState("Test customer");
   const [testBody, setTestBody] = useState(
@@ -230,6 +242,8 @@ export function InboxPage() {
       .filter(Boolean);
     setDraft("");
     setCcDraft("");
+    const confirmsSMS = selected.channel_type === "sms" && confirmSmsSegments;
+    setConfirmSmsSegments(false);
     mutation.mutate(() =>
       noteMode
         ? workspace.api.addConversationNote(selected.id, body)
@@ -239,12 +253,17 @@ export function InboxPage() {
             crypto.randomUUID(),
             useHumanAgent,
             cc,
+            confirmsSMS,
           ),
     );
   };
   const state = selected
     ? composerState(selected, membership.role, membership.organization_status)
     : "permission_denied";
+  const smsEstimate = useMemo(() => estimateSMSSegments(draft), [draft]);
+  const smsConfirmationThreshold =
+    selected?.provider_context.confirm_above_segments ?? 3;
+  const smsMaxSegments = selected?.provider_context.max_segments ?? 10;
 
   return (
     <>
@@ -597,6 +616,52 @@ export function InboxPage() {
                   </div>
                 </div>
               ) : null}
+              {selected.channel_type === "sms" ? (
+                <div
+                  className={`instagram-inbox-policy sms-inbox-policy state-${selected.provider_context.state ?? "provider_unavailable"}`}
+                  role="status"
+                >
+                  <Smartphone aria-hidden="true" />
+                  <div>
+                    <strong>
+                      {selected.provider_context.sender_address ??
+                        selected.channel_name}
+                    </strong>
+                    <p>
+                      {t(
+                        `smsStates.${selected.provider_context.state ?? "provider_unavailable"}`,
+                      )}
+                    </p>
+                    <small>
+                      {t("inbox.smsConsent")}:{" "}
+                      {t(
+                        `smsConsent.${selected.provider_context.consent_state ?? "unknown"}`,
+                      )}
+                    </small>
+                    <small>{t("inbox.smsNoRead")}</small>
+                    {selected.provider_context.sms_connection_id &&
+                    selected.provider_context.consent_state !== "blocked" &&
+                    canOperateCrm(membership.role) &&
+                    !readOnly ? (
+                      <button
+                        className="button secondary sms-block-button"
+                        type="button"
+                        onClick={() =>
+                          mutation.mutate(() =>
+                            workspace.api.updateSMSConsent(
+                              selected.provider_context.sms_connection_id!,
+                              selected.contact,
+                              "blocked",
+                            ),
+                          )
+                        }
+                      >
+                        {t("inbox.smsBlock")}
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
               <ConversationAIPanel
                 conversation={selected}
                 organizationId={organizationId}
@@ -612,6 +677,7 @@ export function InboxPage() {
                     messages={messages.data.results}
                     locale={locale}
                     aiLabel={t("inbox.aiGenerated")}
+                    statusLabel={(status) => t(`messageStatus.${status}`)}
                   />
                 ) : (
                   <EmptyState
@@ -683,6 +749,33 @@ export function InboxPage() {
                     />
                   </label>
                 ) : null}
+                {!noteMode && selected.channel_type === "sms" ? (
+                  <div className="sms-segment-meter" role="status">
+                    <span>
+                      {t("inbox.smsEncoding")}:{" "}
+                      <strong>{smsEstimate.encoding}</strong>
+                    </span>
+                    <span>
+                      {t("inbox.smsSegments", { count: smsEstimate.segments })}
+                    </span>
+                    {smsEstimate.segments > smsMaxSegments ? (
+                      <strong>{t("inbox.smsTooLong")}</strong>
+                    ) : null}
+                    {smsEstimate.segments > smsConfirmationThreshold &&
+                    smsEstimate.segments <= smsMaxSegments ? (
+                      <label>
+                        <input
+                          type="checkbox"
+                          checked={confirmSmsSegments}
+                          onChange={(event) =>
+                            setConfirmSmsSegments(event.target.checked)
+                          }
+                        />
+                        {t("inbox.smsConfirmSegments")}
+                      </label>
+                    ) : null}
+                  </div>
+                ) : null}
                 <textarea
                   value={draft}
                   onChange={(event) => setDraft(event.target.value)}
@@ -709,7 +802,14 @@ export function InboxPage() {
                     readOnly ||
                     (!noteMode &&
                       state !== "enabled" &&
-                      !(state === "human_agent_available" && useHumanAgent))
+                      !(state === "human_agent_available" && useHumanAgent)) ||
+                    (!noteMode &&
+                      selected.channel_type === "sms" &&
+                      smsEstimate.segments > smsMaxSegments) ||
+                    (!noteMode &&
+                      selected.channel_type === "sms" &&
+                      smsEstimate.segments > smsConfirmationThreshold &&
+                      !confirmSmsSegments)
                   }
                   onClick={submitComposer}
                 >

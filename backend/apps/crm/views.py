@@ -423,6 +423,7 @@ class ConversationMessagesView(CrmBaseView):
                 client_message_id=client_id,
                 human_agent=bool(request.data.get("human_agent", False)),
                 cc=cc,
+                confirm_segments=bool(request.data.get("confirm_segments", False)),
             )
         except ProviderUnavailable as exc:
             raise ProviderNotConnected(str(exc)) from exc
@@ -446,6 +447,13 @@ class ConversationMessagesView(CrmBaseView):
             from gmail_integration.services import GmailError
 
             if isinstance(exc, GmailError):
+                error = ProviderNotConnected(exc.code)
+                error.status_code = exc.status_code
+                error.machine_code = exc.code
+                raise error from exc
+            from sms.services import SMSError
+
+            if isinstance(exc, SMSError):
                 error = ProviderNotConnected(exc.code)
                 error.status_code = exc.status_code
                 error.machine_code = exc.code

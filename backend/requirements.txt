@@ -33,7 +33,7 @@ drf-yasg==1.21.8
 
 # Communication
 sendgrid==6.11.0
-twilio==9.6.3
+twilio==9.11.0
 django-phonenumber-field==8.0.0
 phonenumbers==8.13.52
 

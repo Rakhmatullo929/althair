@@ -377,6 +377,7 @@ def send_outbound_message(
     client_message_id,
     human_agent=False,
     cc=None,
+    confirm_segments=False,
 ):
     if conversation.organization_id != organization.id or conversation.channel_connection.organization_id != organization.id:
         raise ValueError("Conversation belongs to another organization.")
@@ -408,6 +409,22 @@ def send_outbound_message(
             client_message_id=client_message_id,
             membership=membership,
             cc=cc,
+        )
+    if conversation.channel_connection.type == ChannelType.SMS:
+        from sms.models import SMSConnection
+        from sms.services import send_sms_message
+
+        if not SMSConnection.objects.filter(
+            channel_connection=conversation.channel_connection,
+            organization=organization,
+        ).exists():
+            raise ProviderUnavailable("Sending is unavailable until this provider is connected.")
+        return send_sms_message(
+            conversation=conversation,
+            body=body,
+            client_message_id=client_message_id,
+            membership=membership,
+            confirm_segments=confirm_segments,
         )
     is_test = settings.ENABLE_CRM_TEST_CHANNEL and is_internal_test_connection(conversation.channel_connection)
     is_public_web_chat = False

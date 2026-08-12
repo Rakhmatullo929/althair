@@ -12,6 +12,91 @@
   --color-border: #dfe8e2;
 }
 
+.sms-gradient {
+  background: linear-gradient(145deg, #e0f2fe, #ccfbf1);
+  color: #0f766e;
+}
+
+.sms-policy-banner {
+  border-color: color-mix(in srgb, var(--primary) 28%, var(--line));
+}
+
+.sms-connect-panel,
+.sms-test-panel,
+.sms-credentials-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.sms-health-grid,
+.sms-policy-grid {
+  margin-bottom: 1rem;
+}
+
+.copy-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.copy-field input {
+  min-width: 0;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.78rem;
+}
+
+.sms-inbox-policy.state-opted_out,
+.sms-inbox-policy.state-consent_required {
+  border-color: color-mix(in srgb, #d97706 40%, var(--color-border));
+  background: color-mix(in srgb, #fef3c7 52%, var(--surface));
+}
+
+.sms-inbox-policy small {
+  display: block;
+  margin-top: 0.2rem;
+}
+
+.sms-block-button {
+  margin-top: 0.55rem;
+  width: fit-content;
+}
+
+.sms-segment-meter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.8rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--primary-soft);
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.sms-segment-meter label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--ink);
+}
+
+.sms-segment-meter > strong {
+  color: #b42318;
+}
+
+@media (max-width: 720px) {
+  .sms-segment-meter,
+  .copy-field {
+    align-items: stretch;
+  }
+
+  .sms-segment-meter {
+    flex-direction: column;
+  }
+}
+
 /* Instagram Messaging stays inside the existing Client Portal visual system. */
 .instagram-gradient {
   color: #fff;
@@ -2764,6 +2849,54 @@ td {
   .wizard-actions .button {
     flex: 1;
     padding-inline: 10px;
+  }
+}
+
+/* SMS settings use text-only operational rows and explicit consent controls. */
+.sms-health-grid,
+.sms-health-grid > *,
+.sms-policy-grid,
+.sms-policy-grid > * {
+  min-width: 0;
+}
+
+.sms-health-grid .detail-list > div {
+  grid-template-columns: minmax(150px, 0.8fr) minmax(0, 1.2fr);
+  align-items: start;
+}
+
+.sms-health-grid .detail-list dt,
+.sms-health-grid .detail-list dd {
+  min-width: 0;
+}
+
+.check-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 0.65rem;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.check-row input {
+  margin-top: 0.2rem;
+}
+
+.check-row span {
+  display: grid;
+  min-width: 0;
+  gap: 0.2rem;
+}
+
+.check-row small {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+@media (max-width: 800px) {
+  .sms-health-grid .detail-list > div {
+    grid-template-columns: minmax(110px, 0.8fr) minmax(0, 1.2fr);
   }
 }
 

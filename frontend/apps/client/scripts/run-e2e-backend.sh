@@ -41,6 +41,10 @@ export GOOGLE_GMAIL_PUBSUB_SUBSCRIPTION="projects/e2e/subscriptions/gmail-push"
 export GOOGLE_GMAIL_PUBSUB_AUDIENCE="http://127.0.0.1:8011/api/v1/webhooks/google/gmail-pubsub/"
 export GOOGLE_GMAIL_PUBSUB_SERVICE_ACCOUNT="gmail-push@e2e.iam.gserviceaccount.com"
 export GOOGLE_GMAIL_FAKE_PUBSUB_TOKEN="test-only-google-pubsub-oidc"
+export SMS_ENABLE_LIVE=False
+export SMS_FAKE_PROVIDER=True
+export SMS_PUBLIC_BASE_URL="https://api.e2e.example.test"
+export TWILIO_AUTH_TOKEN="test-only-twilio-webhook-token"
 FIELD_ENCRYPTION_KEY="$(../../../backend/.venv/bin/python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')"
 export FIELD_ENCRYPTION_KEY
 export CLIENT_PORTAL_SEED_PASSWORD="client-portal-development-only-password"

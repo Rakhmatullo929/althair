@@ -205,6 +205,7 @@ class ConversationAIState(models.TextChoices):
     AUTOPILOT_INSTAGRAM = "autopilot_instagram", _("Instagram autopilot")
     AUTOPILOT_TELEGRAM = "autopilot_telegram", _("Telegram autopilot")
     AUTOPILOT_GMAIL = "autopilot_gmail", _("Gmail autopilot")
+    AUTOPILOT_SMS = "autopilot_sms", _("SMS autopilot")
     PAUSED_BY_HUMAN = "paused_by_human", _("Paused by human")
     HANDOFF_REQUIRED = "handoff_required", _("Handoff required")
 
@@ -284,9 +285,12 @@ class MessageContentType(models.TextChoices):
 
 class MessageStatus(models.TextChoices):
     QUEUED = "queued", _("Queued")
+    SENDING = "sending", _("Sending")
     SENT = "sent", _("Sent")
     DELIVERED = "delivered", _("Delivered")
+    UNDELIVERED = "undelivered", _("Undelivered")
     FAILED = "failed", _("Failed")
+    CANCELED = "canceled", _("Canceled")
     RECEIVED = "received", _("Received")
     READ = "read", _("Read")
 

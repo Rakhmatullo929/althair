@@ -165,7 +165,8 @@ export function ChannelsPage() {
             (type === "webchat" ||
             type === "instagram" ||
             type === "telegram" ||
-            type === "gmail"
+            type === "gmail" ||
+            type === "sms"
               ? "not_connected"
               : "planned");
           return (
@@ -184,7 +185,9 @@ export function ChannelsPage() {
                   ? t("configuredRecord", { provider: primary.provider })
                   : type === "webchat" ||
                       type === "instagram" ||
-                      type === "telegram"
+                      type === "telegram" ||
+                      type === "gmail" ||
+                      type === "sms"
                     ? t("notConnected")
                     : t("planned")}
               </p>
@@ -235,6 +238,13 @@ export function ChannelsPage() {
                   href="/app/settings/channels/web-chat"
                 >
                   {t("configureWebChat")}
+                </Link>
+              ) : type === "sms" ? (
+                <Link
+                  className="button secondary"
+                  href="/app/settings/channels/sms"
+                >
+                  {t("configureSMS")}
                 </Link>
               ) : primary && editable ? (
                 <button

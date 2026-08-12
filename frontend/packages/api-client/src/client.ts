@@ -39,6 +39,9 @@ import type {
   Paginated,
   Pipeline,
   PipelineStage,
+  SMSConnection,
+  SMSHealth,
+  SMSReadiness,
   TelegramBotConnection,
   TelegramHealth,
   TelegramManagedBotRequest,
@@ -491,6 +494,7 @@ export class ApiClient {
     clientMessageId: string,
     humanAgent = false,
     cc: string[] = [],
+    confirmSegments = false,
   ) =>
     this.request<ConversationMessage>(`/conversations/${id}/messages/`, {
       method: "POST",
@@ -499,6 +503,7 @@ export class ApiClient {
         client_message_id: clientMessageId,
         ...(humanAgent ? { human_agent: true } : {}),
         ...(cc.length ? { cc } : {}),
+        ...(confirmSegments ? { confirm_segments: true } : {}),
       },
     });
   addConversationNote = (id: string, body: string) =>
@@ -928,6 +933,91 @@ export class ApiClient {
     this.request<{ status: string; imported: number; message_id: string }>(
       `/integrations/gmail/${id}/test-inbound/`,
       { method: "POST", body },
+    );
+
+  smsReadiness = () =>
+    this.request<SMSReadiness>("/integrations/sms/readiness/");
+  smsConnections = () =>
+    this.request<Paginated<SMSConnection>>("/integrations/sms/connections/");
+  smsConnection = (id: string) =>
+    this.request<SMSConnection>(`/integrations/sms/${id}/`);
+  createSMSConnection = (body: {
+    display_name?: string;
+    provider: "fake" | "twilio";
+    ownership_mode: "platform_managed" | "customer_owned";
+    sender_address: string;
+    sender_country?: string;
+    account_sid?: string;
+    messaging_service_sid?: string;
+    phone_number_sid?: string;
+    api_key_sid?: string;
+    api_key_secret?: string;
+    auth_token?: string;
+    advanced_opt_out_enabled?: boolean;
+    allow_inbound_support?: boolean;
+    default_language?: Locale;
+    supported_languages?: Locale[];
+    ai_mode?: "manual" | "suggest" | "autopilot";
+  }) =>
+    this.request<SMSConnection>("/integrations/sms/connections/", {
+      method: "POST",
+      body,
+    });
+  updateSMSConnection = (
+    id: string,
+    body: Partial<
+      Pick<
+        SMSConnection,
+        | "advanced_opt_out_enabled"
+        | "allow_inbound_support"
+        | "default_language"
+        | "supported_languages"
+        | "ai_mode"
+      >
+    >,
+  ) =>
+    this.request<SMSConnection>(`/integrations/sms/${id}/`, {
+      method: "PATCH",
+      body,
+    });
+  smsHealth = (id: string, refresh = false) =>
+    this.request<SMSHealth>(`/integrations/sms/${id}/health/`, {
+      method: refresh ? "POST" : "GET",
+    });
+  rotateSMSCredentials = (
+    id: string,
+    body: {
+      auth_token?: string;
+      api_key_sid?: string;
+      api_key_secret?: string;
+    },
+  ) =>
+    this.request<SMSConnection>(`/integrations/sms/${id}/rotate-credentials/`, {
+      method: "POST",
+      body,
+    });
+  smsAction = (id: string, action: "pause" | "activate" | "disconnect") =>
+    this.request<SMSConnection>(`/integrations/sms/${id}/${action}/`, {
+      method: "POST",
+    });
+  smsTestInbound = (id: string, body: Record<string, unknown>) =>
+    this.request<{ status: string; created: boolean; envelope_id: string }>(
+      `/integrations/sms/${id}/test/`,
+      { method: "POST", body },
+    );
+  retrySMSOutbound = (id: string, messageId: string) =>
+    this.request<{ status: string; attempt_id: string; message_id: string }>(
+      `/integrations/sms/${id}/retry/`,
+      { method: "POST", body: { message_id: messageId } },
+    );
+  updateSMSConsent = (
+    id: string,
+    contactId: string,
+    state: "opted_in" | "blocked" | "invalid",
+  ) =>
+    this.request<{ state: string; source: string; updated_at: string }>(
+      `/integrations/sms/${id}/consent/`,
+      { method: "POST", body: { contact_id: contactId, state } },
     );
 
   webChatInstallations = () =>

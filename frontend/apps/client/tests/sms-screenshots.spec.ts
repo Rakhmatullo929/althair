@@ -221,7 +221,7 @@ test("@screenshots SMS evidence", async ({ page }) => {
     .getByRole("button", { name: /\+15550106666/ })
     .first()
     .click();
-  await expect(page.getByText("Failed")).toBeVisible();
+  await expect(page.getByText("Failed", { exact: true })).toBeVisible();
   await page.screenshot({
     path: resolve(screenshotDir, "06-sms-failed-state.png"),
     fullPage: true,
@@ -267,6 +267,7 @@ test("@screenshots SMS evidence", async ({ page }) => {
     data: {
       enabled: true,
       default_mode: "suggest",
+      daily_run_limit: 100,
       allowed_channel_connections: Array.from(
         new Set([
           ...runtime.allowed_channel_connections,

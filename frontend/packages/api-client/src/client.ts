@@ -42,6 +42,11 @@ import type {
   SMSConnection,
   SMSHealth,
   SMSReadiness,
+  VoiceCall,
+  VoiceConnection,
+  VoiceHealth,
+  VoiceReadiness,
+  VoiceTransferDestination,
   TelegramBotConnection,
   TelegramHealth,
   TelegramManagedBotRequest,
@@ -1019,6 +1024,142 @@ export class ApiClient {
       `/integrations/sms/${id}/consent/`,
       { method: "POST", body: { contact_id: contactId, state } },
     );
+
+  voiceReadiness = () =>
+    this.request<VoiceReadiness>("/integrations/voice/readiness/");
+  voiceConnections = () =>
+    this.request<Paginated<VoiceConnection>>(
+      "/integrations/voice/connections/",
+    );
+  voiceConnection = (id: string) =>
+    this.request<VoiceConnection>(`/integrations/voice/${id}/`);
+  createVoiceConnection = (body: {
+    display_name?: string;
+    carrier: "fake" | "twilio_sip";
+    ownership_mode: "platform_managed" | "customer_owned";
+    phone_number_e164: string;
+    phone_number_sid?: string;
+    sip_trunk_sid?: string;
+    carrier_account_sid?: string;
+    carrier_api_key_sid?: string;
+    carrier_api_key_secret?: string;
+    carrier_auth_token?: string;
+    openai_project_id?: string;
+    sip_destination?: string;
+    default_language?: Locale;
+    supported_languages?: Locale[];
+    ai_mode?: "manual" | "suggest" | "autopilot";
+    realtime_model_alias?: string;
+    voice_name?: string;
+    reasoning_effort?: "low" | "medium" | "high";
+    greeting?: string;
+    disclosure_mode?: VoiceConnection["disclosure_mode"];
+    transcript_retention_mode?: VoiceConnection["transcript_retention_mode"];
+    max_call_seconds?: number;
+    max_concurrent_calls?: number;
+    daily_minute_limit?: number;
+    monthly_minute_limit?: number;
+  }) =>
+    this.request<VoiceConnection>("/integrations/voice/connections/", {
+      method: "POST",
+      body,
+    });
+  updateVoiceConnection = (
+    id: string,
+    body: Partial<
+      Pick<
+        VoiceConnection,
+        | "default_language"
+        | "supported_languages"
+        | "ai_mode"
+        | "realtime_model_alias"
+        | "voice_name"
+        | "reasoning_effort"
+        | "greeting"
+        | "business_hours_behavior"
+        | "business_hours"
+        | "after_hours_message"
+        | "disclosure_mode"
+        | "transcript_retention_mode"
+        | "max_call_seconds"
+        | "max_concurrent_calls"
+        | "daily_minute_limit"
+        | "monthly_minute_limit"
+        | "max_tools_per_call"
+        | "max_transfer_attempts"
+      >
+    >,
+  ) =>
+    this.request<VoiceConnection>(`/integrations/voice/${id}/`, {
+      method: "PATCH",
+      body,
+    });
+  voiceHealth = (id: string, refresh = false) =>
+    this.request<VoiceHealth>(`/integrations/voice/${id}/health/`, {
+      method: refresh ? "POST" : "GET",
+    });
+  rotateVoiceCredentials = (
+    id: string,
+    body: {
+      carrier_api_key_sid?: string;
+      carrier_api_key_secret?: string;
+      carrier_auth_token?: string;
+    },
+  ) =>
+    this.request<VoiceConnection>(
+      `/integrations/voice/${id}/rotate-credentials/`,
+      { method: "POST", body },
+    );
+  voiceAction = (id: string, action: "pause" | "activate" | "disconnect") =>
+    this.request<VoiceConnection>(`/integrations/voice/${id}/${action}/`, {
+      method: "POST",
+    });
+  voiceTransfers = (id: string) =>
+    this.request<VoiceTransferDestination[]>(
+      `/integrations/voice/${id}/transfers/`,
+    );
+  createVoiceTransfer = (
+    id: string,
+    body: {
+      key: string;
+      display_name: string;
+      destination_type: "phone" | "sip";
+      destination: string;
+      priority?: number;
+      active?: boolean;
+      fallback_behavior?: VoiceTransferDestination["fallback_behavior"];
+    },
+  ) =>
+    this.request<VoiceTransferDestination>(
+      `/integrations/voice/${id}/transfers/`,
+      { method: "POST", body },
+    );
+  updateVoiceTransfer = (
+    connectionId: string,
+    destinationId: string,
+    body: Partial<VoiceTransferDestination> & { destination?: string },
+  ) =>
+    this.request<VoiceTransferDestination>(
+      `/integrations/voice/${connectionId}/transfers/${destinationId}/`,
+      { method: "PATCH", body },
+    );
+  voiceCalls = () => this.request<Paginated<VoiceCall>>("/voice/calls/");
+  voiceCall = (id: string) => this.request<VoiceCall>(`/voice/calls/${id}/`);
+  voiceTestCall = (
+    id: string,
+    body: {
+      caller?: string;
+      language?: Locale;
+      utterance?: string;
+      events?: unknown[];
+    },
+  ) =>
+    this.request<VoiceCall>(`/integrations/voice/${id}/test-call/`, {
+      method: "POST",
+      body,
+    });
+  voiceTakeover = (id: string) =>
+    this.request<VoiceCall>(`/voice/calls/${id}/takeover/`, { method: "POST" });
 
   webChatInstallations = () =>
     this.request<Paginated<WebChatInstallation>>("/web-chat/installations/");

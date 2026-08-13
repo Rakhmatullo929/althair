@@ -12,6 +12,227 @@
   --color-border: #dfe8e2;
 }
 
+.voice-policy-banner {
+  background: linear-gradient(
+    135deg,
+    rgba(38, 113, 95, 0.14),
+    rgba(38, 86, 113, 0.09)
+  );
+}
+
+.voice-legal-warning,
+.voice-policy-note {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  border: 1px solid color-mix(in srgb, var(--warning) 34%, var(--border));
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--warning) 7%, var(--surface));
+  padding: 14px 16px;
+}
+
+.voice-legal-warning p,
+.voice-policy-note p {
+  margin: 4px 0 0;
+}
+
+.voice-gradient {
+  background: linear-gradient(145deg, #166756, #274e74);
+  color: white;
+}
+
+.voice-health-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.voice-health-card {
+  display: grid;
+  gap: 8px;
+  min-height: 126px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  padding: 18px;
+}
+
+.voice-health-card svg {
+  color: var(--primary);
+}
+
+.voice-health-card span,
+.voice-call-card small,
+.voice-transfer-list small {
+  color: var(--muted);
+}
+
+.voice-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.voice-metric-grid > div {
+  display: grid;
+  gap: 5px;
+  border-radius: 13px;
+  background: var(--surface-subtle);
+  padding: 14px;
+}
+
+.voice-transfer-list,
+.voice-call-list,
+.voice-tool-list {
+  display: grid;
+  gap: 10px;
+}
+
+.voice-transfer-list article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.voice-transfer-list article > div {
+  display: grid;
+  gap: 3px;
+}
+
+.four-columns {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.voice-test-controls,
+.voice-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.voice-call-card {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.voice-call-card > summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 16px;
+  align-items: center;
+  cursor: pointer;
+  padding: 16px;
+}
+
+.voice-call-card > summary > div {
+  display: grid;
+  gap: 3px;
+}
+
+.voice-call-detail {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.8fr) minmax(300px, 1.2fr);
+  gap: 18px;
+  border-top: 1px solid var(--border);
+  padding: 18px;
+}
+
+.voice-call-summary dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.voice-call-summary dl > div {
+  display: grid;
+  gap: 2px;
+  border-radius: 10px;
+  background: var(--surface-subtle);
+  padding: 10px;
+}
+
+.voice-transcript {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.voice-transcript li {
+  max-width: 88%;
+  border-radius: 13px;
+  background: var(--surface-subtle);
+  padding: 10px 12px;
+}
+
+.voice-transcript li.speaker-assistant {
+  margin-left: auto;
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+}
+
+.voice-transcript li p {
+  margin: 4px 0 0;
+  white-space: pre-wrap;
+}
+
+.voice-transcript-hidden,
+.voice-inbox-call-card {
+  display: grid;
+  gap: 10px;
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.voice-inbox-call-card header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.voice-inbox-call-card header div {
+  display: grid;
+  gap: 2px;
+}
+
+.voice-inbox-policy {
+  border-color: color-mix(in srgb, #276f62 35%, var(--border));
+}
+
+@media (max-width: 920px) {
+  .voice-health-grid,
+  .voice-metric-grid,
+  .four-columns,
+  .voice-call-detail {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .voice-health-grid,
+  .voice-metric-grid,
+  .four-columns,
+  .voice-call-detail,
+  .voice-transfer-list article,
+  .voice-call-card > summary {
+    grid-template-columns: 1fr;
+  }
+
+  .voice-actions .button,
+  .voice-test-controls .button,
+  .voice-test-controls select {
+    width: 100%;
+  }
+}
+
 .sms-gradient {
   background: linear-gradient(145deg, #e0f2fe, #ccfbf1);
   color: #0f766e;

@@ -1,8 +1,8 @@
 # AI Front Office workspace
 
 This repository contains the preserved public Landing, the localized customer portal with a real
-CRM workflow, tenant-owned Web Chat, Instagram, Telegram, Gmail and SMS messaging, and a tenant-safe,
-approval-controlled AI conversation runtime. The legacy MMC
+CRM workflow, tenant-owned Web Chat, Instagram, Telegram, Gmail and SMS messaging, inbound Voice AI,
+and a tenant-safe, approval-controlled AI conversation runtime. The legacy MMC
 vertical is still isolated in the backend and remains covered by its regression tests.
 
 ## Local stack
@@ -72,6 +72,7 @@ coverage run --source=ai_runtime manage.py test ai_runtime
 coverage report --fail-under=85
 python -m compileall -q .
 python evals/ai_runtime/run_evals.py
+python evals/voice/run_evals.py
 
 cd ../frontend
 pnpm install --frozen-lockfile
@@ -119,10 +120,14 @@ See [backend/docs/api/multitenant-api.md](backend/docs/api/multitenant-api.md),
 [backend/docs/architecture/sms-messaging.md](backend/docs/architecture/sms-messaging.md),
 [backend/docs/api/sms-messaging-api.md](backend/docs/api/sms-messaging-api.md), and
 [backend/docs/integrations/twilio-sms-setup.md](backend/docs/integrations/twilio-sms-setup.md).
+[backend/docs/architecture/voice-ai-telephony.md](backend/docs/architecture/voice-ai-telephony.md),
+[backend/docs/api/voice-ai-api.md](backend/docs/api/voice-ai-api.md), and
+[backend/docs/integrations/twilio-openai-voice-setup.md](backend/docs/integrations/twilio-openai-voice-setup.md).
 
 ## Current boundary
 
-This stage intentionally does not activate generic IMAP, Outlook, WhatsApp, or Voice; add booking, billing,
+This stage intentionally does not activate generic IMAP, Outlook, or WhatsApp; add outbound Voice,
+recording, booking, billing,
 or Super Admin; or deploy production infrastructure. Public Web Chat, Instagram Messaging, and
 Telegram Managed Bots, Gmail, and live Twilio SMS remain server-side opt-in. Real OpenAI calls stay
 disabled unless explicitly enabled server-side. CRM content is real organization-owned database

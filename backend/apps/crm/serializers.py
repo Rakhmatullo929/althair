@@ -210,6 +210,8 @@ class ConversationSerializer(serializers.ModelSerializer):
             from sms.services import can_send_sms
 
             return can_send_sms(obj)
+        if obj.channel_type == "voice":
+            return False
         try:
             from web_chat.services import can_send_public_web_chat
 
@@ -232,6 +234,10 @@ class ConversationSerializer(serializers.ModelSerializer):
             return conversation_policy(obj)
         if obj.channel_type == "sms":
             from sms.services import conversation_policy
+
+            return conversation_policy(obj)
+        if obj.channel_type == "voice":
+            from voice.services import conversation_policy
 
             return conversation_policy(obj)
         return {}

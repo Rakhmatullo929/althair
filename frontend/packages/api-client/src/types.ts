@@ -370,6 +370,13 @@ export type Conversation = {
     max_segments?: number;
     confirm_above_segments?: number;
     supports_read_receipts?: false;
+    voice_call_id?: string;
+    call_status?: VoiceCall["status"];
+    duration_seconds?: number;
+    language?: Locale;
+    transfer_status?: string;
+    transcript_storage_allowed?: boolean;
+    outcome?: string;
   };
   last_message_at: string | null;
   last_inbound_at: string | null;
@@ -1014,6 +1021,198 @@ export type SMSReadiness = {
   limits: SMSLimits;
   allowed_country_codes: string[];
   blocked_country_codes: string[];
+};
+
+export type VoiceTransferDestination = {
+  id: string;
+  organization: string;
+  voice_connection: string;
+  key: string;
+  display_name: string;
+  destination_type: "phone" | "sip";
+  has_destination: boolean;
+  branch: string | null;
+  priority: number;
+  active: boolean;
+  business_hours: WorkingHours;
+  fallback_behavior:
+    | "next_destination"
+    | "callback_task"
+    | "voicemail_message"
+    | "end_call";
+  created_at: string;
+  updated_at: string;
+};
+
+export type VoiceHealth = {
+  status: string;
+  carrier_reachable: boolean | null;
+  number_voice_capable: boolean | null;
+  sip_trunk_ready: boolean | null;
+  realtime_ready: boolean;
+  worker_ready: boolean;
+  carrier_status_callback_url: string;
+  public_https_ready: boolean;
+  recording: "disabled";
+  last_call_at: string | null;
+  last_health_check_at: string | null;
+  last_error_code: string;
+  active_calls: number;
+  limits: {
+    max_call_seconds: number;
+    max_concurrent_calls: number;
+    daily_minute_limit: number;
+    monthly_minute_limit: number;
+  };
+};
+
+export type VoiceConnection = {
+  id: string;
+  organization: string;
+  channel_connection: string;
+  carrier: "fake" | "twilio_sip";
+  ownership_mode: "platform_managed" | "customer_owned";
+  status:
+    | "draft"
+    | "connected"
+    | "degraded"
+    | "paused"
+    | "credential_invalid"
+    | "sip_unavailable"
+    | "realtime_unavailable"
+    | "disconnected";
+  phone_number_e164: string;
+  phone_number_sid: string;
+  sip_trunk_sid: string;
+  carrier_account_sid: string;
+  carrier_api_key_sid: string;
+  openai_project_id: string;
+  sip_destination: string;
+  default_language: Locale;
+  supported_languages: Locale[];
+  ai_mode: "manual" | "suggest" | "autopilot";
+  realtime_model_alias: string;
+  voice_name: string;
+  reasoning_effort: "low" | "medium" | "high";
+  greeting: string;
+  business_hours_behavior: "accept" | "callback" | "reject";
+  business_hours: WorkingHours;
+  after_hours_message: string;
+  disclosure_mode:
+    | "ai_disclosure"
+    | "ai_and_transcript_disclosure"
+    | "explicit_transcript_consent";
+  transcript_retention_mode: "disabled" | "30_days" | "90_days" | "indefinite";
+  recording_mode: "disabled";
+  max_call_seconds: number;
+  max_concurrent_calls: number;
+  daily_minute_limit: number;
+  monthly_minute_limit: number;
+  max_tools_per_call: number;
+  max_transfer_attempts: number;
+  last_inbound_at: string | null;
+  last_call_at: string | null;
+  last_health_check_at: string | null;
+  last_error_code: string;
+  connected_at: string | null;
+  disconnected_at: string | null;
+  created_at: string;
+  updated_at: string;
+  has_carrier_api_key_secret: boolean;
+  has_carrier_auth_token: boolean;
+  health: VoiceHealth;
+  transfer_destinations: VoiceTransferDestination[];
+};
+
+export type VoiceReadiness = {
+  mode: "development" | "live";
+  enabled: boolean;
+  carrier_provider: "fake" | "twilio_sip";
+  realtime_provider: "fake" | "openai";
+  fake_provider: boolean;
+  global_kill_switch: boolean;
+  live_ready: boolean;
+  worker_ready: boolean;
+  missing_live_configuration: string[];
+  defaults: {
+    max_call_seconds: number;
+    max_concurrent_calls: number;
+    daily_minute_limit: number;
+    monthly_minute_limit: number;
+    transcript_retention_days: number;
+    recording: "disabled";
+  };
+};
+
+export type VoiceTranscriptSegment = {
+  id: string;
+  sequence: number;
+  speaker: "caller" | "assistant" | "employee" | "system";
+  text: string;
+  language: Locale | "";
+  start_ms: number | null;
+  end_ms: number | null;
+  created_at: string;
+};
+
+export type VoiceCall = {
+  id: string;
+  organization: string;
+  voice_connection: string;
+  conversation: string;
+  contact: string;
+  contact_name: string;
+  direction: "inbound";
+  caller: string;
+  called_e164: string;
+  status:
+    | "incoming"
+    | "routing"
+    | "ringing"
+    | "accepted"
+    | "active"
+    | "transfer_requested"
+    | "transferred"
+    | "completed"
+    | "rejected"
+    | "failed"
+    | "cancelled";
+  selected_language: Locale | "";
+  ai_mode: "manual" | "suggest" | "autopilot";
+  realtime_provider: string;
+  realtime_model: string;
+  voice_name: string;
+  started_at: string | null;
+  answered_at: string | null;
+  ended_at: string | null;
+  duration_seconds: number;
+  transfer_destination_key: string;
+  transfer_status: string;
+  hangup_actor: string;
+  consent_state: "not_required" | "pending" | "granted" | "declined";
+  transcript_storage_allowed: boolean;
+  disclosure_version: string;
+  summary: string;
+  outcome: string;
+  error_category: string;
+  ai_control_active: boolean;
+  human_takeover_at: string | null;
+  interruption_count: number;
+  transcript: VoiceTranscriptSegment[];
+  tools: Array<{
+    id: string;
+    name: string;
+    status: string;
+    output: Record<string, unknown>;
+    error: string;
+  }>;
+  transfers: Array<{
+    id: string;
+    destination_key: string;
+    status: string;
+    error: string;
+  }>;
+  created_at: string;
 };
 
 export type GmailPrivacyExport = {

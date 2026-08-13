@@ -166,7 +166,8 @@ export function ChannelsPage() {
             type === "instagram" ||
             type === "telegram" ||
             type === "gmail" ||
-            type === "sms"
+            type === "sms" ||
+            type === "voice"
               ? "not_connected"
               : "planned");
           return (
@@ -187,7 +188,8 @@ export function ChannelsPage() {
                       type === "instagram" ||
                       type === "telegram" ||
                       type === "gmail" ||
-                      type === "sms"
+                      type === "sms" ||
+                      type === "voice"
                     ? t("notConnected")
                     : t("planned")}
               </p>
@@ -245,6 +247,13 @@ export function ChannelsPage() {
                   href="/app/settings/channels/sms"
                 >
                   {t("configureSMS")}
+                </Link>
+              ) : type === "voice" ? (
+                <Link
+                  className="button secondary"
+                  href="/app/settings/channels/voice"
+                >
+                  {t("configureVoice")}
                 </Link>
               ) : primary && editable ? (
                 <button

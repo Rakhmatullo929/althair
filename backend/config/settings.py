@@ -75,6 +75,7 @@ INSTALLED_APPS = [
     'telegram',
     'gmail_integration',
     'sms',
+    'voice',
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -363,6 +364,7 @@ REST_FRAMEWORK = {
         'telegram_bot_webhook': '1200/min',
         'gmail_pubsub': '1200/min',
         'sms_webhook': '1200/min',
+        'voice_webhook': '1200/min',
     },
     'EXCEPTION_HANDLER': 'core.api.exception_handler.api_exception_handler',
     'DEFAULT_RENDERER_CLASSES': (
@@ -387,6 +389,7 @@ if os.environ.get('E2E_TESTING', '').lower() in ('true', '1', 'yes'):
         'telegram_bot_webhook': '5000/min',
         'gmail_pubsub': '5000/min',
         'sms_webhook': '5000/min',
+        'voice_webhook': '5000/min',
     })
 
 # ---------------------------------------------------------------------------
@@ -638,6 +641,37 @@ SMS_ALLOWED_COUNTRY_CODES = [
 SMS_BLOCKED_COUNTRY_CODES = [
     value.strip().upper() for value in os.environ.get('SMS_BLOCKED_COUNTRY_CODES', '').split(',') if value.strip()
 ]
+
+# Inbound Voice AI is fake-first. Long-lived Realtime sessions run only in the
+# dedicated voice gateway process; HTTP and ordinary Celery workers never hold
+# a call open. Live mode is explicit and fails closed when configuration is incomplete.
+VOICE_ENABLE_LIVE = os.environ.get('VOICE_ENABLE_LIVE', '').lower() in ('true', '1', 'yes')
+VOICE_CARRIER_PROVIDER = os.environ.get('VOICE_CARRIER_PROVIDER', 'fake').strip().lower()
+VOICE_REALTIME_PROVIDER = os.environ.get('VOICE_REALTIME_PROVIDER', 'fake').strip().lower()
+VOICE_FAKE_PROVIDER = os.environ.get('VOICE_FAKE_PROVIDER', 'true').lower() in ('true', '1', 'yes')
+VOICE_GLOBAL_KILL_SWITCH = os.environ.get('VOICE_GLOBAL_KILL_SWITCH', '').lower() in ('true', '1', 'yes')
+VOICE_FAKE_WEBHOOK_SECRET = os.environ.get('VOICE_FAKE_WEBHOOK_SECRET', 'test-only-voice-webhook-secret')
+TWILIO_VOICE_ACCOUNT_SID = os.environ.get('TWILIO_VOICE_ACCOUNT_SID', '')
+TWILIO_VOICE_API_KEY_SID = os.environ.get('TWILIO_VOICE_API_KEY_SID', '')
+TWILIO_VOICE_API_KEY_SECRET = os.environ.get('TWILIO_VOICE_API_KEY_SECRET', '')
+TWILIO_VOICE_AUTH_TOKEN = os.environ.get('TWILIO_VOICE_AUTH_TOKEN', '')
+TWILIO_VOICE_PUBLIC_BASE_URL = os.environ.get('TWILIO_VOICE_PUBLIC_BASE_URL', '')
+TWILIO_VOICE_SIP_TRUNK_SID = os.environ.get('TWILIO_VOICE_SIP_TRUNK_SID', '')
+OPENAI_WEBHOOK_SECRET = os.environ.get('OPENAI_WEBHOOK_SECRET', '')
+OPENAI_PROJECT_ID = os.environ.get('OPENAI_PROJECT_ID', '')
+OPENAI_REALTIME_MODEL = os.environ.get('OPENAI_REALTIME_MODEL', 'configured-realtime-model')
+OPENAI_REALTIME_VOICE = os.environ.get('OPENAI_REALTIME_VOICE', 'marin')
+OPENAI_REALTIME_REASONING_EFFORT = os.environ.get('OPENAI_REALTIME_REASONING_EFFORT', 'low')
+OPENAI_REALTIME_SIP_REGION = os.environ.get('OPENAI_REALTIME_SIP_REGION', '')
+VOICE_MAX_CALL_SECONDS = int(os.environ.get('VOICE_MAX_CALL_SECONDS', '900'))
+VOICE_MAX_CONCURRENT_CALLS = int(os.environ.get('VOICE_MAX_CONCURRENT_CALLS', '10'))
+VOICE_DAILY_MINUTE_LIMIT = int(os.environ.get('VOICE_DAILY_MINUTE_LIMIT', '300'))
+VOICE_MONTHLY_MINUTE_LIMIT = int(os.environ.get('VOICE_MONTHLY_MINUTE_LIMIT', '5000'))
+VOICE_TRANSCRIPT_RETENTION_DAYS = int(os.environ.get('VOICE_TRANSCRIPT_RETENTION_DAYS', '30'))
+VOICE_PROVIDER_TIMEOUT_SECONDS = int(os.environ.get('VOICE_PROVIDER_TIMEOUT_SECONDS', '15'))
+VOICE_CONTROLLER_MAX_ATTEMPTS = int(os.environ.get('VOICE_CONTROLLER_MAX_ATTEMPTS', '3'))
+VOICE_MAX_WEBHOOK_BYTES = int(os.environ.get('VOICE_MAX_WEBHOOK_BYTES', '262144'))
+VOICE_MAX_TRANSCRIPT_SEGMENTS = int(os.environ.get('VOICE_MAX_TRANSCRIPT_SEGMENTS', '500'))
 
 CELERY_BEAT_SCHEDULE.update({
     'instagram-health-every-15-minutes': {

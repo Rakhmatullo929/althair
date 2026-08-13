@@ -45,6 +45,16 @@ export SMS_ENABLE_LIVE=False
 export SMS_FAKE_PROVIDER=True
 export SMS_PUBLIC_BASE_URL="https://api.e2e.example.test"
 export TWILIO_AUTH_TOKEN="test-only-twilio-webhook-token"
+export VOICE_ENABLE_LIVE=False
+export VOICE_CARRIER_PROVIDER=fake
+export VOICE_REALTIME_PROVIDER=fake
+export VOICE_FAKE_PROVIDER=True
+export VOICE_GLOBAL_KILL_SWITCH=False
+export VOICE_FAKE_WEBHOOK_SECRET="test-only-voice-webhook-secret"
+export TWILIO_VOICE_PUBLIC_BASE_URL="https://api.e2e.example.test"
+export TWILIO_VOICE_AUTH_TOKEN="test-only-twilio-voice-token"
+export OPENAI_REALTIME_MODEL="configured-realtime-model"
+export OPENAI_REALTIME_VOICE=marin
 FIELD_ENCRYPTION_KEY="$(../../../backend/.venv/bin/python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')"
 export FIELD_ENCRYPTION_KEY
 export CLIENT_PORTAL_SEED_PASSWORD="client-portal-development-only-password"

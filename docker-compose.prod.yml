@@ -87,6 +87,29 @@ x-backend-environment: &backend-environment
   SMS_DAILY_SEGMENT_LIMIT: ${SMS_DAILY_SEGMENT_LIMIT:-20000}
   SMS_ALLOWED_COUNTRY_CODES: ${SMS_ALLOWED_COUNTRY_CODES:-}
   SMS_BLOCKED_COUNTRY_CODES: ${SMS_BLOCKED_COUNTRY_CODES:-}
+  VOICE_ENABLE_LIVE: ${VOICE_ENABLE_LIVE:-false}
+  VOICE_CARRIER_PROVIDER: ${VOICE_CARRIER_PROVIDER:-fake}
+  VOICE_REALTIME_PROVIDER: ${VOICE_REALTIME_PROVIDER:-fake}
+  VOICE_FAKE_PROVIDER: "false"
+  VOICE_GLOBAL_KILL_SWITCH: ${VOICE_GLOBAL_KILL_SWITCH:-false}
+  VOICE_FAKE_WEBHOOK_SECRET: ${VOICE_FAKE_WEBHOOK_SECRET:-}
+  TWILIO_VOICE_ACCOUNT_SID: ${TWILIO_VOICE_ACCOUNT_SID:-}
+  TWILIO_VOICE_API_KEY_SID: ${TWILIO_VOICE_API_KEY_SID:-}
+  TWILIO_VOICE_API_KEY_SECRET: ${TWILIO_VOICE_API_KEY_SECRET:-}
+  TWILIO_VOICE_AUTH_TOKEN: ${TWILIO_VOICE_AUTH_TOKEN:-}
+  TWILIO_VOICE_PUBLIC_BASE_URL: ${TWILIO_VOICE_PUBLIC_BASE_URL:-}
+  TWILIO_VOICE_SIP_TRUNK_SID: ${TWILIO_VOICE_SIP_TRUNK_SID:-}
+  OPENAI_WEBHOOK_SECRET: ${OPENAI_WEBHOOK_SECRET:-}
+  OPENAI_PROJECT_ID: ${OPENAI_PROJECT_ID:-}
+  OPENAI_REALTIME_MODEL: ${OPENAI_REALTIME_MODEL:-}
+  OPENAI_REALTIME_VOICE: ${OPENAI_REALTIME_VOICE:-marin}
+  OPENAI_REALTIME_REASONING_EFFORT: ${OPENAI_REALTIME_REASONING_EFFORT:-low}
+  OPENAI_REALTIME_SIP_REGION: ${OPENAI_REALTIME_SIP_REGION:-}
+  VOICE_MAX_CALL_SECONDS: ${VOICE_MAX_CALL_SECONDS:-900}
+  VOICE_MAX_CONCURRENT_CALLS: ${VOICE_MAX_CONCURRENT_CALLS:-10}
+  VOICE_DAILY_MINUTE_LIMIT: ${VOICE_DAILY_MINUTE_LIMIT:-300}
+  VOICE_MONTHLY_MINUTE_LIMIT: ${VOICE_MONTHLY_MINUTE_LIMIT:-5000}
+  VOICE_TRANSCRIPT_RETENTION_DAYS: ${VOICE_TRANSCRIPT_RETENTION_DAYS:-30}
   OUTLOOK_WEBHOOK_SECRET: ${OUTLOOK_WEBHOOK_SECRET:-}
   EXPECTED_API_TOKEN_SHA256: ${EXPECTED_API_TOKEN_SHA256:-}
 
@@ -207,6 +230,31 @@ services:
       api:
         condition: service_healthy
     stop_grace_period: 60s
+    networks:
+      - backend
+
+  voice-worker:
+    <<: *service-defaults
+    build:
+      context: ./backend
+    container_name: althair-voice-worker
+    entrypoint: []
+    command: ["python", "manage.py", "run_voice_gateway"]
+    environment: *backend-environment
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          python manage.py shell -c "from django.core.cache import cache;
+          assert cache.get('voice:worker:heartbeat')"
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 15s
+    stop_grace_period: 30s
     networks:
       - backend
 

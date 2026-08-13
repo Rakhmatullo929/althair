@@ -92,6 +92,29 @@ def health_ready(request):
     else:
         checks['sms'] = 'fake_or_disabled'
 
+    if settings.VOICE_ENABLE_LIVE:
+        voice_ready = all([
+            settings.TWILIO_VOICE_ACCOUNT_SID,
+            settings.TWILIO_VOICE_AUTH_TOKEN,
+            settings.TWILIO_VOICE_PUBLIC_BASE_URL.startswith('https://'),
+            settings.OPENAI_API_KEY,
+            settings.OPENAI_WEBHOOK_SECRET,
+            settings.OPENAI_PROJECT_ID,
+            settings.OPENAI_REALTIME_MODEL,
+        ])
+        checks['voice'] = 'configured' if voice_ready else 'configuration_incomplete'
+        healthy = healthy and voice_ready
+    else:
+        checks['voice'] = 'fake_or_disabled'
+
+    try:
+        from django.core.cache import cache
+        worker_alive = bool(cache.get('voice:worker:heartbeat'))
+    except Exception:
+        worker_alive = False
+    checks['voice_worker'] = 'ready' if worker_alive else ('not_required' if not settings.VOICE_ENABLE_LIVE else 'unavailable')
+    healthy = healthy and (worker_alive or not settings.VOICE_ENABLE_LIVE)
+
     status_code = 200 if healthy else 503
     return JsonResponse({'status': 'ready' if healthy else 'degraded', 'checks': checks}, status=status_code)
 
@@ -114,10 +137,12 @@ urlpatterns = [
         path('', include(('telegram.urls', 'telegram'), namespace='telegram')),
         path('', include(('gmail_integration.urls', 'gmail_integration'), namespace='gmail_integration')),
         path('', include(('sms.urls', 'sms'), namespace='sms')),
+        path('', include(('voice.urls', 'voice'), namespace='voice')),
         path('webhooks/', include(('instagram.webhook_urls', 'instagram_webhooks'), namespace='instagram_webhooks')),
         path('webhooks/', include(('telegram.webhook_urls', 'telegram_webhooks'), namespace='telegram_webhooks')),
         path('webhooks/', include(('gmail_integration.webhook_urls', 'gmail_webhooks'), namespace='gmail_webhooks')),
         path('webhooks/', include(('sms.webhook_urls', 'sms_webhooks'), namespace='sms_webhooks')),
+        path('webhooks/', include(('voice.webhook_urls', 'voice_webhooks'), namespace='voice_webhooks')),
         path('public/web-chat/', include(('web_chat.public_urls', 'web_chat_public'), namespace='web_chat_public')),
         path('public/', include(('early_access.urls', 'early_access'), namespace='early_access')),
         path('users/', include(('users.urls', 'users'), namespace='users')),

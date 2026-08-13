@@ -15,6 +15,7 @@ import {
   MessageSquareText,
   NotebookPen,
   Paperclip,
+  PhoneCall,
   Plus,
   RotateCcw,
   Search,
@@ -185,6 +186,17 @@ export function InboxPage() {
         conversationRows[0] ??
         null);
   const activeConversationId = selected?.id ?? null;
+  const calls = useQuery({
+    queryKey: ["voice", "calls", organizationId],
+    queryFn: () => workspace.api.voiceCalls(),
+    enabled: selected?.channel_type === "voice",
+  });
+  const selectedVoiceCall =
+    selected?.channel_type === "voice"
+      ? calls.data?.results.find(
+          (call) => call.id === selected.provider_context.voice_call_id,
+        )
+      : undefined;
   const messages = useQuery({
     queryKey: crmQueryKeys.messages(
       organizationId,
@@ -662,6 +674,33 @@ export function InboxPage() {
                   </div>
                 </div>
               ) : null}
+              {selected.channel_type === "voice" ? (
+                <div
+                  className="instagram-inbox-policy voice-inbox-policy"
+                  role="status"
+                >
+                  <PhoneCall aria-hidden="true" />
+                  <div>
+                    <strong>{selected.contact_name}</strong>
+                    <p>
+                      {t("inbox.voiceState", {
+                        state:
+                          selected.provider_context.call_status ?? "unknown",
+                      })}
+                    </p>
+                    <small>
+                      {t("inbox.voiceDuration", {
+                        seconds:
+                          selected.provider_context.duration_seconds ?? 0,
+                      })}
+                    </small>
+                    <small>
+                      {t("inbox.voiceConsent")}:{" "}
+                      {selected.provider_context.consent_state}
+                    </small>
+                  </div>
+                </div>
+              ) : null}
               <ConversationAIPanel
                 conversation={selected}
                 organizationId={organizationId}
@@ -670,7 +709,41 @@ export function InboxPage() {
                 onRefresh={refresh}
               />
               <div className="timeline-scroll">
-                {messages.isLoading ? (
+                {selected.channel_type === "voice" && selectedVoiceCall ? (
+                  <article className="voice-inbox-call-card">
+                    <header>
+                      <PhoneCall />
+                      <div>
+                        <strong>{t("inbox.voiceTimeline")}</strong>
+                        <small>{selectedVoiceCall.status}</small>
+                      </div>
+                    </header>
+                    <p>
+                      {selectedVoiceCall.summary || t("inbox.voiceNoSummary")}
+                    </p>
+                    {selectedVoiceCall.transcript_storage_allowed ? (
+                      <ol className="voice-transcript compact">
+                        {selectedVoiceCall.transcript.map((segment) => (
+                          <li
+                            key={segment.id}
+                            className={`speaker-${segment.speaker}`}
+                          >
+                            <strong>{segment.speaker}</strong>
+                            <p>{segment.text}</p>
+                          </li>
+                        ))}
+                      </ol>
+                    ) : (
+                      <small>{t("inbox.voiceTranscriptHidden")}</small>
+                    )}
+                    {selectedVoiceCall.transfer_status ? (
+                      <small>
+                        {t("inbox.voiceTransfer")}:{" "}
+                        {selectedVoiceCall.transfer_status}
+                      </small>
+                    ) : null}
+                  </article>
+                ) : messages.isLoading ? (
                   <PageSkeleton />
                 ) : messages.data?.results.length ? (
                   <Timeline

@@ -48,6 +48,7 @@ from crm.models import (
 )
 from crm.services import add_system_message, is_internal_test_connection, record_activity
 from organizations.models import OrganizationMembership, OrganizationMembershipRole, OrganizationStatus
+from control_plane.policies import operation_allowed
 
 
 logger = logging.getLogger("ai_runtime")
@@ -184,7 +185,11 @@ def _autopilot_environment_allowed():
 
 def _policies(organization):
     ensure_runtime_config(organization)
-    return list(AIToolPolicy.objects.for_organization(organization).order_by("tool_name"))
+    policies = AIToolPolicy.objects.for_organization(organization).order_by("tool_name")
+    return [
+        policy for policy in policies
+        if operation_allowed(organization=organization, ai=True, tool_name=policy.tool_name)
+    ]
 
 
 def _check_run_limits(config, *, current_run=None):
@@ -257,6 +262,14 @@ def create_queued_run(*, message, task_key, mode=None):
         raise AIRuntimeUnavailable("inbound_trigger_required")
     if organization.status not in {OrganizationStatus.TRIAL, OrganizationStatus.ACTIVE}:
         raise AIRuntimeUnavailable("organization_read_only")
+    if not operation_allowed(
+        organization=organization,
+        provider_type="openai",
+        channel_connection=conversation.channel_connection,
+        ai=True,
+        autopilot=bool(mode and "autopilot" in str(mode)),
+    ):
+        raise AIRuntimeUnavailable("operational_control_active")
     config = ensure_runtime_config(organization)
     config = OrganizationAIRuntimeConfig.objects.select_for_update().get(pk=config.pk)
     if not config.enabled:
@@ -425,6 +438,14 @@ def process_run(run_id):
 
     config = ensure_runtime_config(run.organization)
     try:
+        if not operation_allowed(
+            organization=run.organization,
+            provider_type="openai",
+            channel_connection=run.conversation.channel_connection,
+            ai=True,
+            autopilot="autopilot" in str(run.mode),
+        ):
+            raise AIRuntimeUnavailable("operational_control_active")
         _check_run_limits(config, current_run=run)
         policies = _policies(run.organization)
         tools = provider_tools_for(policies)

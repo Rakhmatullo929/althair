@@ -76,6 +76,7 @@ INSTALLED_APPS = [
     'gmail_integration',
     'sms',
     'voice',
+    'control_plane',
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -107,6 +108,7 @@ CORS_ALLOW_HEADERS = (
     *default_headers,
     'idempotency-key',
     'x-organization-id',
+    'x-internal-reason',
     'x-request-id',
 )
 
@@ -116,6 +118,8 @@ if DEBUG:
         'http://127.0.0.1:3000',
         'http://localhost:3001',
         'http://127.0.0.1:3001',
+        'http://localhost:3002',
+        'http://127.0.0.1:3002',
         'http://localhost:5173',
         'http://127.0.0.1:5173',
     ]
@@ -124,6 +128,8 @@ if DEBUG:
         'http://127.0.0.1:3000',
         'http://localhost:3001',
         'http://127.0.0.1:3001',
+        'http://localhost:3002',
+        'http://127.0.0.1:3002',
         'http://localhost:5173',
         'http://127.0.0.1:5173',
     ]
@@ -365,6 +371,9 @@ REST_FRAMEWORK = {
         'gmail_pubsub': '1200/min',
         'sms_webhook': '1200/min',
         'voice_webhook': '1200/min',
+        'internal_login': '5/min',
+        'internal_mfa': '10/min',
+        'internal_api': '240/min',
     },
     'EXCEPTION_HANDLER': 'core.api.exception_handler.api_exception_handler',
     'DEFAULT_RENDERER_CLASSES': (
@@ -375,7 +384,7 @@ REST_FRAMEWORK = {
     ),
 }
 
-if os.environ.get('E2E_TESTING', '').lower() in ('true', '1', 'yes'):
+if TESTING:
     REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'].update({
         'login': '200/min',
         'registration': '200/min',
@@ -390,6 +399,9 @@ if os.environ.get('E2E_TESTING', '').lower() in ('true', '1', 'yes'):
         'gmail_pubsub': '5000/min',
         'sms_webhook': '5000/min',
         'voice_webhook': '5000/min',
+        'internal_login': '200/min',
+        'internal_mfa': '200/min',
+        'internal_api': '5000/min',
     })
 
 # ---------------------------------------------------------------------------
@@ -672,6 +684,24 @@ VOICE_PROVIDER_TIMEOUT_SECONDS = int(os.environ.get('VOICE_PROVIDER_TIMEOUT_SECO
 VOICE_CONTROLLER_MAX_ATTEMPTS = int(os.environ.get('VOICE_CONTROLLER_MAX_ATTEMPTS', '3'))
 VOICE_MAX_WEBHOOK_BYTES = int(os.environ.get('VOICE_MAX_WEBHOOK_BYTES', '262144'))
 VOICE_MAX_TRANSCRIPT_SEGMENTS = int(os.environ.get('VOICE_MAX_TRANSCRIPT_SEGMENTS', '500'))
+
+# The internal control plane is disabled unless explicitly enabled. Its opaque
+# cookie is deliberately separate from customer JWT cookies and has a short,
+# inactivity-bounded lifetime.
+CONTROL_PLANE_ENABLE = os.environ.get('CONTROL_PLANE_ENABLE', '').lower() in ('true', '1', 'yes')
+CONTROL_PLANE_COOKIE_NAME = os.environ.get('CONTROL_PLANE_COOKIE_NAME', 'althair-internal-session')
+CONTROL_PLANE_SESSION_MINUTES = int(os.environ.get('CONTROL_PLANE_SESSION_MINUTES', '30'))
+CONTROL_PLANE_INACTIVITY_MINUTES = int(os.environ.get('CONTROL_PLANE_INACTIVITY_MINUTES', '15'))
+CONTROL_PLANE_MFA_REQUIRED = os.environ.get('CONTROL_PLANE_MFA_REQUIRED', 'true').lower() in ('true', '1', 'yes')
+CONTROL_PLANE_FAKE_MFA = os.environ.get('CONTROL_PLANE_FAKE_MFA', '').lower() in ('true', '1', 'yes')
+CONTROL_PLANE_ALLOWED_IPS = [
+    value.strip() for value in os.environ.get('CONTROL_PLANE_ALLOWED_IPS', '').split(',') if value.strip()
+]
+CONTROL_PLANE_RECENT_MFA_MINUTES = int(os.environ.get('CONTROL_PLANE_RECENT_MFA_MINUTES', '10'))
+CONTROL_PLANE_EXPORT_STORAGE = os.environ.get('CONTROL_PLANE_EXPORT_STORAGE', '')
+
+if CONTROL_PLANE_FAKE_MFA and not (DEBUG or TESTING):
+    raise RuntimeError('CONTROL_PLANE_FAKE_MFA is permitted only in development or tests')
 
 CELERY_BEAT_SCHEDULE.update({
     'instagram-health-every-15-minutes': {

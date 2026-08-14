@@ -213,6 +213,12 @@ export function AppShell({ children }: { children: ReactNode }) {
             {t("organization.suspendedBanner")}
           </div>
         ) : null}
+        {workspace.membership.organization_status !== "suspended" &&
+        workspace.membership.operational_restrictions.restricted ? (
+          <div className="operational-banner" role="status">
+            {t("organization.operationalBanner")}
+          </div>
+        ) : null}
         <div className="content-wrap">
           <nav className="breadcrumbs" aria-label={t("navigation.breadcrumbs")}>
             <Link href="/app">{t("navigation.overview")}</Link>

@@ -1,0 +1,70 @@
+{
+  "common": {
+    "skip": "Skip to main content",
+    "product": "Althair Operations",
+    "internal": "Internal control plane",
+    "environment": "Environment",
+    "loading": "Loading verified platform data…",
+    "retry": "Retry",
+    "reason": "Reason",
+    "confirm": "Confirm action",
+    "cancel": "Cancel",
+    "status": "Status",
+    "language": "Language",
+    "noData": "No stored records match this view.",
+    "redacted": "Sensitive values are redacted",
+    "requestId": "Request ID: {id}"
+  },
+  "auth": {
+    "title": "Internal staff sign in",
+    "description": "Use your dedicated platform access. Customer sessions cannot open this application.",
+    "email": "Internal email",
+    "password": "Password",
+    "submit": "Continue securely",
+    "mfaTitle": "Verify multi-factor authentication",
+    "mfaDescription": "Enter a current authenticator code or an unused recovery code.",
+    "code": "Verification code",
+    "verify": "Verify and open operations",
+    "setup": "Set up MFA",
+    "setupHint": "The setup secret and recovery codes are shown only once.",
+    "genericError": "Internal sign-in could not be completed.",
+    "logout": "Sign out"
+  },
+  "nav": {
+    "overview": "Overview",
+    "organizations": "Organizations",
+    "providers": "Providers",
+    "ai": "AI control",
+    "jobs": "Jobs & webhooks",
+    "incidents": "Incidents",
+    "dataRequests": "Data requests",
+    "entitlements": "Entitlements",
+    "audit": "Audit",
+    "staff": "Platform staff",
+    "settings": "Settings"
+  },
+  "pages": {
+    "overview": "Platform overview",
+    "organizations": "Organization directory",
+    "organization": "Read-only tenant inspector",
+    "providers": "Provider health control center",
+    "ai": "AI usage and operational controls",
+    "jobs": "Jobs, webhooks, and dead letters",
+    "incidents": "Incident management",
+    "dataRequests": "Data request approvals",
+    "entitlements": "Non-billing entitlements",
+    "audit": "Immutable platform audit",
+    "staff": "Platform staff access",
+    "settings": "Internal security settings"
+  },
+  "actions": {
+    "suspend": "Suspend organization",
+    "reactivate": "Reactivate organization",
+    "disableAi": "Disable global AI",
+    "restore": "Restore control",
+    "retryJob": "Retry idempotent job",
+    "createIncident": "Create incident",
+    "approve": "Approve request",
+    "saveEntitlement": "Save entitlement"
+  }
+}

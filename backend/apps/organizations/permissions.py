@@ -29,6 +29,8 @@ def resolve_request_organization(request, *, expected_organization_id=None):
         raise InvalidOrganizationHeader() from exc
     if expected_organization_id and organization_id != uuid.UUID(str(expected_organization_id)):
         raise OrganizationHeaderMismatch()
+    if not request.user or not request.user.is_authenticated:
+        raise OrganizationAccessDenied()
     try:
         organization = Organization.objects.get(pk=organization_id)
         membership = OrganizationMembership.objects.select_related("organization").get(
@@ -71,9 +73,3 @@ class HasOrganizationRole(BasePermission):
             write_action=getattr(view, "write_action", "manage_crm"),
         )
         return role_allows(membership.role, action)
-
-
-class IsPlatformAdmin(BasePermission):
-    def has_permission(self, request, view):
-        user = request.user
-        return bool(user and user.is_authenticated and user.is_staff and user.is_superuser)

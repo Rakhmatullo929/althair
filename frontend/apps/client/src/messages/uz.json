@@ -33,7 +33,8 @@
   },
   "organization": {
     "switchLabel": "Tashkilot",
-    "suspendedBanner": "Tashkilot faoliyati to‘xtatilgan. Sozlamalarni ko‘rish mumkin, o‘zgartirish esa o‘chirilgan."
+    "suspendedBanner": "Tashkilot faoliyati to‘xtatilgan. Sozlamalarni ko‘rish mumkin, o‘zgartirish esa o‘chirilgan.",
+    "operationalBanner": "Platformadagi operatsion cheklov sabab ayrim imkoniyatlar vaqtincha mavjud emas."
   },
   "errors": {
     "loadTitle": "Ish maydonini yuklab bo‘lmadi",

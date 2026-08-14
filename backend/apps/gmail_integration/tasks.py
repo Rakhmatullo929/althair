@@ -17,6 +17,7 @@ from gmail_integration.models import (
     GmailSyncType,
 )
 from gmail_integration.providers import GmailProviderError, build_rfc_reply, gmail_provider
+from control_plane.policies import operation_allowed
 from gmail_integration.services import (
     bounded_full_sync,
     connection_health,
@@ -263,6 +264,16 @@ def retry_gmail_outbound(attempt_id):
         origin_id=f"message:{attempt.message.id}",
         cc=tuple(attempt.message.metadata.get("cc") or []),
     )
+    if not operation_allowed(
+        organization=attempt.organization,
+        provider_type="gmail",
+        channel_connection=attempt.connection.channel_connection,
+    ):
+        attempt.status = GmailOutboundStatus.FAILED
+        attempt.safe_error_code = "operational_control_active"
+        attempt.next_retry_at = None
+        attempt.save(update_fields=["attempt_count", "status", "safe_error_code", "next_retry_at", "updated_at"])
+        return {"status": attempt.status}
     try:
         result = gmail_provider().send_reply(
             attempt.connection, thread_id=source.gmail_thread_id, raw_message=raw

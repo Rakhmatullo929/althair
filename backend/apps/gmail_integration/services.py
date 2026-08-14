@@ -55,6 +55,7 @@ from gmail_integration.providers import (
     gmail_provider,
 )
 from organizations.models import OrganizationMembershipRole, OrganizationStatus
+from control_plane.policies import operation_allowed
 
 
 SAFE_REDIRECT_PATTERN = re.compile(
@@ -814,7 +815,14 @@ def conversation_policy(conversation) -> dict:
 
 
 def can_send_gmail(conversation):
-    return conversation_policy(conversation)["can_send"]
+    return bool(
+        conversation_policy(conversation)["can_send"]
+        and operation_allowed(
+            organization=conversation.organization,
+            provider_type="gmail",
+            channel_connection=conversation.channel_connection,
+        )
+    )
 
 
 def _send_throttle(connection):
@@ -863,6 +871,12 @@ def send_gmail_message(
     connection = connection_for_conversation(conversation)
     if not connection:
         raise GmailError("provider_unavailable", status_code=409)
+    if not operation_allowed(
+        organization=conversation.organization,
+        provider_type="gmail",
+        channel_connection=conversation.channel_connection,
+    ):
+        raise GmailError("operational_control_active", status_code=409)
     policy = conversation_policy(conversation)
     if not policy["can_send"]:
         raise GmailError(policy["state"], status_code=409)

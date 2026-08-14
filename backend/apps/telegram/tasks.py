@@ -10,6 +10,7 @@ from django.utils import timezone
 from crm.models import MessageStatus
 from telegram.models import TelegramBotConnection, TelegramConnectionStatus, TelegramOutboundAttempt
 from telegram.providers import TelegramProviderError, telegram_provider
+from control_plane.policies import operation_allowed
 from telegram.services import connection_health, expire_pending_requests, process_manager_event, process_webhook_event
 
 
@@ -60,6 +61,16 @@ def retry_telegram_outbound(attempt_id):
         attempt.status = "sending"
         attempt.save(update_fields=["attempt_count", "status", "updated_at"])
         message = attempt.message
+        if not operation_allowed(
+            organization=attempt.organization,
+            provider_type="telegram",
+            channel_connection=attempt.connection.channel_connection,
+        ):
+            attempt.status = "failed"
+            attempt.safe_error_code = "operational_control_active"
+            attempt.next_retry_at = None
+            attempt.save(update_fields=["status", "safe_error_code", "next_retry_at", "updated_at"])
+            return {"status": attempt.status, "error_code": "operational_control_active"}
         try:
             result = telegram_provider().send_text(connection=attempt.connection, chat_id=message.conversation.external_thread_id, text=message.body)
         except TelegramProviderError as exc:

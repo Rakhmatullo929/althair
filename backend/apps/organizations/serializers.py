@@ -18,13 +18,26 @@ class MembershipSummarySerializer(serializers.ModelSerializer):
     organization_name = serializers.CharField(source="organization.name", read_only=True)
     organization_slug = serializers.CharField(source="organization.slug", read_only=True)
     organization_status = serializers.CharField(source="organization.status", read_only=True)
+    operational_restrictions = serializers.SerializerMethodField()
+    entitlement = serializers.SerializerMethodField()
 
     class Meta:
         model = OrganizationMembership
         fields = [
             "id", "organization", "organization_name", "organization_slug",
             "organization_status", "role", "status", "joined_at",
+            "operational_restrictions", "entitlement",
         ]
+
+    def get_operational_restrictions(self, obj):
+        from control_plane.services import public_operational_restrictions
+
+        return public_operational_restrictions(obj.organization)
+
+    def get_entitlement(self, obj):
+        from control_plane.services import public_entitlement
+
+        return public_entitlement(obj.organization)
 
 
 class MeSerializer(serializers.ModelSerializer):

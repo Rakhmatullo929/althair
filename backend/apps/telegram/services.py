@@ -43,6 +43,7 @@ from telegram.models import (
     TelegramWebhookEvent,
 )
 from telegram.providers import TelegramProviderError, telegram_provider
+from control_plane.policies import operation_allowed
 
 
 ALLOWED_UPDATES = ["message", "edited_message", "callback_query", "message_reaction", "my_chat_member"]
@@ -478,7 +479,14 @@ def conversation_policy(conversation) -> dict:
 
 
 def can_send_telegram(conversation):
-    return conversation_policy(conversation).get("can_send", False)
+    return bool(
+        conversation_policy(conversation).get("can_send", False)
+        and operation_allowed(
+            organization=conversation.organization,
+            provider_type="telegram",
+            channel_connection=conversation.channel_connection,
+        )
+    )
 
 
 def _throttle(connection):
@@ -499,6 +507,12 @@ def send_telegram_message(*, conversation, body, client_message_id, membership=N
     connection = connection_for_conversation(conversation)
     if not connection:
         raise TelegramError("provider_unavailable", status_code=409)
+    if not operation_allowed(
+        organization=conversation.organization,
+        provider_type="telegram",
+        channel_connection=conversation.channel_connection,
+    ):
+        raise TelegramError("operational_control_active", status_code=409)
     policy = conversation_policy(conversation)
     if not policy["can_send"]:
         raise TelegramError(policy["state"], status_code=409)

@@ -50,6 +50,7 @@ from voice.models import (
     VoiceWebhookEnvelope,
 )
 from voice.providers import VoiceProviderError, carrier_provider_for, realtime_provider_for
+from control_plane.policies import blocking_control, operation_allowed
 
 
 class VoiceError(Exception):
@@ -469,6 +470,15 @@ def route_verified_incoming_call(event: dict) -> IncomingCallResult:
     rejection = ""
     if settings.VOICE_GLOBAL_KILL_SWITCH:
         rejection = "global_kill_switch"
+    elif code := blocking_control(
+        organization=connection.organization,
+        provider_type="voice",
+        channel_connection=connection.channel_connection,
+        ai=True,
+        voice=True,
+        autopilot=True,
+    ):
+        rejection = code
     elif connection.organization.status not in ACTIVE_ORGANIZATIONS:
         rejection = "organization_read_only"
     elif connection.status not in ROUTABLE_CONNECTIONS:
@@ -543,6 +553,22 @@ def accept_or_reject_routed_call(result: IncomingCallResult) -> None:
     provider = realtime_provider_for(result.call.voice_connection)
     if not result.accepted:
         provider.reject(call_id=result.call.provider_call_id, status_code=486 if result.rejection_reason == "concurrent_call_limit" else 603)
+        return
+    if not operation_allowed(
+        organization=result.call.organization,
+        provider_type="voice",
+        channel_connection=result.call.voice_connection.channel_connection,
+        ai=True,
+        voice=True,
+        autopilot=True,
+    ):
+        provider.reject(call_id=result.call.provider_call_id, status_code=603)
+        VoiceCall.objects.filter(pk=result.call.pk).update(
+            status=VoiceCallStatus.REJECTED,
+            rejection_reason="operational_control_active",
+            ended_at=timezone.now(),
+            outcome="rejected",
+        )
         return
     session = VoiceSessionBuilder().build(call=result.call)
     safety_identifier = hashlib.sha256(

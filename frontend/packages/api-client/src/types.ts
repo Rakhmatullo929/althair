@@ -16,6 +16,19 @@ export type MembershipSummary = {
   role: OrganizationRole;
   status: "active";
   joined_at: string | null;
+  operational_restrictions: {
+    restricted: boolean;
+    ai_disabled: boolean;
+    provider_sends_disabled: boolean;
+    new_logins_disabled: boolean;
+    message: string;
+  };
+  entitlement: {
+    plan: string;
+    status: "trial" | "active" | "grace" | "suspended" | "manual";
+    features: Record<string, boolean>;
+    limits: Record<string, number>;
+  };
 };
 
 export type CurrentUser = {

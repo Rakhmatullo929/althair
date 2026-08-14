@@ -33,7 +33,8 @@
   },
   "organization": {
     "switchLabel": "Organization",
-    "suspendedBanner": "This organization is suspended. You can review settings, but changes are disabled."
+    "suspendedBanner": "This organization is suspended. You can review settings, but changes are disabled.",
+    "operationalBanner": "Some capabilities are temporarily unavailable due to a platform operational control."
   },
   "errors": {
     "loadTitle": "We could not load this workspace",

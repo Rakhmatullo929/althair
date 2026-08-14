@@ -53,6 +53,7 @@ from sms.parser import (
 )
 from sms.providers import SMSProviderError, provider_for
 from sms.segments import estimate_segments
+from control_plane.policies import operation_allowed
 
 
 class SMSError(Exception):
@@ -635,7 +636,14 @@ def conversation_policy(conversation: Conversation) -> dict:
 
 
 def can_send_sms(conversation: Conversation) -> bool:
-    return bool(conversation_policy(conversation).get("can_send"))
+    return bool(
+        conversation_policy(conversation).get("can_send")
+        and operation_allowed(
+            organization=conversation.organization,
+            provider_type="sms",
+            channel_connection=conversation.channel_connection,
+        )
+    )
 
 
 def sms_autopilot_allowed(conversation: Conversation) -> bool:
@@ -689,6 +697,12 @@ def send_sms_message(
     policy = conversation_policy(conversation)
     if not policy["can_send"]:
         raise SMSError(str(policy["state"]), status_code=409)
+    if not operation_allowed(
+        organization=conversation.organization,
+        provider_type="sms",
+        channel_connection=conversation.channel_connection,
+    ):
+        raise SMSError("operational_control_active", status_code=409)
     connection = SMSConnection.objects.select_for_update().get(channel_connection=conversation.channel_connection)
     try:
         recipient = normalize_phone(conversation.external_thread_id)
@@ -772,6 +786,16 @@ def send_sms_message(
     if not cache.add(send_lock_key, str(message.id), timeout=settings.SMS_SEND_LOCK_SECONDS):
         raise SMSError("send_in_progress", status_code=409)
     try:
+        if not operation_allowed(
+            organization=conversation.organization,
+            provider_type="sms",
+            channel_connection=conversation.channel_connection,
+        ):
+            attempt.status = SMSOutboundAttemptStatus.FAILED
+            attempt.retryable = False
+            attempt.last_error_code = "operational_control_active"
+            attempt.save(update_fields=["status", "retryable", "last_error_code", "updated_at"])
+            return {"status": "policy_blocked", "retry": False}
         result = provider_for(connection).send(
             connection=connection,
             to=recipient,

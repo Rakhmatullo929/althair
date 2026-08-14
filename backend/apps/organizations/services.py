@@ -47,6 +47,9 @@ def create_organization(*, creator, name: str, slug: str, **fields) -> Organizat
     from crm.services import ensure_default_pipeline
 
     ensure_default_pipeline(organization)
+    from control_plane.services import ensure_default_entitlement
+
+    ensure_default_entitlement(organization)
     return organization
 
 

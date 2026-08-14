@@ -12,6 +12,19 @@ const memberships = [
     role: "owner",
     status: "active",
     joined_at: null,
+    operational_restrictions: {
+      restricted: false,
+      ai_disabled: false,
+      provider_sends_disabled: false,
+      new_logins_disabled: false,
+      message: "",
+    },
+    entitlement: {
+      plan: "manual",
+      status: "manual",
+      features: {},
+      limits: {},
+    },
   },
   {
     id: "m2",
@@ -22,6 +35,19 @@ const memberships = [
     role: "viewer",
     status: "active",
     joined_at: null,
+    operational_restrictions: {
+      restricted: false,
+      ai_disabled: false,
+      provider_sends_disabled: false,
+      new_logins_disabled: false,
+      message: "",
+    },
+    entitlement: {
+      plan: "manual",
+      status: "manual",
+      features: {},
+      limits: {},
+    },
   },
 ] satisfies MembershipSummary[];
 

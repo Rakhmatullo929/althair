@@ -15,6 +15,7 @@ from instagram.models import (
     InstagramOutboundStatus,
 )
 from instagram.providers import InstagramProviderError, instagram_provider
+from control_plane.policies import operation_allowed
 from instagram.services import connection_health, process_webhook_event
 
 
@@ -106,6 +107,16 @@ def retry_instagram_outbound(attempt_id):
         attempt.status = InstagramOutboundStatus.SENDING
         attempt.save(update_fields=["attempt_count", "status", "updated_at"])
         message = attempt.message
+        if not operation_allowed(
+            organization=attempt.organization,
+            provider_type="instagram",
+            channel_connection=attempt.connection.channel_connection,
+        ):
+            attempt.status = InstagramOutboundStatus.FAILED
+            attempt.safe_error_code = "operational_control_active"
+            attempt.next_retry_at = None
+            attempt.save(update_fields=["status", "safe_error_code", "next_retry_at", "updated_at"])
+            return {"status": attempt.status, "error_code": "operational_control_active"}
         try:
             result = instagram_provider().send_text(
                 connection=attempt.connection,

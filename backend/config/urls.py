@@ -115,6 +115,16 @@ def health_ready(request):
     checks['voice_worker'] = 'ready' if worker_alive else ('not_required' if not settings.VOICE_ENABLE_LIVE else 'unavailable')
     healthy = healthy and (worker_alive or not settings.VOICE_ENABLE_LIVE)
 
+    if settings.CONTROL_PLANE_ENABLE:
+        checks['control_plane'] = (
+            'ready'
+            if settings.CONTROL_PLANE_MFA_REQUIRED and settings.CONTROL_PLANE_SESSION_MINUTES <= 60
+            else 'configuration_incomplete'
+        )
+        healthy = healthy and checks['control_plane'] == 'ready'
+    else:
+        checks['control_plane'] = 'disabled'
+
     status_code = 200 if healthy else 503
     return JsonResponse({'status': 'ready' if healthy else 'degraded', 'checks': checks}, status=status_code)
 
@@ -124,6 +134,7 @@ urlpatterns = [
     path('health/live', health_live, name='health_live'),
     path('health/ready', health_ready, name='health_ready'),
     path(settings.ADMIN_URL, admin.site.urls),
+    path('api/v1/internal/', include(('control_plane.urls', 'control_plane'), namespace='control_plane')),
     path('core/', include(('core.urls', 'core'), namespace='core')),
     path('api/v1/', include([
         path('me/', MeView.as_view(), name='me'),

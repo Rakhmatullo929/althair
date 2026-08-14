@@ -44,6 +44,7 @@ from instagram.providers import (
     instagram_provider,
 )
 from organizations.models import Organization, OrganizationMembershipRole, OrganizationStatus
+from control_plane.policies import operation_allowed
 
 
 SAFE_REDIRECT_PATTERN = re.compile(
@@ -630,7 +631,14 @@ def window_eligibility(conversation: Conversation, *, at=None) -> dict:
 
 
 def can_send_instagram(conversation: Conversation) -> bool:
-    return bool(window_eligibility(conversation).get("can_send"))
+    return bool(
+        window_eligibility(conversation).get("can_send")
+        and operation_allowed(
+            organization=conversation.organization,
+            provider_type="instagram",
+            channel_connection=conversation.channel_connection,
+        )
+    )
 
 
 def serialize_conversation_policy(conversation: Conversation) -> dict:
@@ -676,6 +684,12 @@ def send_instagram_message(
     connection = connection_for_conversation(conversation)
     if not connection:
         raise InstagramError("provider_unavailable", status_code=409)
+    if not operation_allowed(
+        organization=conversation.organization,
+        provider_type="instagram",
+        channel_connection=conversation.channel_connection,
+    ):
+        raise InstagramError("operational_control_active", status_code=409)
     text = (body or "").strip()
     if not text or len(text) > settings.META_INSTAGRAM_MAX_TEXT_LENGTH:
         raise InstagramError("message_length_invalid")

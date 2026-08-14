@@ -211,6 +211,19 @@ class LoginView(APIView):
             )
             return Response({'detail': 'Invalid credentials.'}, status=status.HTTP_401_UNAUTHORIZED)
 
+        from control_plane.models import OrganizationOperationalState
+
+        if OrganizationOperationalState.objects.filter(
+            organization__memberships__user=user,
+            organization__memberships__status=OrganizationMembershipStatus.ACTIVE,
+            new_logins_disabled=True,
+        ).exists():
+            security_logger.warning('Customer login blocked by an organization operational control')
+            return Response(
+                {'detail': 'Sign-in is temporarily unavailable for this organization.', 'code': 'operational_control_active'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         security_logger.info('Successful login for user %s from IP %s', user.id, client_ip)
 
         return _auth_response(user)

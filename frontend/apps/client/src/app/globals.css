@@ -1729,6 +1729,15 @@ svg {
   font-weight: 700;
   text-align: center;
 }
+.operational-banner {
+  border-bottom: 1px solid #b9d0eb;
+  background: #edf6ff;
+  color: #194c7b;
+  padding: 10px 38px;
+  font-size: 0.83rem;
+  font-weight: 700;
+  text-align: center;
+}
 .content-wrap {
   width: min(100%, 1480px);
   margin: 0 auto;

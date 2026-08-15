@@ -146,6 +146,13 @@ def complete_oauth(*, user, raw_state: str, code: str) -> InstagramConnection:
         raise InstagramError("oauth_state_expired", status_code=410)
     if state.user_id != user.id or state.membership.user_id != user.id:
         raise InstagramError("oauth_state_user_mismatch", status_code=403)
+    from billing.services import BillingError, EntitlementService
+
+    try:
+        entitlements = EntitlementService(state.organization)
+        entitlements.require("instagram")
+    except BillingError as exc:
+        raise InstagramError(exc.code, status_code=exc.status_code) from exc
     state.consumed_at = timezone.now()
     state.save(update_fields=["consumed_at"])
     try:
@@ -163,6 +170,21 @@ def complete_oauth(*, user, raw_state: str, code: str) -> InstagramConnection:
     ).first()
     if duplicate:
         raise InstagramError("instagram_account_already_connected", status_code=409)
+    try:
+        entitlements.require_capacity(
+            "max_instagram_connections",
+            InstagramConnection.objects.for_organization(state.organization)
+            .exclude(connection_status=InstagramConnectionStatus.DISCONNECTED)
+            .count(),
+        )
+        entitlements.require_capacity(
+            "max_channel_connections",
+            ChannelConnection.objects.for_organization(state.organization)
+            .exclude(status=ChannelStatus.DISCONNECTED)
+            .count(),
+        )
+    except BillingError as exc:
+        raise InstagramError(exc.code, status_code=exc.status_code) from exc
     token_expires_at = (
         timezone.now() + timedelta(seconds=snapshot.expires_in)
         if snapshot.expires_in
@@ -705,6 +727,12 @@ def send_instagram_message(
         raise InstagramError(policy["state"], status_code=409)
     if sender_type == MessageSenderType.AI and human_agent:
         raise InstagramError("ai_cannot_use_human_agent", status_code=403)
+    from billing.services import BillingError, EntitlementService
+
+    try:
+        EntitlementService(conversation.organization).require("monthly_external_messages")
+    except BillingError as exc:
+        raise InstagramError(exc.code, status_code=exc.status_code) from exc
     _throttle(connection)
     lock_key = f"instagram:send-lock:{connection.id}"
     if not cache.add(lock_key, "1", timeout=settings.META_INSTAGRAM_SEND_LOCK_SECONDS):
@@ -780,6 +808,9 @@ def send_instagram_message(
         message.status = MessageStatus.SENT
         message.error_code = ""
         message.save(update_fields=["provider_message_id", "status", "error_code", "updated_at"])
+        from billing.services import record_message_usage
+
+        record_message_usage(message)
         attempt.status = InstagramOutboundStatus.SENT
         attempt.provider_request_id = result.request_id
         attempt.safe_error_code = ""

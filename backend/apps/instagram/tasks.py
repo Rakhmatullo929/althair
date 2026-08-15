@@ -149,6 +149,9 @@ def retry_instagram_outbound(attempt_id):
         message.status = MessageStatus.SENT
         message.error_code = ""
         message.save(update_fields=["provider_message_id", "status", "error_code", "updated_at"])
+        from billing.services import record_message_usage
+
+        record_message_usage(message)
         attempt.status = InstagramOutboundStatus.SENT
         attempt.provider_request_id = result.request_id
         attempt.safe_error_code = ""

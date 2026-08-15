@@ -156,6 +156,7 @@ export function WebChatWidget({
   const [config, setConfig] = useState<Config | null>(null);
   const [language, setLanguage] = useState<Language>(initialLocale);
   const [session, setSession] = useState<Session | null>(null);
+  const sessionRef = useRef<Session | null>(null);
   const [events, setEvents] = useState<EventItem[]>([]);
   const [cursor, setCursor] = useState(0);
   const cursorRef = useRef(0);
@@ -179,6 +180,7 @@ export function WebChatWidget({
     const timer = window.setTimeout(() => {
       const stored = sessionStore.get();
       if (stored) {
+        sessionRef.current = stored;
         setSession(stored);
         setState("active");
       }
@@ -268,8 +270,11 @@ export function WebChatWidget({
         },
       );
       if (response.status === 401) {
-        setState("expired");
-        sessionStore.set(null);
+        if (sessionRef.current?.session_token === session.session_token) {
+          sessionRef.current = null;
+          setState("expired");
+          sessionStore.set(null);
+        }
         throw new Error("session_expired");
       }
       if (!response.ok) {
@@ -396,6 +401,7 @@ export function WebChatWidget({
         if (!identityResponse.ok) throw new Error("identity_failed");
       }
       sessionStore.set(next);
+      sessionRef.current = next;
       setSession(next);
       setState("active");
     } catch {
@@ -443,6 +449,7 @@ export function WebChatWidget({
       await authorizedFetch("close/", { method: "POST" });
     } finally {
       sessionStore.set(null);
+      sessionRef.current = null;
       setSession(null);
       setEvents([]);
       setState("closed");
@@ -450,6 +457,7 @@ export function WebChatWidget({
   }
   const restart = () => {
     sessionStore.set(null);
+    sessionRef.current = null;
     setSession(null);
     setEvents([]);
     setCursor(0);

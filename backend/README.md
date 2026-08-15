@@ -2,7 +2,8 @@
 
 Django 5.2 modular monolith for secure client authentication, onboarding, versioned AI Context,
 channel configuration status, a tenant-safe CRM, an approval-controlled AI conversation runtime,
-inbound Voice AI telephony, and the preserved legacy intake/job workflows.
+inbound Voice AI telephony, separate Internal Super Admin operations, provider-independent Billing,
+and the preserved legacy intake/job workflows.
 
 ## Local Python setup
 
@@ -44,6 +45,10 @@ unless `DEBUG=true` and `CLIENT_PORTAL_SEED_PASSWORD` is set.
 | `TWILIO_VOICE_*` | Server-only Voice account, API/auth, number/trunk, and public callback configuration |
 | `OPENAI_WEBHOOK_SECRET`, `OPENAI_PROJECT_ID`, `OPENAI_REALTIME_*` | Signed Realtime SIP call and explicit session configuration |
 | `VOICE_MAX_*`, `VOICE_*_MINUTE_LIMIT`, `VOICE_TRANSCRIPT_RETENTION_DAYS` | Duration, concurrency, cost, and privacy defaults |
+| `BILLING_ENABLE`, `BILLING_PROVIDER`, `BILLING_FAKE_PROVIDER` | Explicit Billing gate and deterministic fake/manual provider selection |
+| `BILLING_DEFAULT_PLAN_KEY`, `BILLING_DEFAULT_CURRENCY` | Versioned default plan and explicit ISO currency |
+| `BILLING_TRIAL_DAYS`, `BILLING_GRACE_DAYS`, `BILLING_INVOICE_PREFIX` | Trial, dunning, and invoice-number policy |
+| `BILLING_MANUAL_PROVIDER_ENABLE` | Enables reviewed manual pilot operations; never online checkout |
 | `META_APP_ID`, `META_APP_SECRET`, `META_INSTAGRAM_VERIFY_TOKEN` | Server-only Instagram Business Login and signed webhook configuration |
 | `META_INSTAGRAM_GRAPH_API_VERSION`, `META_INSTAGRAM_REDIRECT_URI` | Explicit current Graph version and exact OAuth callback |
 | `META_INSTAGRAM_ENABLE_LIVE`, `META_INSTAGRAM_ENABLE_HUMAN_AGENT` | Fail-closed live-provider and separately approved human-only extension gates |
@@ -72,6 +77,8 @@ python manage.py check
 python manage.py test
 coverage run --source=ai_runtime manage.py test ai_runtime
 coverage report --fail-under=85
+coverage run --source=billing manage.py test billing
+coverage report --fail-under=85
 python -m compileall -q .
 python evals/ai_runtime/run_evals.py
 python evals/voice/run_evals.py
@@ -88,6 +95,8 @@ Architecture and contracts:
 - `docs/architecture/telegram-managed-bots.md`
 - `docs/architecture/gmail-email-integration.md`
 - `docs/architecture/voice-ai-telephony.md`
+- `docs/architecture/internal-control-plane.md`
+- `docs/architecture/billing-subscriptions.md`
 - `docs/api/multitenant-api.md`
 - `docs/api/crm-api.md`
 - `docs/api/ai-runtime-api.md`
@@ -95,6 +104,9 @@ Architecture and contracts:
 - `docs/api/telegram-managed-bots-api.md`
 - `docs/api/gmail-email-api.md`
 - `docs/api/voice-ai-api.md`
+- `docs/api/internal-control-plane-api.md`
+- `docs/api/billing-api.md`
+- `docs/operations/billing-runbook.md`
 - `docs/integrations/instagram-app-review.md`
 - `docs/integrations/telegram-managed-bots.md`
 - `docs/integrations/google-gmail-setup.md`
@@ -103,8 +115,8 @@ Architecture and contracts:
 
 ## Known limitations
 
-Generic email/IMAP, Outlook, WhatsApp, outbound Voice, recording, booking, billing, Super Admin,
-RLS, and production deployment are outside this stage. Instagram live access remains gated by real
+Generic email/IMAP, Outlook, WhatsApp, outbound Voice, recording, booking, live payment providers,
+tax/fiscalization, RLS, and production deployment are outside this stage. Instagram live access remains gated by real
 Meta configuration and App Review; local/CI coverage uses the deterministic fake adapter. The live
 Responses API remains opt-in and is never required for tests. The legacy MMC vertical is retained
 and independently regression-tested.

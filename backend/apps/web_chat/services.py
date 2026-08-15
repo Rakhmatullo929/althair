@@ -33,6 +33,7 @@ from crm.services import (
     ingest_inbound_message,
     record_activity,
 )
+from control_plane.policies import operation_allowed
 from organizations.models import OrganizationStatus
 from web_chat.models import (
     InstallationAIMode,
@@ -183,6 +184,12 @@ def create_session(*, installation, origin_proof, consent_accepted, language, re
     origin = verify_origin_proof(installation, origin_proof)
     if installation.require_consent and not consent_accepted:
         raise WebChatError("consent_required", status_code=409)
+    if not operation_allowed(
+        organization=installation.organization,
+        provider_type="web_chat",
+        channel_connection=installation.channel_connection,
+    ):
+        raise WebChatError("session_unavailable", status_code=403)
     if language not in installation.supported_languages:
         language = installation.default_language
     ip_digest = _ip_hash(request)
@@ -216,6 +223,19 @@ def create_session(*, installation, origin_proof, consent_accepted, language, re
     )
     session.full_clean()
     session.save()
+    from billing.services import record_usage
+
+    record_usage(
+        organization=installation.organization,
+        meter_key="web_chat_sessions",
+        quantity=1,
+        unit="session",
+        source_type="web_chat_session",
+        source_id=str(session.id),
+        idempotency_key=f"web-chat-session:{session.id}",
+        occurred_at=now,
+        metadata={"provider": "public_web_chat", "language": language},
+    )
     publish_event(session=session, event_type="session_started", safe_payload={"language": language})
     metric(installation, "session_start", session=session)
     if consent_accepted:
@@ -605,6 +625,11 @@ def can_send_public_web_chat(conversation):
         and session.status in {WebChatSessionStatus.ACTIVE, WebChatSessionStatus.HANDED_OFF}
         and session.installation.status == InstallationStatus.ACTIVE
         and session.expires_at > timezone.now()
+        and operation_allowed(
+            organization=conversation.organization,
+            provider_type="web_chat",
+            channel_connection=conversation.channel_connection,
+        )
     )
 
 

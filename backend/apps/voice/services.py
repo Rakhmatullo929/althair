@@ -180,6 +180,21 @@ def webhook_auth_token(connection: VoiceConnection) -> str:
 
 @transaction.atomic
 def create_connection(*, organization, membership, data: dict) -> VoiceConnection:
+    from billing.services import BillingError, EntitlementService
+
+    try:
+        entitlements = EntitlementService(organization)
+        entitlements.require("voice")
+        entitlements.require_capacity(
+            "max_voice_connections",
+            VoiceConnection.objects.for_organization(organization).exclude(status="disconnected").count(),
+        )
+        entitlements.require_capacity(
+            "max_channel_connections",
+            ChannelConnection.objects.for_organization(organization).exclude(status="disconnected").count(),
+        )
+    except BillingError as exc:
+        raise VoiceError(exc.code, status_code=exc.status_code) from exc
     carrier = str(data.get("carrier") or "fake")
     ownership = str(data.get("ownership_mode") or VoiceOwnershipMode.PLATFORM_MANAGED)
     if carrier not in {"fake", "twilio_sip"} or ownership not in VoiceOwnershipMode.values:
@@ -467,6 +482,8 @@ def route_verified_incoming_call(event: dict) -> IncomingCallResult:
     if existing_envelope and existing_envelope.call:
         call = existing_envelope.call
         return IncomingCallResult(call, False, call.status != VoiceCallStatus.REJECTED, call.rejection_reason)
+    from billing.services import EntitlementService
+
     rejection = ""
     if settings.VOICE_GLOBAL_KILL_SWITCH:
         rejection = "global_kill_switch"
@@ -481,6 +498,8 @@ def route_verified_incoming_call(event: dict) -> IncomingCallResult:
         rejection = code
     elif connection.organization.status not in ACTIVE_ORGANIZATIONS:
         rejection = "organization_read_only"
+    elif not EntitlementService(connection.organization).resolve("voice").allowed:
+        rejection = "feature_not_entitled"
     elif connection.status not in ROUTABLE_CONNECTIONS:
         rejection = "connection_unavailable"
     elif connection.circuit_open_until and connection.circuit_open_until > timezone.now():
@@ -813,7 +832,7 @@ def finalize_call(call: VoiceCall, *, outcome: str = "answered", hangup_actor: s
         call.summary = "Inbound Voice call completed without a stored transcript."
     call.ai_control_active = False
     call.save()
-    VoiceUsageEvent.objects.update_or_create(
+    usage_event, usage_created = VoiceUsageEvent.objects.update_or_create(
         call=call,
         defaults={
             "organization": call.organization,
@@ -828,6 +847,20 @@ def finalize_call(call: VoiceCall, *, outcome: str = "answered", hangup_actor: s
             "tool_failures": call.tool_calls.filter(status__in=["failed", "rejected"]).count(),
         },
     )
+    if usage_created:
+        from billing.services import record_usage
+
+        record_usage(
+            organization=call.organization,
+            meter_key="voice_seconds",
+            quantity=call.duration_seconds,
+            unit="second",
+            source_type="voice_call",
+            source_id=str(call.id),
+            idempotency_key=f"voice:{call.id}:seconds",
+            occurred_at=call.ended_at,
+            metadata={"provider": usage_event.provider, "outcome": call.outcome},
+        )
     record_activity(
         organization=call.organization, event_type="voice.call_completed", summary="Inbound Voice call completed",
         contact=call.contact, conversation=call.conversation,

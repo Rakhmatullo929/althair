@@ -206,6 +206,9 @@ test.describe.serial("Telegram Managed Bots", () => {
     }
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/en/app/settings/channels/telegram");
+    await expect(
+      page.getByRole("heading", { name: "Telegram Managed Bots" }),
+    ).toBeVisible();
     const body = await page.locator("body").innerText();
     expect(body).not.toContain("TELEGRAM_MANAGER_BOT_TOKEN");
     expect(body).not.toContain("webhook_secret");

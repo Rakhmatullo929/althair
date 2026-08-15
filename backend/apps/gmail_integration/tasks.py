@@ -293,6 +293,9 @@ def retry_gmail_outbound(attempt_id):
     attempt.message.status = "sent"
     attempt.message.error_code = ""
     attempt.message.save(update_fields=["provider_message_id", "status", "error_code", "updated_at"])
+    from billing.services import record_message_usage
+
+    record_message_usage(attempt.message)
     GmailMessageRecord.objects.get_or_create(
         organization=attempt.connection.organization,
         connection=attempt.connection,

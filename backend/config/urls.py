@@ -125,6 +125,16 @@ def health_ready(request):
     else:
         checks['control_plane'] = 'disabled'
 
+    if settings.BILLING_ENABLE:
+        checks['billing'] = (
+            'fake_ready' if settings.BILLING_PROVIDER == 'fake' and (settings.DEBUG or settings.TESTING)
+            else 'manual_ready' if settings.BILLING_PROVIDER == 'manual' and settings.BILLING_MANUAL_PROVIDER_ENABLE
+            else 'configuration_incomplete'
+        )
+        healthy = healthy and checks['billing'] in {'fake_ready', 'manual_ready'}
+    else:
+        checks['billing'] = 'disabled'
+
     status_code = 200 if healthy else 503
     return JsonResponse({'status': 'ready' if healthy else 'degraded', 'checks': checks}, status=status_code)
 
@@ -134,6 +144,7 @@ urlpatterns = [
     path('health/live', health_live, name='health_live'),
     path('health/ready', health_ready, name='health_ready'),
     path(settings.ADMIN_URL, admin.site.urls),
+    path('api/v1/internal/billing/', include(('billing.internal_urls', 'billing_internal'), namespace='billing_internal')),
     path('api/v1/internal/', include(('control_plane.urls', 'control_plane'), namespace='control_plane')),
     path('core/', include(('core.urls', 'core'), namespace='core')),
     path('api/v1/', include([
@@ -149,11 +160,13 @@ urlpatterns = [
         path('', include(('gmail_integration.urls', 'gmail_integration'), namespace='gmail_integration')),
         path('', include(('sms.urls', 'sms'), namespace='sms')),
         path('', include(('voice.urls', 'voice'), namespace='voice')),
+        path('billing/', include(('billing.urls', 'billing'), namespace='billing')),
         path('webhooks/', include(('instagram.webhook_urls', 'instagram_webhooks'), namespace='instagram_webhooks')),
         path('webhooks/', include(('telegram.webhook_urls', 'telegram_webhooks'), namespace='telegram_webhooks')),
         path('webhooks/', include(('gmail_integration.webhook_urls', 'gmail_webhooks'), namespace='gmail_webhooks')),
         path('webhooks/', include(('sms.webhook_urls', 'sms_webhooks'), namespace='sms_webhooks')),
         path('webhooks/', include(('voice.webhook_urls', 'voice_webhooks'), namespace='voice_webhooks')),
+        path('webhooks/', include(('billing.webhook_urls', 'billing_webhooks'), namespace='billing_webhooks')),
         path('public/web-chat/', include(('web_chat.public_urls', 'web_chat_public'), namespace='web_chat_public')),
         path('public/', include(('early_access.urls', 'early_access'), namespace='early_access')),
         path('users/', include(('users.urls', 'users'), namespace='users')),

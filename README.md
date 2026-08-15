@@ -2,7 +2,8 @@
 
 This repository contains the preserved public Landing, the localized customer portal with a real
 CRM workflow, tenant-owned Web Chat, Instagram, Telegram, Gmail and SMS messaging, inbound Voice AI,
-and a tenant-safe, approval-controlled AI conversation runtime. The legacy MMC
+and a tenant-safe, approval-controlled AI conversation runtime, separate Internal Super Admin, and
+provider-independent Billing/subscriptions. The legacy MMC
 vertical is still isolated in the backend and remains covered by its regression tests.
 
 ## Local stack
@@ -51,7 +52,15 @@ The opt-in public Web Chat demo is also separate and uses synthetic organization
 
 ```bash
 DEBUG=true WEB_CHAT_ENABLE_PUBLIC=true WEB_CHAT_ALLOW_FAKE_AUTOPILOT=true \
-  python manage.py seed_web_chat_demo
+python manage.py seed_web_chat_demo
+```
+
+Provider-independent Billing uses deterministic fake/manual adapters only. The E2E-only synthetic
+seed is explicitly gated and creates no card or real payment data:
+
+```bash
+DEBUG=true E2E_TESTING=true BILLING_ENABLE=true BILLING_PROVIDER=fake \
+  python manage.py seed_billing_demo
 ```
 
 The AI runtime uses the deterministic fake provider by default. Publish AI Context, enable the
@@ -69,6 +78,8 @@ python manage.py migrate --noinput
 python manage.py check
 python manage.py test
 coverage run --source=ai_runtime manage.py test ai_runtime
+coverage report --fail-under=85
+coverage run --source=billing manage.py test billing
 coverage report --fail-under=85
 python -m compileall -q .
 python evals/ai_runtime/run_evals.py
@@ -122,13 +133,17 @@ See [backend/docs/api/multitenant-api.md](backend/docs/api/multitenant-api.md),
 [backend/docs/integrations/twilio-sms-setup.md](backend/docs/integrations/twilio-sms-setup.md).
 [backend/docs/architecture/voice-ai-telephony.md](backend/docs/architecture/voice-ai-telephony.md),
 [backend/docs/api/voice-ai-api.md](backend/docs/api/voice-ai-api.md), and
-[backend/docs/integrations/twilio-openai-voice-setup.md](backend/docs/integrations/twilio-openai-voice-setup.md).
+[backend/docs/integrations/twilio-openai-voice-setup.md](backend/docs/integrations/twilio-openai-voice-setup.md),
+[backend/docs/architecture/internal-control-plane.md](backend/docs/architecture/internal-control-plane.md),
+[backend/docs/architecture/billing-subscriptions.md](backend/docs/architecture/billing-subscriptions.md),
+[backend/docs/api/billing-api.md](backend/docs/api/billing-api.md), and
+[backend/docs/operations/billing-runbook.md](backend/docs/operations/billing-runbook.md).
 
 ## Current boundary
 
 This stage intentionally does not activate generic IMAP, Outlook, or WhatsApp; add outbound Voice,
-recording, booking, billing,
-or Super Admin; or deploy production infrastructure. Public Web Chat, Instagram Messaging, and
+recording, booking, live payment providers, tax/fiscalization, or production infrastructure.
+Public Web Chat, Instagram Messaging, and
 Telegram Managed Bots, Gmail, and live Twilio SMS remain server-side opt-in. Real OpenAI calls stay
 disabled unless explicitly enabled server-side. CRM content is real organization-owned database
 data, not simulated revenue, sales, or provider state.

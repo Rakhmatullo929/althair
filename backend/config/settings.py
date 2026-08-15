@@ -76,6 +76,7 @@ INSTALLED_APPS = [
     'gmail_integration',
     'sms',
     'voice',
+    'billing',
     'control_plane',
 ]
 
@@ -703,6 +704,25 @@ CONTROL_PLANE_EXPORT_STORAGE = os.environ.get('CONTROL_PLANE_EXPORT_STORAGE', ''
 if CONTROL_PLANE_FAKE_MFA and not (DEBUG or TESTING):
     raise RuntimeError('CONTROL_PLANE_FAKE_MFA is permitted only in development or tests')
 
+# Provider-independent Billing. Only deterministic fake/manual adapters exist in this stage.
+BILLING_ENABLE = os.environ.get('BILLING_ENABLE', '').lower() in ('true', '1', 'yes')
+BILLING_PROVIDER = os.environ.get('BILLING_PROVIDER', 'fake' if TESTING else 'manual').lower()
+BILLING_DEFAULT_PLAN_KEY = os.environ.get('BILLING_DEFAULT_PLAN_KEY', 'starter')
+BILLING_DEFAULT_CURRENCY = os.environ.get('BILLING_DEFAULT_CURRENCY', 'UZS').upper()
+BILLING_TRIAL_DAYS = int(os.environ.get('BILLING_TRIAL_DAYS', '14' if BILLING_ENABLE else '0'))
+BILLING_GRACE_DAYS = int(os.environ.get('BILLING_GRACE_DAYS', '7'))
+BILLING_INVOICE_PREFIX = os.environ.get('BILLING_INVOICE_PREFIX', 'ALTHAIR')
+BILLING_MANUAL_PROVIDER_ENABLE = os.environ.get('BILLING_MANUAL_PROVIDER_ENABLE', '').lower() in ('true', '1', 'yes')
+BILLING_FAKE_PROVIDER = os.environ.get('BILLING_FAKE_PROVIDER', 'true' if TESTING else 'false').lower() in ('true', '1', 'yes')
+BILLING_FAKE_SIGNING_KEY = os.environ.get('BILLING_FAKE_SIGNING_KEY', 'deterministic-ci-only')
+
+if BILLING_PROVIDER not in {'fake', 'manual'}:
+    raise RuntimeError('Only fake and manual Billing providers are supported in this stage')
+if len(BILLING_DEFAULT_CURRENCY) != 3 or not BILLING_DEFAULT_CURRENCY.isalpha():
+    raise RuntimeError('BILLING_DEFAULT_CURRENCY must be an ISO 4217 code')
+if BILLING_PROVIDER == 'fake' and BILLING_ENABLE and not (DEBUG or TESTING):
+    raise RuntimeError('The fake Billing provider cannot power production Billing')
+
 CELERY_BEAT_SCHEDULE.update({
     'instagram-health-every-15-minutes': {
         'task': 'instagram.tasks.check_instagram_connections',
@@ -715,6 +735,13 @@ CELERY_BEAT_SCHEDULE.update({
     'instagram-subscription-health-hourly': {
         'task': 'instagram.tasks.verify_instagram_subscriptions',
         'schedule': 3600.0,
+    },
+})
+
+CELERY_BEAT_SCHEDULE.update({
+    'billing-lifecycle-every-15-minutes': {
+        'task': 'billing.tasks.process_billing_lifecycle',
+        'schedule': 900.0,
     },
 })
 

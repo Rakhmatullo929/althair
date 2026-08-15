@@ -223,6 +223,13 @@ def complete_oauth(*, user, raw_state: str, code: str) -> GmailConnection:
         raise GmailError("oauth_state_expired", status_code=410)
     if state.user_id != user.id or state.membership.user_id != user.id:
         raise GmailError("oauth_state_user_mismatch", status_code=403)
+    from billing.services import BillingError, EntitlementService
+
+    try:
+        entitlements = EntitlementService(state.organization)
+        entitlements.require("gmail")
+    except BillingError as exc:
+        raise GmailError(exc.code, status_code=exc.status_code) from exc
     state.consumed_at = timezone.now()
     state.save(update_fields=["consumed_at"])
     try:
@@ -248,6 +255,22 @@ def complete_oauth(*, user, raw_state: str, code: str) -> GmailConnection:
         duplicates = duplicates.exclude(pk=reconnect.pk)
     if duplicates.exists():
         raise GmailError("gmail_mailbox_already_connected", status_code=409)
+    if not reconnect:
+        try:
+            entitlements.require_capacity(
+                "max_gmail_connections",
+                GmailConnection.objects.for_organization(state.organization)
+                .exclude(connection_status=GmailConnectionStatus.DISCONNECTED)
+                .count(),
+            )
+            entitlements.require_capacity(
+                "max_channel_connections",
+                ChannelConnection.objects.for_organization(state.organization)
+                .exclude(status=ChannelStatus.DISCONNECTED)
+                .count(),
+            )
+        except BillingError as exc:
+            raise GmailError(exc.code, status_code=exc.status_code) from exc
     if reconnect:
         connection = GmailConnection.objects.select_for_update().select_related(
             "channel_connection"
@@ -871,15 +894,21 @@ def send_gmail_message(
     connection = connection_for_conversation(conversation)
     if not connection:
         raise GmailError("provider_unavailable", status_code=409)
+    policy = conversation_policy(conversation)
+    if not policy["can_send"]:
+        raise GmailError(policy["state"], status_code=409)
     if not operation_allowed(
         organization=conversation.organization,
         provider_type="gmail",
         channel_connection=conversation.channel_connection,
     ):
         raise GmailError("operational_control_active", status_code=409)
-    policy = conversation_policy(conversation)
-    if not policy["can_send"]:
-        raise GmailError(policy["state"], status_code=409)
+    from billing.services import BillingError, EntitlementService
+
+    try:
+        EntitlementService(conversation.organization).require("monthly_external_messages")
+    except BillingError as exc:
+        raise GmailError(exc.code, status_code=exc.status_code) from exc
     text = (body or "").strip()
     if not text or len(text) > settings.GOOGLE_GMAIL_MAX_SEND_TEXT:
         raise GmailError("message_length_invalid")
@@ -973,6 +1002,9 @@ def send_gmail_message(
         message.provider_message_id = f"gmail:{result.message_id}"
         message.status = MessageStatus.SENT
         message.save(update_fields=["provider_message_id", "status", "updated_at"])
+        from billing.services import record_message_usage
+
+        record_message_usage(message)
         GmailMessageRecord.objects.create(
             organization=conversation.organization,
             connection=connection,

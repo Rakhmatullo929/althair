@@ -303,7 +303,7 @@ class OrganizationListView(InternalBaseView):
         if value := request.query_params.get("ai_enabled"):
             rows = rows.filter(ai_runtime_config__enabled=value.lower() in {"1", "true", "yes"})
         if value := request.query_params.get("plan"):
-            rows = rows.filter(entitlement__plan_id=value)
+            rows = rows.filter(entitlement__plan__key=value)
         paginator = InternalPagination()
         page = paginator.paginate_queryset(rows, request, view=self)
         data = [{
@@ -311,7 +311,8 @@ class OrganizationListView(InternalBaseView):
             "industry": item.industry, "created_at": item.created_at,
             "member_count": item.member_count, "channel_count": item.channel_count,
             "ai_enabled": item.internal_ai_enabled,
-            "plan": getattr(getattr(item, "entitlement", None), "plan_id", "unassigned"),
+            "plan": getattr(getattr(getattr(item, "entitlement", None), "plan", None), "key", "unassigned"),
+            "plan_id": str(getattr(getattr(item, "entitlement", None), "plan_id", "")),
         } for item in page]
         return paginator.get_paginated_response(data)
 

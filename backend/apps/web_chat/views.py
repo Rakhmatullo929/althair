@@ -76,6 +76,17 @@ class InstallationListCreateView(InstallationBaseView):
         )
 
     def post(self, request):
+        from billing.services import BillingError, EntitlementService
+
+        try:
+            entitlements = EntitlementService(request.organization)
+            entitlements.require("web_chat")
+            entitlements.require_capacity(
+                "max_web_chat_installations",
+                WebChatInstallation.objects.for_organization(request.organization).exclude(status="archived").count(),
+            )
+        except BillingError as exc:
+            return Response({"detail": exc.message, "code": exc.code, "details": exc.details}, status=exc.status_code)
         serializer = WebChatInstallationSerializer(data=request.data, context=installation_context(request))
         serializer.is_valid(raise_exception=True)
         instance = serializer.save()
@@ -108,6 +119,15 @@ class InstallationActionView(InstallationBaseView):
         installation = self.get_object(request, installation_id)
         actor = request.organization_membership
         if self.action == "activate":
+            from billing.services import BillingError, EntitlementService
+
+            try:
+                EntitlementService(request.organization).require("web_chat")
+            except BillingError as exc:
+                return Response(
+                    {"detail": exc.message, "code": exc.code, "details": exc.details},
+                    status=exc.status_code,
+                )
             activate_installation(installation, actor)
         elif self.action == "pause":
             installation.status = InstallationStatus.PAUSED

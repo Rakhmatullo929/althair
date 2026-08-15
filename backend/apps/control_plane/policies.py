@@ -66,7 +66,26 @@ def blocking_control(
 
 
 def operation_allowed(**kwargs) -> bool:
-    return not blocking_control(**kwargs)
+    if blocking_control(**kwargs):
+        return False
+    organization = kwargs.get("organization")
+    provider_type = kwargs.get("provider_type", "")
+    if organization and provider_type in {"web_chat", "instagram", "telegram", "gmail", "sms", "voice"}:
+        from billing.services import feature_allowed as billing_feature_allowed
+
+        if not billing_feature_allowed(organization, provider_type):
+            return False
+    if organization and kwargs.get("ai"):
+        from billing.services import feature_allowed as billing_feature_allowed
+
+        if not billing_feature_allowed(organization, "ai_runtime"):
+            return False
+    if organization and kwargs.get("autopilot"):
+        from billing.services import feature_allowed as billing_feature_allowed
+
+        if not billing_feature_allowed(organization, "ai_autopilot"):
+            return False
+    return True
 
 
 def ensure_operation_allowed(**kwargs) -> None:
@@ -76,13 +95,6 @@ def ensure_operation_allowed(**kwargs) -> None:
 
 
 def feature_allowed(organization, feature: str) -> bool:
-    entitlement = OrganizationEntitlement.objects.select_related("plan").filter(
-        organization=organization
-    ).first()
-    if not entitlement:
-        return False
-    if entitlement.status not in {"trial", "active", "grace", "manual"}:
-        return False
-    if feature in entitlement.feature_overrides:
-        return entitlement.feature_overrides[feature] is True
-    return entitlement.plan.feature_flags.get(feature) is True
+    from billing.services import feature_allowed as billing_feature_allowed
+
+    return billing_feature_allowed(organization, feature)

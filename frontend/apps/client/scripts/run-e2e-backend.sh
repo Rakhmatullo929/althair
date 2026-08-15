@@ -55,6 +55,15 @@ export TWILIO_VOICE_PUBLIC_BASE_URL="https://api.e2e.example.test"
 export TWILIO_VOICE_AUTH_TOKEN="test-only-twilio-voice-token"
 export OPENAI_REALTIME_MODEL="configured-realtime-model"
 export OPENAI_REALTIME_VOICE=marin
+export BILLING_ENABLE=True
+export BILLING_PROVIDER=fake
+export BILLING_DEFAULT_PLAN_KEY=starter
+export BILLING_DEFAULT_CURRENCY=UZS
+export BILLING_TRIAL_DAYS=14
+export BILLING_GRACE_DAYS=7
+export BILLING_INVOICE_PREFIX=E2E
+export BILLING_FAKE_PROVIDER=True
+export BILLING_MANUAL_PROVIDER_ENABLE=True
 FIELD_ENCRYPTION_KEY="$(../../../backend/.venv/bin/python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')"
 export FIELD_ENCRYPTION_KEY
 export CLIENT_PORTAL_SEED_PASSWORD="client-portal-development-only-password"
@@ -64,4 +73,5 @@ cd ../../../backend
 .venv/bin/python manage.py seed_client_portal
 .venv/bin/python manage.py seed_crm
 .venv/bin/python manage.py seed_web_chat_demo
+.venv/bin/python manage.py seed_billing_demo
 exec .venv/bin/python manage.py runserver 127.0.0.1:8011 --noreload

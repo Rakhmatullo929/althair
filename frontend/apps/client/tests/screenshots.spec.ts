@@ -390,6 +390,7 @@ test("@screenshots public Web Chat evidence", async ({ page }) => {
 });
 
 test("@screenshots AI runtime evidence", async ({ page }) => {
+  test.setTimeout(120_000);
   await mkdir(screenshotDir, { recursive: true });
   await page.setViewportSize({ width: 1440, height: 1000 });
   await login(page);

@@ -103,11 +103,14 @@ class DataRequestCreateSerializer(serializers.Serializer):
 
 class EntitlementSerializer(serializers.ModelSerializer):
     plan = serializers.SlugRelatedField(slug_field="key", read_only=True)
+    plan_id = serializers.UUIDField(read_only=True)
+    plan_version = serializers.IntegerField(source="plan.version", read_only=True)
     organization = serializers.UUIDField(source="organization_id")
 
     class Meta:
         model = OrganizationEntitlement
-        fields = ["organization", "plan", "status", "starts_at", "ends_at", "feature_overrides", "limit_overrides", "updated_at"]
+        fields = ["organization", "plan", "plan_id", "plan_version", "status", "starts_at", "ends_at",
+                  "feature_overrides", "limit_overrides", "override_reason", "override_expires_at", "updated_at"]
 
 
 class EntitlementWriteSerializer(serializers.Serializer):
@@ -115,6 +118,7 @@ class EntitlementWriteSerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=OrganizationEntitlement.Status.choices, required=False)
     feature_overrides = serializers.DictField(child=serializers.BooleanField(), required=False)
     limit_overrides = serializers.DictField(child=serializers.IntegerField(min_value=0), required=False)
+    override_expires_at = serializers.DateTimeField(required=False, allow_null=True)
     reason = serializers.CharField(min_length=8, max_length=1000)
 
 

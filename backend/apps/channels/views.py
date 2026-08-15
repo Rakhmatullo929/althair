@@ -23,6 +23,26 @@ class ChannelConnectionListCreateView(ChannelBaseView):
         return paginator.get_paginated_response(ChannelConnectionSerializer(page, many=True).data)
 
     def post(self, request):
+        from billing.services import BillingError, EntitlementService
+
+        try:
+            service = EntitlementService(request.organization)
+            service.require_capacity(
+                "max_channel_connections",
+                ChannelConnection.objects.for_organization(request.organization).exclude(status="disconnected").count(),
+            )
+            requested_feature = {
+                "webchat": "web_chat",
+                "instagram": "instagram",
+                "telegram": "telegram",
+                "gmail": "gmail",
+                "sms": "sms",
+                "voice": "voice",
+            }.get(str(request.data.get("type") or ""))
+            if requested_feature:
+                service.require(requested_feature)
+        except BillingError as exc:
+            return Response({"detail": exc.message, "code": exc.code, "details": exc.details}, status=exc.status_code)
         serializer = ChannelConnectionSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         instance = serializer.save()

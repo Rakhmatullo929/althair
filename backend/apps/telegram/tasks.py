@@ -85,6 +85,9 @@ def retry_telegram_outbound(attempt_id):
         message.status = MessageStatus.SENT
         message.error_code = ""
         message.save(update_fields=["provider_message_id", "status", "error_code", "updated_at"])
+        from billing.services import record_message_usage
+
+        record_message_usage(message)
         attempt.status = "sent"
         attempt.safe_error_code = ""
         attempt.next_retry_at = None

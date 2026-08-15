@@ -138,6 +138,21 @@ def _assert_connection_relationships(connection: SMSConnection):
 
 @transaction.atomic
 def create_connection(*, organization, membership, data: dict) -> SMSConnection:
+    from billing.services import BillingError, EntitlementService
+
+    try:
+        entitlements = EntitlementService(organization)
+        entitlements.require("sms")
+        entitlements.require_capacity(
+            "max_sms_connections",
+            SMSConnection.objects.for_organization(organization).exclude(status=SMSConnectionStatus.DISCONNECTED).count(),
+        )
+        entitlements.require_capacity(
+            "max_channel_connections",
+            ChannelConnection.objects.for_organization(organization).exclude(status="disconnected").count(),
+        )
+    except BillingError as exc:
+        raise SMSError(exc.code, status_code=exc.status_code, details=exc.details) from exc
     provider = str(data.get("provider") or SMSProviderType.FAKE)
     ownership_mode = str(data.get("ownership_mode") or SMSOwnershipMode.PLATFORM_MANAGED)
     if provider not in SMSProviderType.values or ownership_mode not in SMSOwnershipMode.values:
@@ -734,6 +749,14 @@ def send_sms_message(
             else "consent_required"
         )
         raise SMSError(state, status_code=409)
+    from billing.services import BillingError, EntitlementService
+
+    try:
+        entitlements = EntitlementService(conversation.organization)
+        entitlements.require("sms")
+        entitlements.require("monthly_external_messages")
+    except BillingError as exc:
+        raise SMSError(exc.code, status_code=exc.status_code, details=exc.details) from exc
     _rate_limit(connection, recipient)
     text = str(body or "").strip()
     if not text:
@@ -888,6 +911,21 @@ def send_sms_message(
         conversation=conversation,
         metadata={"provider": "sms", "segments": estimate.segments},
     )
+    from billing.services import record_message_usage, record_usage
+
+    billed_segments = result.provider_segments or estimate.segments
+    record_usage(
+        organization=conversation.organization,
+        meter_key="sms_segments",
+        quantity=billed_segments,
+        unit="segment",
+        source_type="sms_message",
+        source_id=str(message.id),
+        idempotency_key=f"sms:{message.id}:segments",
+        occurred_at=now,
+        metadata={"provider": connection.provider},
+    )
+    record_message_usage(message)
     return message, True
 
 

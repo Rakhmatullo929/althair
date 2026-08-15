@@ -39,6 +39,7 @@
     "incidents": "Incidents",
     "dataRequests": "Data requests",
     "entitlements": "Entitlements",
+    "billing": "Billing",
     "audit": "Audit",
     "staff": "Platform staff",
     "settings": "Settings"
@@ -53,6 +54,7 @@
     "incidents": "Incident management",
     "dataRequests": "Data request approvals",
     "entitlements": "Non-billing entitlements",
+    "billing": "Billing operations",
     "audit": "Immutable platform audit",
     "staff": "Platform staff access",
     "settings": "Internal security settings"
@@ -66,5 +68,64 @@
     "createIncident": "Create incident",
     "approve": "Approve request",
     "saveEntitlement": "Save entitlement"
+  },
+  "billing": {
+    "internal": "Internal Billing",
+    "sections": {
+      "plans": "Plan catalog",
+      "subscriptions": "Subscriptions",
+      "invoices": "Invoices",
+      "usage": "Usage & events"
+    },
+    "description": "Provider-independent financial operations with separate authorization, recent MFA, and immutable audit.",
+    "navigation": "Internal Billing navigation",
+    "createPlan": "Create plan version",
+    "refresh": "Refresh",
+    "assurance": "No card or payment credentials are stored or displayed",
+    "mfaFresh": "MFA is fresh",
+    "mfaRequired": "Recent MFA required for writes",
+    "storedRecords": "{count} stored records",
+    "search": "Filter safe billing data",
+    "loading": "Loading Billing data…",
+    "noData": "No stored billing records match this view.",
+    "providerEvents": "Verified provider events",
+    "providerEventsHelp": "Payload hashes and safe errors only; raw payment payloads are not retained.",
+    "noProviderEvents": "No provider events received.",
+    "planCreated": "Draft plan version created and audited.",
+    "actionComplete": "Reviewed Billing action completed and audited.",
+    "record": "Billing record",
+    "publish": "Publish",
+    "grantManual": "Grant manual",
+    "extendGrace": "Extend grace",
+    "issue": "Issue",
+    "void": "Void",
+    "markPaid": "Reviewed mark paid",
+    "reconcile": "Reconcile usage",
+    "draftPlanHelp": "Publication makes plan and price values immutable. Create a new version for future changes.",
+    "createDraft": "Create draft",
+    "close": "Close",
+    "confirm": "Confirm reviewed action",
+    "actionFailed": "The Billing action could not be completed.",
+    "mfaActionHelp": "A specific reason and recent MFA are required. The outcome is written to immutable platform audit.",
+    "fields": {
+      "key": "Plan key",
+      "display_name": "Display name",
+      "description": "Description",
+      "currency": "ISO currency",
+      "amount_minor": "Amount in minor units",
+      "reason": "Review reason",
+      "audience": "Audience",
+      "price_id": "Price UUID",
+      "days": "Days"
+    },
+    "actions": {
+      "publish": "Publish immutable plan version",
+      "grant": "Grant reviewed manual subscription",
+      "grace": "Extend grace period",
+      "issue": "Issue invoice",
+      "void": "Void invoice",
+      "mark-paid": "Record reviewed manual payment",
+      "reconcile": "Reconcile immutable usage events"
+    }
   }
 }

@@ -53,13 +53,11 @@ test("@screenshots Gmail evidence", async ({ page }) => {
     fullPage: true,
     style: screenshotStyle,
   });
-  if (
-    await page
-      .getByRole("button", { name: "Connect Google mailbox" })
-      .isVisible()
-  ) {
-    await page.getByRole("button", { name: "Connect Google mailbox" }).click();
-  }
+  const connectButton = page.getByRole("button", {
+    name: "Connect Google mailbox",
+  });
+  await expect(connectButton).toBeVisible();
+  await connectButton.click();
   await expect(
     page.getByRole("heading", { name: "support@example.test" }),
   ).toBeVisible();

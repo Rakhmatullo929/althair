@@ -114,34 +114,35 @@ def record_audit(
 
 
 def ensure_default_entitlement(organization: Organization) -> OrganizationEntitlement:
-    plan, _ = PlanCatalog.objects.get_or_create(
-        key="manual",
-        defaults={
-            "display_name": "Manual",
-            "feature_flags": {
-                "channels": True, "ai": True, "voice": True, "branches": True, "seats": True, "usage": True,
-            },
-            "default_limits": {"seats": 25, "branches": 25},
-            "internal_notes": "Safe default for organizations created before billing exists.",
-        },
-    )
-    entitlement, _ = OrganizationEntitlement.objects.get_or_create(
-        organization=organization, defaults={"plan": plan, "status": OrganizationEntitlement.Status.MANUAL}
-    )
-    return entitlement
+    from billing.services import ensure_default_entitlement as ensure_billing_entitlement
+
+    return ensure_billing_entitlement(organization)
 
 
 def public_entitlement(organization: Organization) -> dict:
+    from billing.models import FeatureDefinition
+    from billing.services import EntitlementService
+
     entitlement = ensure_default_entitlement(organization)
-    features = {
-        key: value is True for key, value in entitlement.plan.feature_flags.items()
+    service = EntitlementService(organization)
+    snapshots = {
+        row["feature"]: row for row in service.all()
     }
-    features.update({key: value is True for key, value in entitlement.feature_overrides.items()})
+    features = {
+        key: snapshots[key]["allowed"]
+        for key in FeatureDefinition.objects.filter(value_type="boolean", active=True).values_list("key", flat=True)
+    }
+    limits = {
+        key: snapshots[key]["value"]
+        for key in FeatureDefinition.objects.exclude(value_type="boolean").filter(active=True).values_list("key", flat=True)
+    }
     return {
-        "plan": entitlement.plan_id,
+        "plan": entitlement.plan.key,
+        "plan_id": str(entitlement.plan_id),
+        "plan_version": entitlement.plan.version,
         "status": entitlement.status,
         "features": features,
-        "limits": {**entitlement.plan.default_limits, **entitlement.limit_overrides},
+        "limits": limits,
     }
 
 
@@ -520,13 +521,34 @@ def update_entitlement(request, organization: Organization, data: dict, *, reaso
     entitlement = OrganizationEntitlement.objects.select_for_update().get(pk=entitlement.pk)
     before = public_entitlement(organization)
     if "plan" in data:
-        entitlement.plan = PlanCatalog.objects.get(pk=data["plan"], active=True)
+        entitlement.plan = PlanCatalog.objects.filter(
+            key=data["plan"], status=PlanCatalog.Status.ACTIVE
+        ).order_by("-version").first()
+        if not entitlement.plan:
+            raise ControlPlaneConflict("The requested active plan does not exist.")
     if "status" in data:
         entitlement.status = data["status"]
     if "feature_overrides" in data:
+        from billing.models import FeatureDefinition
+
+        unknown = set(data["feature_overrides"]) - set(FeatureDefinition.objects.values_list("key", flat=True))
+        if unknown:
+            raise ControlPlaneConflict("Unknown feature keys default to disabled and cannot be overridden.")
         entitlement.feature_overrides = safe_summary(data["feature_overrides"])
     if "limit_overrides" in data:
+        from billing.models import FeatureDefinition
+
+        # Preserve the pre-Billing control-plane API alias while new Billing
+        # callers use the canonical monthly_voice_minutes feature key.
+        legacy_limit_aliases = {"voice_minutes"}
+        unknown = set(data["limit_overrides"]) - set(
+            FeatureDefinition.objects.values_list("key", flat=True)
+        ) - legacy_limit_aliases
+        if unknown:
+            raise ControlPlaneConflict("Unknown limit keys cannot be overridden.")
         entitlement.limit_overrides = safe_summary(data["limit_overrides"])
+    entitlement.override_reason = reason
+    entitlement.override_expires_at = data.get("override_expires_at", entitlement.override_expires_at)
     entitlement.updated_by = request.platform_access
     entitlement.save()
     after = public_entitlement(organization)

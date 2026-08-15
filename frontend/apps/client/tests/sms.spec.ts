@@ -367,6 +367,9 @@ test.describe.serial("SMS messaging", () => {
     }
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`/en/app/settings/channels/sms/${sms.id}`);
+    await expect(
+      page.getByRole("heading", { name: "+15550109999" }),
+    ).toBeVisible();
     const accessibility = await new AxeBuilder({ page }).analyze();
     expect(accessibility.violations).toEqual([]);
     const widths = await page.evaluate(() => ({

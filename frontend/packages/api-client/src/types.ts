@@ -1302,3 +1302,171 @@ export type WebChatSessionSummary = {
   first_message_at: string | null;
   first_response_at: string | null;
 };
+
+export type BillingPrice = {
+  id: string;
+  currency: string;
+  billing_interval: "month" | "year" | "one_time";
+  amount_minor: number;
+  included_usage: Record<string, number | string>;
+  overage_rates: Record<string, unknown>;
+  effective_from: string | null;
+  effective_to: string | null;
+  status: "draft" | "active" | "retired";
+};
+
+export type BillingPlan = {
+  id: string;
+  key: string;
+  version: number;
+  display_name: string;
+  description: string;
+  status: "draft" | "active" | "retired";
+  audience: "self_serve" | "sales_assisted" | "internal";
+  feature_values: Record<string, boolean | number | string | string[]>;
+  prices: BillingPrice[];
+  created_at: string;
+  published_at: string | null;
+  retired_at: string | null;
+};
+
+export type BillingScheduledChange = {
+  id: string;
+  target_plan: { id: string; key: string; version: number };
+  target_price: string;
+  effective_at: string;
+  change_type: "upgrade" | "downgrade" | "interval_change" | "cancellation";
+  status: "scheduled" | "applied" | "cancelled" | "failed";
+  preview_snapshot: Record<string, unknown>;
+  created_at: string;
+};
+
+export type BillingSubscription = {
+  id: string;
+  organization: string;
+  provider: "fake" | "manual" | string;
+  plan: BillingPlan;
+  price: BillingPrice;
+  status:
+    | "trialing"
+    | "active"
+    | "past_due"
+    | "grace"
+    | "paused"
+    | "cancelled"
+    | "expired"
+    | "manual";
+  trial_started_at: string | null;
+  trial_ends_at: string | null;
+  current_period_start: string;
+  current_period_end: string;
+  cancel_at_period_end: boolean;
+  cancelled_at: string | null;
+  grace_ends_at: string | null;
+  ended_at: string | null;
+  scheduled_change: BillingScheduledChange | null;
+  online_payment_connected: false;
+  created_at: string;
+  updated_at: string;
+};
+
+export type BillingAccount = {
+  id: string;
+  organization: string;
+  legal_name: string;
+  tax_id: string;
+  billing_email: string;
+  billing_address: Record<string, unknown>;
+  country_code: string;
+  default_currency: string;
+  timezone: string;
+  provider: string;
+  status: "active" | "restricted" | "closed";
+  payment_method_stored: false;
+  created_at: string;
+  updated_at: string;
+};
+
+export type BillingUsage = {
+  meter_key: string;
+  period_start: string;
+  period_end: string;
+  quantity: string;
+  included: number | string;
+  remaining: string;
+  overage_estimate_minor: number;
+  updated_at: string;
+};
+
+export type EntitlementSnapshot = {
+  feature: string;
+  allowed: boolean;
+  value: boolean | number | string | string[];
+  source: string;
+  effective_period: { start: string; end: string };
+  usage: string | null;
+  remaining: string | null;
+  enforcement_reason: string;
+  enforcement_mode: "hard" | "soft" | "informational";
+};
+
+export type BillingInvoiceLine = {
+  id: string;
+  line_type: "base" | "usage" | "adjustment" | "credit" | "tax_placeholder";
+  description: string;
+  feature_or_meter_key: string;
+  quantity: string;
+  unit_amount_minor: number;
+  amount_minor: number;
+  source_period: Record<string, string>;
+  pricing_snapshot: Record<string, unknown>;
+  created_at: string;
+};
+
+export type BillingInvoice = {
+  id: string;
+  organization: string;
+  invoice_number: string;
+  provider: string;
+  currency: string;
+  status: "draft" | "open" | "paid" | "void" | "uncollectible" | "refunded";
+  period_start: string;
+  period_end: string;
+  subtotal_minor: number;
+  discount_minor: number;
+  tax_minor: number;
+  total_minor: number;
+  amount_paid_minor: number;
+  amount_due_minor: number;
+  due_at: string | null;
+  issued_at: string | null;
+  paid_at: string | null;
+  voided_at: string | null;
+  lines: BillingInvoiceLine[];
+  payment_attempts: Array<{
+    id: string;
+    provider: string;
+    status: string;
+    amount_minor: number;
+    currency: string;
+    failure_code: string;
+    attempted_at: string | null;
+    completed_at: string | null;
+    created_at: string;
+  }>;
+  created_at: string;
+  updated_at: string;
+};
+
+export type BillingChangePreview = {
+  subscription_id: string;
+  current_plan: { key: string; version: number };
+  target_plan: { id: string; key: string; version: number };
+  target_price_id: string;
+  currency: string;
+  current_amount_minor: number;
+  target_amount_minor: number;
+  effective_at: string;
+  change_type: "upgrade" | "downgrade" | "interval_change";
+  proration: "not_applied";
+};

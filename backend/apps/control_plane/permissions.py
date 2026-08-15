@@ -14,19 +14,22 @@ ROLE_PERMISSIONS = {
         "provider.read", "provider.manage", "ai.read", "ai.manage", "job.read", "job.manage",
         "incident.read", "incident.manage", "entitlement.read", "entitlement.manage",
         "data_request.read", "data_request.approve", "audit.read", "staff.read", "settings.read",
+        "billing.read", "billing.manage", "billing.financial",
     },
     PlatformRole.OPERATIONS: {
         "overview.read", "organization.read", "provider.read", "provider.manage", "ai.read",
         "job.read", "job.manage", "incident.read", "incident.manage", "entitlement.read",
-        "data_request.read", "audit.read", "settings.read",
+        "data_request.read", "audit.read", "settings.read", "billing.read", "billing.reconcile",
     },
     PlatformRole.SUPPORT: {
         "overview.read", "organization.read", "provider.read", "ai.read", "job.read",
         "incident.read", "incident.create", "entitlement.read", "settings.read",
+        "billing.read",
     },
     PlatformRole.SECURITY_AUDITOR: {
         "overview.read", "organization.read", "provider.read", "ai.read", "job.read",
         "incident.read", "data_request.read", "audit.read", "staff.read", "settings.read",
+        "billing.read",
     },
 }
 

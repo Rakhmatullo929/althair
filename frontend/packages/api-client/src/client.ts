@@ -9,6 +9,12 @@ import type {
   AssistantContextFields,
   AssistantProfile,
   AssistantRevision,
+  BillingAccount,
+  BillingChangePreview,
+  BillingInvoice,
+  BillingPlan,
+  BillingSubscription,
+  BillingUsage,
   Branch,
   ChannelConnection,
   Contact,
@@ -54,6 +60,7 @@ import type {
   TelegramUserLink,
   WebChatInstallation,
   WebChatSessionSummary,
+  EntitlementSnapshot,
 } from "./types";
 
 function queryString(
@@ -1160,6 +1167,79 @@ export class ApiClient {
     });
   voiceTakeover = (id: string) =>
     this.request<VoiceCall>(`/voice/calls/${id}/takeover/`, { method: "POST" });
+
+  billingAccount = () => this.request<BillingAccount>("/billing/account/");
+  updateBillingAccount = (
+    body: Partial<
+      Pick<
+        BillingAccount,
+        | "legal_name"
+        | "tax_id"
+        | "billing_email"
+        | "billing_address"
+        | "country_code"
+        | "timezone"
+      >
+    >,
+  ) =>
+    this.request<BillingAccount>("/billing/account/", {
+      method: "PATCH",
+      body,
+    });
+  billingSubscription = () =>
+    this.request<BillingSubscription>("/billing/subscription/");
+  billingPlans = () =>
+    this.request<{ results: BillingPlan[]; currency: string }>(
+      "/billing/plans/",
+    );
+  billingChangePreview = (priceId: string) =>
+    this.request<BillingChangePreview>(
+      "/billing/subscription/change-preview/",
+      { method: "POST", body: { price_id: priceId } },
+    );
+  scheduleBillingChange = (priceId: string, idempotencyKey: string) =>
+    this.request<BillingSubscription>("/billing/subscription/change/", {
+      method: "POST",
+      body: { price_id: priceId },
+      headers: { "Idempotency-Key": idempotencyKey },
+    });
+  cancelBillingSubscription = (idempotencyKey: string) =>
+    this.request<BillingSubscription>("/billing/subscription/cancel/", {
+      method: "POST",
+      body: {},
+      headers: { "Idempotency-Key": idempotencyKey },
+    });
+  resumeBillingSubscription = (idempotencyKey: string) =>
+    this.request<BillingSubscription>("/billing/subscription/resume/", {
+      method: "POST",
+      body: {},
+      headers: { "Idempotency-Key": idempotencyKey },
+    });
+  billingUsage = () =>
+    this.request<{
+      period_start: string;
+      period_end: string;
+      results: BillingUsage[];
+      limits: Record<string, EntitlementSnapshot>;
+      estimate_label: string;
+    }>("/billing/usage/");
+  billingEntitlements = () =>
+    this.request<{ results: EntitlementSnapshot[] }>("/billing/entitlements/");
+  billingInvoices = () =>
+    this.request<Paginated<BillingInvoice>>("/billing/invoices/");
+  billingInvoice = (id: string) =>
+    this.request<BillingInvoice>(`/billing/invoices/${id}/`);
+  billingCheckout = (invoiceId: string) =>
+    this.request<{
+      state: string;
+      provider: string;
+      online_payment_connected: false;
+      message: string;
+      action?: string;
+    }>("/billing/checkout/", {
+      method: "POST",
+      body: { invoice_id: invoiceId },
+    });
 
   webChatInstallations = () =>
     this.request<Paginated<WebChatInstallation>>("/web-chat/installations/");

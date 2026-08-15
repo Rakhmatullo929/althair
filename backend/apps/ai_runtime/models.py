@@ -331,7 +331,7 @@ class AIUsageEvent(OrganizationOwnedModel):
     @classmethod
     def for_run(cls, run: AIRun):
         today = timezone.localdate()
-        return cls.objects.update_or_create(
+        event, created = cls.objects.update_or_create(
             run=run,
             defaults={
                 "organization": run.organization,
@@ -345,7 +345,27 @@ class AIUsageEvent(OrganizationOwnedModel):
                 "date_bucket": today,
                 "month_bucket": today.replace(day=1),
             },
-        )[0]
+        )
+        if created:
+            from billing.services import record_usage
+
+            for meter_key, quantity, unit in (
+                ("ai_runs", 1, "run"),
+                ("ai_input_tokens", run.input_tokens, "token"),
+                ("ai_output_tokens", run.output_tokens, "token"),
+            ):
+                record_usage(
+                    organization=run.organization,
+                    meter_key=meter_key,
+                    quantity=quantity,
+                    unit=unit,
+                    source_type="ai_run",
+                    source_id=str(run.id),
+                    idempotency_key=f"ai:{run.id}:{meter_key}",
+                    occurred_at=run.completed_at or timezone.now(),
+                    metadata={"provider": run.provider, "model": run.model, "successful": event.successful},
+                )
+        return event
 
 
 class ConversationSummary(OrganizationOwnedModel):

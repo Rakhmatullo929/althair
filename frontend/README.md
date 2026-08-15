@@ -23,7 +23,9 @@ The client includes login/registration/invitation/reset states; a responsive app
 validated organization switching; resumable onboarding; company, branch, team, channel-status,
 versioned AI Context, Unified Inbox, contacts, leads, and follow-up tasks. RU, UZ, and EN
 dictionaries are complete. The CRM uses only organization-scoped API data. Real provider
-activation, OpenAI execution, booking, billing, and Super Admin are intentionally absent.
+activation, OpenAI execution, booking, live payment providers, card entry, and tax/fiscalization are
+intentionally absent. The customer Billing and separate Internal Super Admin applications use only
+provider-independent fake/manual flows in this stage.
 
 ## Commands
 

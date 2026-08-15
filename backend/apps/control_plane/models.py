@@ -205,14 +205,73 @@ class OperationalControl(models.Model):
 
 
 class PlanCatalog(models.Model):
-    key = models.SlugField(max_length=80, primary_key=True)
+    """The canonical, versioned product plan used by Billing and entitlements."""
+
+    class Status(models.TextChoices):
+        DRAFT = "draft", "Draft"
+        ACTIVE = "active", "Active"
+        RETIRED = "retired", "Retired"
+
+    class Audience(models.TextChoices):
+        SELF_SERVE = "self_serve", "Self serve"
+        SALES_ASSISTED = "sales_assisted", "Sales assisted"
+        INTERNAL = "internal", "Internal"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    key = models.SlugField(max_length=80)
+    version = models.PositiveIntegerField(default=1)
     display_name = models.CharField(max_length=160)
-    active = models.BooleanField(default=True, db_index=True)
-    feature_flags = models.JSONField(default=dict, validators=[validate_json_object])
-    default_limits = models.JSONField(default=dict, validators=[validate_json_object])
+    description = models.TextField(max_length=2000, blank=True)
+    status = models.CharField(max_length=16, choices=Status.choices, default=Status.DRAFT, db_index=True)
+    audience = models.CharField(
+        max_length=24, choices=Audience.choices, default=Audience.SELF_SERVE, db_index=True
+    )
+    feature_values = models.JSONField(default=dict, validators=[validate_json_object])
     internal_notes = models.TextField(max_length=2000, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    published_at = models.DateTimeField(null=True, blank=True)
+    retired_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["key", "-version"]
+        constraints = [
+            models.UniqueConstraint(fields=["key", "version"], name="unique_plan_catalog_version"),
+        ]
+
+    @property
+    def active(self):
+        return self.status == self.Status.ACTIVE
+
+    @property
+    def feature_flags(self):
+        return {key: value for key, value in self.feature_values.items() if isinstance(value, bool)}
+
+    @property
+    def default_limits(self):
+        return {
+            key: value
+            for key, value in self.feature_values.items()
+            if isinstance(value, (int, float)) and not isinstance(value, bool)
+        }
+
+    def clean(self):
+        super().clean()
+        if not self.pk:
+            return
+        previous = type(self).objects.filter(pk=self.pk).values(
+            "key", "version", "display_name", "description", "audience", "feature_values", "status"
+        ).first()
+        if previous and previous["status"] == self.Status.ACTIVE:
+            immutable = ("key", "version", "display_name", "description", "audience", "feature_values")
+            if any(previous[field] != getattr(self, field) for field in immutable):
+                raise ValidationError("Published plans are immutable; create a new version instead.")
+            if self.status == self.Status.DRAFT:
+                raise ValidationError("A published plan cannot return to draft.")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
 
 
 class OrganizationEntitlement(models.Model):
@@ -232,6 +291,8 @@ class OrganizationEntitlement(models.Model):
     ends_at = models.DateTimeField(null=True, blank=True)
     feature_overrides = models.JSONField(default=dict, blank=True, validators=[validate_json_object])
     limit_overrides = models.JSONField(default=dict, blank=True, validators=[validate_json_object])
+    override_reason = models.CharField(max_length=1000, blank=True)
+    override_expires_at = models.DateTimeField(null=True, blank=True, db_index=True)
     updated_by = models.ForeignKey(
         PlatformStaffAccess, on_delete=models.PROTECT, null=True, blank=True, related_name="entitlements_updated"
     )

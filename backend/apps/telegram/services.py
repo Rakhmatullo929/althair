@@ -223,6 +223,19 @@ def normalize_bot_username(value: str) -> str:
 
 
 def create_managed_request(*, organization, membership, user, suggested_name: str, suggested_username: str) -> dict:
+    from billing.services import BillingError, EntitlementService
+
+    try:
+        entitlements = EntitlementService(organization)
+        entitlements.require("telegram")
+        entitlements.require_capacity(
+            "max_telegram_bots",
+            TelegramBotConnection.objects.for_organization(organization).exclude(
+                status__in=[TelegramConnectionStatus.REVOKED, TelegramConnectionStatus.DISCONNECTED]
+            ).count(),
+        )
+    except BillingError as exc:
+        raise TelegramError(exc.code, status_code=exc.status_code) from exc
     if membership.role not in {OrganizationMembershipRole.OWNER, OrganizationMembershipRole.ADMIN}:
         raise TelegramError("role_forbidden", status_code=403)
     if organization.status not in {OrganizationStatus.TRIAL, OrganizationStatus.ACTIVE}:
@@ -293,6 +306,19 @@ def _complete_managed_event(event):
 
 
 def connect_existing_bot(*, organization, membership, token: str):
+    from billing.services import BillingError, EntitlementService
+
+    try:
+        entitlements = EntitlementService(organization)
+        entitlements.require("telegram")
+        entitlements.require_capacity(
+            "max_telegram_bots",
+            TelegramBotConnection.objects.for_organization(organization).exclude(
+                status__in=[TelegramConnectionStatus.REVOKED, TelegramConnectionStatus.DISCONNECTED]
+            ).count(),
+        )
+    except BillingError as exc:
+        raise TelegramError(exc.code, status_code=exc.status_code) from exc
     if membership.role not in {OrganizationMembershipRole.OWNER, OrganizationMembershipRole.ADMIN}:
         raise TelegramError("role_forbidden", status_code=403)
     if not integration_readiness()["fake_provider"] and not settings.TELEGRAM_ENABLE_LIVE:
@@ -516,6 +542,12 @@ def send_telegram_message(*, conversation, body, client_message_id, membership=N
     policy = conversation_policy(conversation)
     if not policy["can_send"]:
         raise TelegramError(policy["state"], status_code=409)
+    from billing.services import BillingError, EntitlementService
+
+    try:
+        EntitlementService(conversation.organization).require("monthly_external_messages")
+    except BillingError as exc:
+        raise TelegramError(exc.code, status_code=exc.status_code) from exc
     text = (body or "").strip()
     if not text or len(text) > settings.TELEGRAM_MAX_TEXT_LENGTH:
         raise TelegramError("message_length_invalid")
@@ -550,6 +582,9 @@ def send_telegram_message(*, conversation, body, client_message_id, membership=N
         message.provider_message_id = result.message_id
         message.status = MessageStatus.SENT
         message.save(update_fields=["provider_message_id", "status", "updated_at"])
+        from billing.services import record_message_usage
+
+        record_message_usage(message)
         attempt.status = "sent"
         attempt.save(update_fields=["status", "updated_at"])
         connection.last_send_at = now

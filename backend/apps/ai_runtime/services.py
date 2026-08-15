@@ -438,6 +438,12 @@ def process_run(run_id):
 
     config = ensure_runtime_config(run.organization)
     try:
+        from billing.services import BillingError, EntitlementService
+
+        entitlements = EntitlementService(run.organization)
+        entitlements.require("ai_runtime")
+        if "autopilot" in str(run.mode):
+            entitlements.require("ai_autopilot")
         if not operation_allowed(
             organization=run.organization,
             provider_type="openai",
@@ -502,6 +508,8 @@ def process_run(run_id):
         )
         run.refresh_from_db()
         return run
+    except BillingError as exc:
+        return _fail_run(run, category="billing", code=exc.code)
     except AIRuntimeUnavailable as exc:
         if run.conversation.channel_connection.type == "instagram":
             create_handoff(
@@ -868,6 +876,13 @@ def _create_ai_message(*, run, body, client_message_id, metadata):
         pass
     if not is_test and not is_public:
         raise AIRuntimeUnavailable("external_send_blocked")
+    if is_public:
+        from billing.services import BillingError, EntitlementService
+
+        try:
+            EntitlementService(run.organization).require("monthly_external_messages")
+        except BillingError as exc:
+            raise AIRuntimeUnavailable(exc.code) from exc
     now = timezone.now()
     message = Message(
         organization=run.organization,
@@ -884,6 +899,9 @@ def _create_ai_message(*, run, body, client_message_id, metadata):
     )
     message.full_clean()
     message.save()
+    from billing.services import record_message_usage
+
+    record_message_usage(message)
     Conversation.objects.filter(pk=run.conversation_id).update(last_message_at=now, last_outbound_at=now)
     if is_public:
         from web_chat.services import publish_message_event

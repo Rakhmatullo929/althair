@@ -17,6 +17,7 @@
     "channels": "Channels",
     "aiContext": "AI Context",
     "aiAutomation": "AI Automation",
+    "billing": "Billing",
     "setupStage": "Setup workspace",
     "setupStageHint": "Instagram, Telegram, Gmail, SMS and Web Chat are available",
     "openMenu": "Open navigation",
@@ -1500,5 +1501,112 @@
     "metrics": "Operational metrics",
     "recentSessions": "Recent sessions",
     "anonymize": "Anonymize"
+  },
+  "billing": {
+    "views": {
+      "overview": "Billing",
+      "plans": "Plans",
+      "usage": "Usage",
+      "invoices": "Invoices",
+      "invoice": "Invoice details"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "plans": "Plans",
+      "usage": "Usage",
+      "invoices": "Invoices"
+    },
+    "description": "Plans, usage, invoices, and subscription lifecycle for this organization.",
+    "navigation": "Billing navigation",
+    "loadError": "Billing could not be loaded",
+    "notAvailable": "Not available",
+    "saved": "Billing profile saved.",
+    "cancelScheduled": "Cancellation is scheduled for the end of the current period.",
+    "resumed": "Renewal resumed.",
+    "changeScheduled": "Plan change scheduled for the next renewal.",
+    "banners": {
+      "trial": {
+        "title": "Trial is active",
+        "description": "Your included limits are available until the trial ends."
+      },
+      "pastDue": {
+        "title": "Payment is past due",
+        "description": "Billing access remains available while the account is reviewed."
+      },
+      "grace": {
+        "title": "Account is in a grace period",
+        "description": "Billable capabilities may be restricted when the grace period ends."
+      },
+      "restricted": {
+        "title": "Billable capabilities are restricted",
+        "description": "CRM history, Billing, and data export remain available."
+      }
+    },
+    "statuses": {
+      "trialing": "Trial",
+      "active": "Active",
+      "past_due": "Past due",
+      "grace": "Grace",
+      "paused": "Paused",
+      "cancelled": "Cancelled",
+      "expired": "Expired",
+      "manual": "Manual"
+    },
+    "intervals": { "month": "month", "year": "year", "one_time": "one time" },
+    "currentPlan": "Current plan",
+    "status": "Status",
+    "periodEnd": "Renewal / period end",
+    "price": "Price",
+    "scheduledFor": "Plan change scheduled for {date}",
+    "resume": "Resume renewal",
+    "cancelRenewal": "Cancel at period end",
+    "readOnly": "Only an organization owner or administrator can change Billing.",
+    "paymentProvider": "Payment provider",
+    "onlineNotConnected": "Online payment is not connected yet",
+    "manualProviderHelp": "This organization uses an honest manual or pilot billing flow. No card data is collected.",
+    "usageMeters": "active usage meters",
+    "invoiceCount": "invoices",
+    "includedFeatures": "Included features",
+    "serverEnforced": "The server enforces these capabilities and safety controls remain stronger.",
+    "billingProfile": "Billing profile",
+    "legalDraft": "Legal and tax labels are drafts pending jurisdiction-specific review.",
+    "profile": {
+      "legal_name": "Legal name",
+      "billing_email": "Billing email",
+      "country_code": "Country code",
+      "tax_id": "Tax ID (optional)"
+    },
+    "saveProfile": "Save profile",
+    "previewChange": "Preview change",
+    "contactSales": "Contact sales for a reviewed manual change",
+    "noProration": "No silent proration",
+    "changePreview": "Plan change preview",
+    "changeEffective": "The change takes effect on {date}.",
+    "today": "Current period",
+    "nextPeriod": "Next period",
+    "refreshPreview": "Refresh preview",
+    "scheduleChange": "Schedule change",
+    "realUsage": "Real usage",
+    "usageHelp": "Rebuildable aggregates from immutable, idempotent usage events.",
+    "remaining": "{value} remaining",
+    "noUsage": "No metered usage has been recorded in this period.",
+    "estimateLabel": "Estimated overage; tax is not calculated.",
+    "invoiceHistory": "Invoice history",
+    "invoiceHistoryHelp": "Issued amounts keep their original plan and price snapshot.",
+    "invoice": "Invoice",
+    "date": "Date",
+    "total": "Total",
+    "view": "View",
+    "noInvoices": "No invoices have been issued yet.",
+    "issuedOn": "Issued {date}",
+    "descriptionLabel": "Description",
+    "quantity": "Quantity",
+    "unitPrice": "Unit price",
+    "amount": "Amount",
+    "subtotal": "Subtotal",
+    "discount": "Discount",
+    "taxNotCalculated": "Tax (not calculated)",
+    "financialRecordNotice": "Financial records follow the configured retention policy; no universal legal claim is made.",
+    "print": "Print / save PDF"
   }
 }

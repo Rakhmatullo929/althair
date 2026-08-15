@@ -6,6 +6,7 @@ import {
   Bot,
   Building2,
   ChevronRight,
+  CreditCard,
   GitBranch,
   Inbox,
   KanbanSquare,
@@ -37,6 +38,7 @@ const navItems = [
   ["channels", "/app/settings/channels", Radio],
   ["aiContext", "/app/settings/ai-context", Bot],
   ["aiAutomation", "/app/settings/ai-automation", Sparkles],
+  ["billing", "/app/billing", CreditCard],
 ] as const;
 
 function Navigation() {

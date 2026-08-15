@@ -109,6 +109,14 @@ class BranchListCreateView(PathOrganizationView):
         return paginated_response(request, rows, BranchSerializer, self)
 
     def post(self, request, organization_id):
+        from billing.services import BillingError, EntitlementService
+
+        try:
+            EntitlementService(request.organization).require_capacity(
+                "max_branches", Branch.objects.filter(organization=request.organization, is_active=True).count()
+            )
+        except BillingError as exc:
+            return Response({"detail": exc.message, "code": exc.code, "details": exc.details}, status=exc.status_code)
         serializer = BranchSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         branch = serializer.save(organization=request.organization)
@@ -199,6 +207,8 @@ class InvitationListCreateView(PathOrganizationView):
         return paginated_response(request, rows.order_by("-created_at"), InvitationSerializer, self)
 
     def post(self, request, organization_id):
+        from billing.services import BillingError, EntitlementService
+
         serializer = InvitationCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         role = serializer.validated_data["role"]
@@ -218,6 +228,24 @@ class InvitationListCreateView(PathOrganizationView):
             return Response(
                 {"detail": "A pending invitation already exists.", "code": "invitation_conflict"},
                 status=status.HTTP_409_CONFLICT,
+            )
+        active_members = OrganizationMembership.objects.filter(
+            organization=request.organization,
+            status="active",
+        ).count()
+        pending_invitations = OrganizationInvitation.objects.filter(
+            organization=request.organization,
+            status="pending",
+            expires_at__gt=timezone.now(),
+        ).count()
+        try:
+            EntitlementService(request.organization).require_capacity(
+                "max_members", active_members + pending_invitations
+            )
+        except BillingError as exc:
+            return Response(
+                {"detail": exc.message, "code": exc.code, "details": exc.details},
+                status=exc.status_code,
             )
         invitation, raw_token = create_invitation(
             organization=request.organization,

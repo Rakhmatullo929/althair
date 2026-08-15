@@ -347,6 +347,9 @@ def ingest_inbound_message(
         conversation=conversation,
         metadata={"test_data": is_test},
     )
+    from billing.services import record_message_usage
+
+    record_message_usage(message)
     if enqueue_ai:
         transaction.on_commit(lambda: _enqueue_ai_inbound(message.id))
     conversation.refresh_from_db()
@@ -436,6 +439,13 @@ def send_outbound_message(
         pass
     if not is_test and not is_public_web_chat:
         raise ProviderUnavailable("Sending is unavailable until this provider is connected.")
+    if is_public_web_chat:
+        from billing.services import BillingError, EntitlementService
+
+        try:
+            EntitlementService(organization).require("monthly_external_messages")
+        except BillingError as exc:
+            raise ProviderUnavailable(exc.code) from exc
     existing = Message.objects.for_organization(organization).filter(
         conversation=conversation,
         client_message_id=client_message_id,
@@ -459,6 +469,9 @@ def send_outbound_message(
     )
     message.full_clean()
     message.save()
+    from billing.services import record_message_usage
+
+    record_message_usage(message)
     Conversation.objects.filter(pk=conversation.pk).update(last_message_at=at, last_outbound_at=at)
     Conversation.objects.filter(pk=conversation.pk).update(
         ai_state=ConversationAIState.PAUSED_BY_HUMAN,

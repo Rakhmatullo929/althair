@@ -17,6 +17,7 @@
     "channels": "Kanallar",
     "aiContext": "AI kontekst",
     "aiAutomation": "AI avtomatlashtirish",
+    "billing": "Billing",
     "setupStage": "Ish maydonini sozlash",
     "setupStageHint": "Instagram, Telegram, Gmail, SMS va Web Chat mavjud",
     "openMenu": "Navigatsiyani ochish",
@@ -1500,5 +1501,112 @@
     "metrics": "Ish ko‘rsatkichlari",
     "recentSessions": "So‘nggi sessiyalar",
     "anonymize": "Anonimlashtirish"
+  },
+  "billing": {
+    "views": {
+      "overview": "Billing",
+      "plans": "Tariflar",
+      "usage": "Foydalanish",
+      "invoices": "Hisob-fakturalar",
+      "invoice": "Hisob tafsilotlari"
+    },
+    "tabs": {
+      "overview": "Umumiy",
+      "plans": "Tariflar",
+      "usage": "Foydalanish",
+      "invoices": "Hisoblar"
+    },
+    "description": "Ushbu tashkilotning tarifi, foydalanishi, hisoblari va obuna holati.",
+    "navigation": "Billing navigatsiyasi",
+    "loadError": "Billing ma'lumotlarini yuklab bo'lmadi",
+    "notAvailable": "Mavjud emas",
+    "saved": "Billing profili saqlandi.",
+    "cancelScheduled": "Bekor qilish joriy davr oxiriga rejalashtirildi.",
+    "resumed": "Yangilanish qayta yoqildi.",
+    "changeScheduled": "Tarif o'zgarishi keyingi yangilanishga rejalashtirildi.",
+    "banners": {
+      "trial": {
+        "title": "Sinov muddati faol",
+        "description": "Kiritilgan limitlar sinov muddati oxirigacha mavjud."
+      },
+      "pastDue": {
+        "title": "To'lov muddati o'tgan",
+        "description": "Hisob tekshirilayotganda Billing ochiq qoladi."
+      },
+      "grace": {
+        "title": "Imtiyozli davr",
+        "description": "Davr tugagach pullik imkoniyatlar cheklanishi mumkin."
+      },
+      "restricted": {
+        "title": "Pullik imkoniyatlar cheklangan",
+        "description": "CRM tarixi, Billing va ma'lumot eksporti ochiq qoladi."
+      }
+    },
+    "statuses": {
+      "trialing": "Sinov",
+      "active": "Faol",
+      "past_due": "Muddati o'tgan",
+      "grace": "Imtiyozli",
+      "paused": "To'xtatilgan",
+      "cancelled": "Bekor qilingan",
+      "expired": "Tugagan",
+      "manual": "Qo'lda"
+    },
+    "intervals": { "month": "oy", "year": "yil", "one_time": "bir martalik" },
+    "currentPlan": "Joriy tarif",
+    "status": "Holat",
+    "periodEnd": "Yangilanish / davr oxiri",
+    "price": "Narx",
+    "scheduledFor": "Tarif o'zgarishi {date} sanasiga rejalashtirilgan",
+    "resume": "Yangilanishni tiklash",
+    "cancelRenewal": "Davr oxirida bekor qilish",
+    "readOnly": "Billingni faqat tashkilot egasi yoki administratori o'zgartira oladi.",
+    "paymentProvider": "To'lov provayderi",
+    "onlineNotConnected": "Onlayn to'lov hali ulanmagan",
+    "manualProviderHelp": "Halol qo'lda boshqariladigan pilot jarayoni ishlatiladi. Karta ma'lumotlari yig'ilmaydi.",
+    "usageMeters": "faol foydalanish hisoblagichi",
+    "invoiceCount": "hisob-faktura",
+    "includedFeatures": "Kiritilgan imkoniyatlar",
+    "serverEnforced": "Limitlar serverda tekshiriladi; xavfsizlik qoidalari ustun.",
+    "billingProfile": "Billing profili",
+    "legalDraft": "Huquqiy va soliq yozuvlari tegishli yurisdiksiya uchun tekshirilishi kerak.",
+    "profile": {
+      "legal_name": "Yuridik nom",
+      "billing_email": "Hisob emaili",
+      "country_code": "Mamlakat kodi",
+      "tax_id": "Soliq ID (ixtiyoriy)"
+    },
+    "saveProfile": "Profilni saqlash",
+    "previewChange": "Ko'rib chiqish",
+    "contactSales": "Qo'lda o'zgartirish uchun savdo bo'limiga murojaat qiling",
+    "noProration": "Yashirin qayta hisoblashsiz",
+    "changePreview": "Tarif o'zgarishi ko'rinishi",
+    "changeEffective": "O'zgarish {date} sanasida kuchga kiradi.",
+    "today": "Joriy davr",
+    "nextPeriod": "Keyingi davr",
+    "refreshPreview": "Hisobni yangilash",
+    "scheduleChange": "Rejalashtirish",
+    "realUsage": "Haqiqiy foydalanish",
+    "usageHelp": "O'zgarmas idempotent hodisalardan tiklanadigan natijalar.",
+    "remaining": "Qoldi: {value}",
+    "noUsage": "Bu davrda foydalanish hali qayd etilmagan.",
+    "estimateLabel": "Ortiqcha foydalanish bahosi; soliq hisoblanmagan.",
+    "invoiceHistory": "Hisob-fakturalar tarixi",
+    "invoiceHistoryHelp": "Chiqarilgan summalar asl tarif va narx nusxasini saqlaydi.",
+    "invoice": "Hisob-faktura",
+    "date": "Sana",
+    "total": "Jami",
+    "view": "Ochish",
+    "noInvoices": "Hisob-fakturalar hali chiqarilmagan.",
+    "issuedOn": "{date} kuni chiqarilgan",
+    "descriptionLabel": "Tavsif",
+    "quantity": "Miqdor",
+    "unitPrice": "Birlik narxi",
+    "amount": "Summa",
+    "subtotal": "Oraliq jami",
+    "discount": "Chegirma",
+    "taxNotCalculated": "Soliq (hisoblanmagan)",
+    "financialRecordNotice": "Moliyaviy yozuvlar sozlangan siyosat bo'yicha saqlanadi; universal huquqiy da'vo qilinmaydi.",
+    "print": "Chop etish / PDF saqlash"
   }
 }

@@ -11,6 +11,7 @@
     "contacts": "Kontaktlar",
     "leads": "Lidlar",
     "tasks": "Vazifalar",
+    "booking": "Band qilish",
     "company": "Kompaniya",
     "branches": "Filiallar",
     "team": "Jamoa",
@@ -1608,5 +1609,225 @@
     "taxNotCalculated": "Soliq (hisoblanmagan)",
     "financialRecordNotice": "Moliyaviy yozuvlar sozlangan siyosat bo'yicha saqlanadi; universal huquqiy da'vo qilinmaydi.",
     "print": "Chop etish / PDF saqlash"
+  },
+  "booking": {
+    "title": "Band qilish va jadval",
+    "description": "Haqiqiy bo'sh vaqtlar, uchrashuvlar, eslatmalar va onlayn band qilish qoidalari.",
+    "navigationLabel": "Band qilish navigatsiyasi",
+    "tabs": {
+      "calendar": "Taqvim",
+      "appointments": "Uchrashuvlar",
+      "appointment": "Uchrashuv",
+      "services": "Xizmatlar",
+      "staff": "Xodimlar",
+      "resources": "Resurslar",
+      "schedules": "Jadvallar",
+      "waitlist": "Kutish ro'yxati",
+      "reminders": "Eslatmalar",
+      "settings": "Sozlamalar"
+    },
+    "summaryLabel": "Bandlar xulosasi",
+    "select": "Tanlang",
+    "stats": {
+      "today": "Bugun",
+      "week": "Keyingi 7 kun",
+      "pending": "Tasdiq kutilmoqda",
+      "waitlist": "Kutish ro'yxati"
+    },
+    "calendar": {
+      "eyebrow": "Jonli jadval",
+      "title": "Yaqin uchrashuvlar",
+      "openList": "Ro'yxatni ochish"
+    },
+    "appointments": {
+      "eyebrow": "Amallar",
+      "title": "Uchrashuvlar",
+      "filter": "Holat",
+      "all": "Barcha holatlar",
+      "emptyTitle": "Uchrashuvlar yo'q",
+      "emptyDescription": "Mijoz yoki jamoa band qilganda bu yerda ko'rinadi.",
+      "anyStaff": "Istalgan bo'sh xodim"
+    },
+    "statuses": {
+      "pending_confirmation": "Tasdiq kutilmoqda",
+      "confirmed": "Tasdiqlangan",
+      "checked_in": "Mijoz keldi",
+      "in_progress": "Jarayonda",
+      "completed": "Yakunlangan",
+      "cancelled": "Bekor qilingan",
+      "no_show": "Kelmadi",
+      "rejected": "Rad etilgan"
+    },
+    "detail": {
+      "when": "Sana va vaqt",
+      "customer": "Mijoz",
+      "staff": "Xodim",
+      "branch": "Filial",
+      "source": "Manba",
+      "timezone": "Mijoz vaqt mintaqasi",
+      "timeline": "Audit tarixi"
+    },
+    "actions": {
+      "confirm": "Tasdiqlash",
+      "cancel": "Bekor qilish",
+      "checkIn": "Kelganini belgilash",
+      "noShow": "Kelmaganini belgilash",
+      "start": "Xizmatni boshlash",
+      "complete": "Yakunlash",
+      "reschedule": "Vaqtini o'zgartirish",
+      "newDate": "Yangi sana",
+      "findSlots": "Haqiqiy bo'sh vaqtni topish",
+      "manualCancellation": "Jamoa bekor qildi"
+    },
+    "services": {
+      "eyebrow": "Katalog",
+      "title": "Band qilinadigan xizmatlar",
+      "add": "Xizmat qo'shish",
+      "name": "Xizmat nomi",
+      "duration": "Davomiyligi",
+      "price": "Narxning eng kichik birligi",
+      "mode": "Band qilish rejimi",
+      "notSet": "Belgilanmagan",
+      "noDescription": "Ommaviy tavsif yo'q."
+    },
+    "staff": {
+      "eyebrow": "Sig'im",
+      "title": "Band qilinadigan xodimlar",
+      "empty": "Xodimlar sozlanmagan.",
+      "add": "Xodimni qo'shish",
+      "member": "Jamoa a'zosi",
+      "name": "Ommaviy nom",
+      "branch": "Filial",
+      "service": "Ko'rsatiladigan xizmat"
+    },
+    "resources": {
+      "eyebrow": "Sig'im",
+      "title": "Xonalar va resurslar",
+      "empty": "Resurslar sozlanmagan.",
+      "capacity": "Sig'im {count}",
+      "add": "Resurs qo'shish",
+      "branch": "Filial",
+      "name": "Resurs nomi",
+      "type": "Resurs turi",
+      "capacityLabel": "Sig'im"
+    },
+    "schedules": {
+      "eyebrow": "Bo'sh vaqt qoidalari",
+      "title": "Jadval qamrovi",
+      "branchHours": "Filial vaqtlari",
+      "staffHours": "Xodim vaqtlari",
+      "branchCount": "{count} ta filial",
+      "staffCount": "{count} ta xodim",
+      "dst": "Vaqt mintaqasi xavfsiz",
+      "dstDescription": "DST bo'shliqlari rad etiladi, takror vaqtlar aniq ajratiladi.",
+      "weeklyRule": "Haftalik ish vaqtini qo'shish",
+      "ownerType": "Jadval turi",
+      "owner": "Filial, xodim yoki resurs",
+      "branch": "Filial",
+      "staff": "Xodim",
+      "resource": "Resurs",
+      "weekday": "Hafta kuni",
+      "start": "Boshlanish",
+      "end": "Tugash",
+      "addRule": "Qoidani qo'shish",
+      "timeOff": "Dam olish yoki ta'til qo'shish",
+      "startsAt": "Boshlanadi",
+      "endsAt": "Tugaydi",
+      "addTimeOff": "Istisno qo'shish",
+      "timeOffReason": "Band qilish jamoasi tomonidan sozlangan",
+      "timezone": "Mahalliy vaqt {timezone} bo'yicha. DST bo'shlig'i rad etiladi.",
+      "weekdays": {
+        "0": "Dushanba",
+        "1": "Seshanba",
+        "2": "Chorshanba",
+        "3": "Payshanba",
+        "4": "Juma",
+        "5": "Shanba",
+        "6": "Yakshanba"
+      },
+      "exceptions": {
+        "unavailable": "Mavjud emas",
+        "available_override": "Qo'shimcha vaqt",
+        "holiday": "Dam olish",
+        "time_off": "Ta'til"
+      },
+      "help": "Qoidalar, tanaffuslar, dam olish va istisnolar tashkilot ichida saqlanib, slot ko'rsatilishidan oldin qo'llanadi."
+    },
+    "waitlist": {
+      "eyebrow": "Talab",
+      "title": "Kutish ro'yxati",
+      "empty": "Kutish ro'yxati bo'sh."
+    },
+    "reminders": {
+      "eyebrow": "Yetkazish",
+      "title": "Uchrashuv eslatmalari",
+      "empty": "Eslatmalar rejalashtirilmagan."
+    },
+    "settings": {
+      "eyebrow": "Onlayn band",
+      "title": "Ommaviy sahifa",
+      "preview": "Ko'rish",
+      "publicTitle": "Ommaviy sarlavha",
+      "intro": "Kirish matni",
+      "enabled": "Ommaviy band qilish yoqilgan",
+      "publicKey": "Yopiq ommaviy kalit"
+    },
+    "active": "Faol",
+    "inactive": "Nofaol",
+    "save": "Saqlash",
+    "errors": {
+      "load": "Band qilish ma'lumotlari mavjud emas",
+      "notFound": "Uchrashuv topilmadi"
+    },
+    "inbox": {
+      "title": "Uchrashuv yaratish",
+      "description": "Barcha kanallardagi bir xil haqiqiy bo'sh vaqt",
+      "service": "Xizmat",
+      "branch": "Filial",
+      "date": "Sana",
+      "select": "Tanlang",
+      "find": "Vaqt topish",
+      "available": "Bo'sh vaqtlar",
+      "none": "Bu sana uchun mos vaqt yo'q.",
+      "chooseSlot": "Bo'sh vaqtni tanlang.",
+      "confirmTitle": "Aniq vaqtni tasdiqlang",
+      "create": "Uchrashuv yaratish",
+      "created": "{reference} uchrashuvi yaratildi va suhbatga bog'landi."
+    }
+  },
+  "publicBooking": {
+    "eyebrow": "Onlayn band qilish",
+    "intro": "Xizmat va haqiqiy bo'sh vaqtni tanlang.",
+    "unavailable": "Band qilish mavjud emas",
+    "stepsLabel": "Band qilish bosqichlari",
+    "steps": {
+      "service": "Xizmat",
+      "time": "Vaqt",
+      "details": "Ma'lumot",
+      "complete": "Tayyor"
+    },
+    "choose": "Xizmat va filialni tanlang",
+    "branch": "Filial",
+    "selectBranch": "Filialni tanlang",
+    "date": "Sana",
+    "findTimes": "Bo'sh vaqtlarni topish",
+    "chooseTime": "Aniq vaqtni tanlang",
+    "back": "Orqaga",
+    "noSlots": "Bo'sh vaqt yo'q",
+    "noSlotsHelp": "Boshqa sana, xizmat yoki filialni sinab ko'ring.",
+    "details": "Ma'lumotlaringiz",
+    "name": "To'liq ism",
+    "email": "Email",
+    "phone": "Telefon",
+    "contactRequired": "Email yoki telefon raqamini kiriting.",
+    "notes": "Jamoa uchun izoh",
+    "consent": "Uchrashuvni boshqarish va xizmat xabarlarini olish uchun ma'lumotlardan foydalanishga roziman.",
+    "reserving": "Band qilinmoqda…",
+    "confirm": "Uchrashuvni band qilish",
+    "completeTitle": "So'rov saqlandi",
+    "completeDescription": "Raqam: {reference}",
+    "confirmationTruth": "Yuqoridagi holat ishonchli. Kutilayotgan so'rov tasdiqlangan deb ko'rsatilmaydi.",
+    "privacy": "Sessiya qisqa muddatli va tashkilot doirasida ajratilgan.",
+    "privacyLink": "Maxfiylik siyosati"
   }
 }

@@ -18,6 +18,7 @@ import {
   Settings2,
   UserRoundSearch,
   Users,
+  CalendarDays,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
@@ -32,6 +33,7 @@ const navItems = [
   ["contacts", "/app/contacts", UserRoundSearch],
   ["leads", "/app/leads", KanbanSquare],
   ["tasks", "/app/tasks", ListTodo],
+  ["booking", "/app/booking", CalendarDays],
   ["company", "/app/settings/company", Building2],
   ["branches", "/app/settings/branches", GitBranch],
   ["team", "/app/settings/team", Users],

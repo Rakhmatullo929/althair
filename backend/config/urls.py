@@ -135,6 +135,12 @@ def health_ready(request):
     else:
         checks['billing'] = 'disabled'
 
+    checks['booking'] = (
+        'fake_ready' if settings.BOOKING_ENABLE and settings.BOOKING_REMINDER_PROVIDER == 'fake'
+        else 'channel_ready' if settings.BOOKING_ENABLE and settings.BOOKING_REMINDER_PROVIDER == 'channels'
+        else 'disabled'
+    )
+
     status_code = 200 if healthy else 503
     return JsonResponse({'status': 'ready' if healthy else 'degraded', 'checks': checks}, status=status_code)
 
@@ -145,6 +151,7 @@ urlpatterns = [
     path('health/ready', health_ready, name='health_ready'),
     path(settings.ADMIN_URL, admin.site.urls),
     path('api/v1/internal/billing/', include(('billing.internal_urls', 'billing_internal'), namespace='billing_internal')),
+    path('api/v1/internal/booking/', include(('booking.internal_urls', 'booking_internal'), namespace='booking_internal')),
     path('api/v1/internal/', include(('control_plane.urls', 'control_plane'), namespace='control_plane')),
     path('core/', include(('core.urls', 'core'), namespace='core')),
     path('api/v1/', include([
@@ -161,6 +168,7 @@ urlpatterns = [
         path('', include(('sms.urls', 'sms'), namespace='sms')),
         path('', include(('voice.urls', 'voice'), namespace='voice')),
         path('billing/', include(('billing.urls', 'billing'), namespace='billing')),
+        path('booking/', include(('booking.urls', 'booking'), namespace='booking')),
         path('webhooks/', include(('instagram.webhook_urls', 'instagram_webhooks'), namespace='instagram_webhooks')),
         path('webhooks/', include(('telegram.webhook_urls', 'telegram_webhooks'), namespace='telegram_webhooks')),
         path('webhooks/', include(('gmail_integration.webhook_urls', 'gmail_webhooks'), namespace='gmail_webhooks')),
@@ -168,6 +176,7 @@ urlpatterns = [
         path('webhooks/', include(('voice.webhook_urls', 'voice_webhooks'), namespace='voice_webhooks')),
         path('webhooks/', include(('billing.webhook_urls', 'billing_webhooks'), namespace='billing_webhooks')),
         path('public/web-chat/', include(('web_chat.public_urls', 'web_chat_public'), namespace='web_chat_public')),
+        path('public/booking/', include(('booking.public_urls', 'booking_public'), namespace='booking_public')),
         path('public/', include(('early_access.urls', 'early_access'), namespace='early_access')),
         path('users/', include(('users.urls', 'users'), namespace='users')),
         path('intake/', include(('intake.urls', 'intake'), namespace='intake')),

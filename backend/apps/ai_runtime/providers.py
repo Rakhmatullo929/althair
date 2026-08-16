@@ -106,13 +106,18 @@ class FakeAIProvider(BaseAIProvider):
     def _tool_call(self, lowered: str, raw: str, allowed: set[str]):
         if any(token in lowered for token in ("human", "человек", "operator", "менеджер", "complaint", "жалоб")):
             return _call("request_human_handoff", {"reason_code": "customer_request", "safe_summary": "Customer requested human assistance."}, allowed)
-        if any(token in lowered for token in ("urgent", "emergency", "диагноз", "medical", "юрист", "refund", "payment", "book ", "booking", "заказ")):
+        if any(token in lowered for token in (
+            "urgent", "emergency", "диагноз", "diagnos", "chest pain", "clinical", "medical",
+            "prescription", "юрист", "refund", "payment", "charge", "card", "заказ",
+        )):
             return _call("request_human_handoff", {"reason_code": "unsupported_or_high_risk", "safe_summary": "Request needs a qualified human because it is unsupported or high risk."}, allowed)
         if any(token in lowered for token in (
             "system prompt", "api key", "secret", "ignore previous", "другая компания",
             "other tenant", "another tenant", "another company",
         )):
             return _call("request_human_handoff", {"reason_code": "policy_conflict", "safe_summary": "Customer message attempted to override platform or tenant safety policy."}, allowed)
+        if any(token in lowered for token in ("book", "booking", "appointment", "запис", "брон", "uchrashuv")):
+            return _call_or_policy("list_services", {}, allowed)
         name_match = re.search(r"(?:name is|name to|имя на|меня зовут)\s+([\w\- 'А-Яа-яЁёЎўҚқҒғҲҳ]{2,80})", raw, re.IGNORECASE)
         if name_match:
             return _call_or_policy("update_contact_name", {"display_name": name_match.group(1).strip()}, allowed)
@@ -147,7 +152,9 @@ def _call_or_policy(name: str, arguments: dict, allowed: set[str]):
 
 def _detect_language(text: str) -> str:
     lowered = text.casefold()
-    if any(char in lowered for char in "ўқғҳ") or any(word in lowered for word in ("salom", "iltimos", "qachon", "eslat")):
+    if any(char in lowered for char in "ўқғҳ") or any(
+        word in lowered for word in ("salom", "iltimos", "qachon", "eslat", "uchrashuv", "klinika")
+    ):
         return "uz"
     if re.search(r"[а-яё]", lowered):
         return "ru"

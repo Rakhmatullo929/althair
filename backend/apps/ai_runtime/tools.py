@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import date, datetime, timedelta
 from typing import Callable
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -275,6 +276,347 @@ def _handoff(ctx, args):
     return {"handoff_id": str(handoff.id), "status": handoff.status, "reason_code": handoff.reason_code}
 
 
+def _require_booking_ai(ctx):
+    from billing.services import EntitlementService
+
+    EntitlementService(ctx.organization).require("booking_ai")
+
+
+def _booking_operation_key(ctx, action, value):
+    run_id = getattr(getattr(ctx, "run", None), "id", None)
+    scope = run_id or ctx.conversation.id
+    return f"ai:{scope}:{action}:{value}"
+
+
+def _customer_appointment(ctx, reference):
+    from booking.models import Appointment
+
+    appointment = Appointment.objects.for_organization(ctx.organization).filter(
+        contact=ctx.conversation.contact,
+        public_reference=reference,
+    ).first()
+    if not appointment:
+        raise ToolValidationError("appointment_not_found")
+    return appointment
+
+
+def _booking_services(ctx, args):
+    from booking.models import Service
+
+    _require_booking_ai(ctx)
+    services = Service.objects.for_organization(ctx.organization).filter(active=True).order_by("name")[:50]
+    return {
+        "services": [
+            {
+                "id": str(service.id),
+                "name": service.name,
+                "duration_minutes": service.duration_minutes,
+                "price_minor": service.price_minor,
+                "currency": service.currency,
+                "booking_mode": service.booking_mode,
+            }
+            for service in services
+        ]
+    }
+
+
+def _booking_branches(ctx, args):
+    _require_booking_ai(ctx)
+    return _branches(ctx, args)
+
+
+def _booking_service_details(ctx, args):
+    from booking.models import Service
+
+    _require_booking_ai(ctx)
+    service = _scoped(
+        Service.objects.for_organization(ctx.organization).filter(active=True),
+        args["service_id"],
+    )
+    return {
+        "id": str(service.id),
+        "name": service.name,
+        "public_description": service.public_description,
+        "duration_minutes": service.duration_minutes,
+        "price_minor": service.price_minor,
+        "currency": service.currency,
+        "booking_mode": service.booking_mode,
+        "customer_can_choose_staff": service.customer_can_choose_staff,
+        "minimum_notice_minutes": service.minimum_notice_minutes,
+        "maximum_advance_days": service.maximum_advance_days,
+        "cancellation_notice_minutes": service.cancellation_notice_minutes,
+    }
+
+
+def _booking_staff(ctx, args):
+    from booking.models import BookableStaffProfile
+    from organizations.models import OrganizationMembershipStatus
+
+    _require_booking_ai(ctx)
+    rows = BookableStaffProfile.objects.for_organization(ctx.organization).filter(
+        active=True,
+        accepts_online_booking=True,
+        membership__status=OrganizationMembershipStatus.ACTIVE,
+        branch_assignments__branch_id=args["branch_id"],
+        supported_services__service_id=args["service_id"],
+        supported_services__active=True,
+    ).distinct().order_by("display_name", "id")[:50]
+    return {"staff": [{"id": str(row.id), "display_name": row.display_name} for row in rows]}
+
+
+def _booking_availability(ctx, args):
+    from booking.services import AvailabilityService
+
+    _require_booking_ai(ctx)
+    try:
+        starts = date.fromisoformat(args["date_from"])
+        ends = date.fromisoformat(args["date_to"])
+    except ValueError as exc:
+        raise ToolValidationError("invalid_booking_date") from exc
+    slots = AvailabilityService(ctx.organization).slots(
+        branch_id=args["branch_id"],
+        service_id=args["service_id"],
+        date_from=starts,
+        date_to=ends,
+    )[:20]
+    return {"slots": [slot.as_dict() for slot in slots]}
+
+
+def _booking_hold(ctx, args):
+    from booking.models import AppointmentHold
+    from booking.services import AppointmentHoldService, BookingError
+
+    _require_booking_ai(ctx)
+    try:
+        starts_at = datetime.fromisoformat(args["starts_at"])
+        if starts_at.tzinfo is None:
+            raise ValueError
+        hold, created = AppointmentHoldService.create(
+            organization=ctx.organization,
+            branch_id=args["branch_id"],
+            service_id=args["service_id"],
+            contact_id=ctx.conversation.contact_id,
+            starts_at=starts_at,
+            staff_profile_id=args["staff_profile_id"],
+            idempotency_key=_booking_operation_key(ctx, "hold", args["starts_at"]),
+            created_by_type=AppointmentHold.CreatedByType.AI,
+        )
+    except (ValueError, BookingError) as exc:
+        raise ToolValidationError(getattr(exc, "code", "invalid_booking_time")) from exc
+    return {
+        "hold_id": str(hold.id),
+        "starts_at": hold.starts_at.isoformat(),
+        "ends_at": hold.ends_at.isoformat(),
+        "expires_at": hold.expires_at.isoformat(),
+        "created": created,
+    }
+
+
+def _validate_confirmed_identity(ctx, supplied):
+    normalized = supplied.strip().casefold()
+    contact = ctx.conversation.contact
+    values = {contact.display_name.strip().casefold()}
+    values.update(
+        value.strip().casefold()
+        for value in contact.identities.values_list("raw_value", flat=True)
+        if value.strip()
+    )
+    if normalized not in values:
+        raise ToolValidationError("customer_identity_not_confirmed")
+
+
+def _booking_create_from_hold(ctx, args):
+    from booking.models import AppointmentHold
+    from booking.services import AppointmentService, BookingError
+
+    _require_booking_ai(ctx)
+    _validate_confirmed_identity(ctx, args["customer_identity"])
+    try:
+        hold = _scoped(
+            AppointmentHold.objects.for_organization(ctx.organization).filter(
+                contact=ctx.conversation.contact
+            ).select_related("branch", "service"),
+            args["hold_id"],
+        )
+        local_start = hold.starts_at.astimezone(ZoneInfo(args["customer_timezone"]))
+        summary = args["confirmation_summary"].casefold()
+        required_confirmation = (
+            hold.service.name.casefold(),
+            hold.branch.name.casefold(),
+            local_start.date().isoformat(),
+            local_start.strftime("%H:%M"),
+            args["customer_timezone"].casefold(),
+        )
+        if not all(item in summary for item in required_confirmation):
+            raise ToolValidationError("booking_confirmation_incomplete")
+        appointment, created, _ = AppointmentService.create_from_hold(
+            organization=ctx.organization,
+            hold_id=args["hold_id"],
+            idempotency_key=_booking_operation_key(ctx, "appointment", args["hold_id"]),
+            customer_timezone=args["customer_timezone"],
+            created_by_membership=ctx.actor,
+            source_conversation=ctx.conversation,
+        )
+    except BookingError as exc:
+        raise ToolValidationError(exc.code) from exc
+    except (ValueError, ZoneInfoNotFoundError) as exc:
+        raise ToolValidationError("invalid_customer_timezone") from exc
+    return {
+        "appointment_id": str(appointment.id),
+        "public_reference": appointment.public_reference,
+        "status": appointment.status,
+        "starts_at": appointment.starts_at.isoformat(),
+        "created": created,
+    }
+
+
+def _booking_status(ctx, args):
+    _require_booking_ai(ctx)
+    appointment = _customer_appointment(ctx, args["public_reference"])
+    return {
+        "public_reference": appointment.public_reference,
+        "status": appointment.status,
+        "starts_at": appointment.starts_at.isoformat(),
+        "ends_at": appointment.ends_at.isoformat(),
+    }
+
+
+def _booking_customer_appointments(ctx, args):
+    from booking.models import Appointment
+
+    _require_booking_ai(ctx)
+    appointments = Appointment.objects.for_organization(ctx.organization).filter(
+        contact=ctx.conversation.contact,
+    ).order_by("-starts_at")[:20]
+    return {
+        "appointments": [
+            {
+                "public_reference": appointment.public_reference,
+                "service_name": appointment.service_name_snapshot,
+                "starts_at": appointment.starts_at.isoformat(),
+                "ends_at": appointment.ends_at.isoformat(),
+                "status": appointment.status,
+            }
+            for appointment in appointments
+        ]
+    }
+
+
+def _booking_policy(ctx, args):
+    from booking.models import Service
+    from booking.services import resolve_policy
+
+    _require_booking_ai(ctx)
+    branch = _scoped(
+        Branch.objects.filter(organization=ctx.organization, is_active=True),
+        args["branch_id"],
+    )
+    service = _scoped(
+        Service.objects.for_organization(ctx.organization).filter(active=True),
+        args["service_id"],
+    )
+    policy = resolve_policy(organization=ctx.organization, branch=branch, service=service)
+    return {
+        "allow_customer_reschedule": policy.allow_customer_reschedule,
+        "allow_customer_cancel": policy.allow_customer_cancel,
+        "minimum_notice_minutes": service.minimum_notice_minutes or policy.default_minimum_notice_minutes,
+        "maximum_advance_days": service.maximum_advance_days or policy.default_maximum_advance_days,
+        "cancellation_notice_minutes": (
+            service.cancellation_notice_minutes or policy.default_cancellation_notice_minutes
+        ),
+        "cancellation_policy_text": policy.cancellation_policy_text,
+        "no_show_policy_text": policy.no_show_policy_text,
+    }
+
+
+def _booking_confirm(ctx, args):
+    from booking.services import AppointmentService, BookingError
+
+    _require_booking_ai(ctx)
+    appointment = _customer_appointment(ctx, args["public_reference"])
+    try:
+        appointment, changed = AppointmentService.confirm(
+            organization=ctx.organization,
+            appointment_id=appointment.id,
+            actor_type="customer",
+            actor_membership=ctx.actor,
+            token=args["confirmation_token"],
+        )
+    except BookingError as exc:
+        raise ToolValidationError(exc.code) from exc
+    return {"public_reference": appointment.public_reference, "status": appointment.status, "changed": changed}
+
+
+def _booking_cancel(ctx, args):
+    from booking.services import AppointmentService, BookingError
+
+    _require_booking_ai(ctx)
+    appointment = _customer_appointment(ctx, args["public_reference"])
+    try:
+        appointment, changed = AppointmentService.cancel(
+            organization=ctx.organization,
+            appointment_id=appointment.id,
+            reason=args["reason"],
+            actor_type="ai",
+            actor_membership=ctx.actor,
+            customer=True,
+        )
+    except BookingError as exc:
+        raise ToolValidationError(exc.code) from exc
+    return {"public_reference": appointment.public_reference, "status": appointment.status, "changed": changed}
+
+
+def _booking_reschedule(ctx, args):
+    from booking.services import AppointmentService, BookingError
+
+    _require_booking_ai(ctx)
+    appointment = _customer_appointment(ctx, args["public_reference"])
+    try:
+        starts_at = datetime.fromisoformat(args["starts_at"])
+        if starts_at.tzinfo is None:
+            raise ValueError
+        appointment = AppointmentService.reschedule(
+            organization=ctx.organization,
+            appointment_id=appointment.id,
+            starts_at=starts_at,
+            idempotency_key=_booking_operation_key(ctx, "reschedule", args["starts_at"]),
+            actor_type="ai",
+            actor_membership=ctx.actor,
+            customer=True,
+        )
+    except (ValueError, BookingError) as exc:
+        raise ToolValidationError(getattr(exc, "code", "invalid_booking_time")) from exc
+    return {
+        "public_reference": appointment.public_reference,
+        "status": appointment.status,
+        "starts_at": appointment.starts_at.isoformat(),
+    }
+
+
+def _booking_join_waitlist(ctx, args):
+    from booking.services import BookingError, WaitlistService
+
+    _require_booking_ai(ctx)
+    try:
+        entry = WaitlistService.create(
+            organization=ctx.organization,
+            branch_id=args["branch_id"],
+            service_id=args["service_id"],
+            contact_id=ctx.conversation.contact_id,
+            earliest_date=date.fromisoformat(args["earliest_date"]),
+            latest_date=date.fromisoformat(args["latest_date"]),
+            preferred_staff_id=args.get("preferred_staff_id"),
+            preferred_time_windows=[],
+        )
+    except (ValueError, BookingError) as exc:
+        raise ToolValidationError(getattr(exc, "code", "invalid_waitlist_date")) from exc
+    return {"waitlist_entry_id": str(entry.id), "status": entry.status}
+
+
+def _booking_handoff(ctx, args):
+    return _handoff(ctx, {"reason_code": "booking_requires_human", "safe_summary": args["safe_summary"]})
+
+
 TOOL_REGISTRY = {
     spec.name: spec
     for spec in (
@@ -291,6 +633,21 @@ TOOL_REGISTRY = {
         ToolSpec("create_follow_up_task", "Create a follow-up task for the current contact.", {"title": _string("Task title.", 200), "due_in_hours": {"type": "integer", "minimum": 1, "maximum": 720, "description": "Hours until due."}}, ("title", "due_in_hours"), True, "manage_crm", _create_task),
         ToolSpec("add_internal_ai_note", "Add an AI-labeled internal note to this conversation.", {"body": _string("Plain-text factual internal note.", 2000)}, ("body",), True, "manage_crm", _internal_note),
         ToolSpec("request_human_handoff", "Pause AI and request a human for this conversation.", {"reason_code": _string("Stable safe reason code.", 80), "safe_summary": _string("Short factual summary without reasoning.", 1000)}, ("reason_code", "safe_summary"), True, "read", _handoff, True),
+        ToolSpec("list_services", "List active tenant booking services and their public terms.", {}, (), False, "read", _booking_services),
+        ToolSpec("get_service_details", "Read public booking details for one service from the tenant catalog.", {"service_id": _uuid("Service ID returned by list_services.")}, ("service_id",), False, "read", _booking_service_details),
+        ToolSpec("list_booking_branches", "List active branches available for booking.", {}, (), False, "read", _booking_branches),
+        ToolSpec("list_bookable_staff", "List public-safe staff choices for one service and branch.", {"branch_id": _uuid("Branch ID."), "service_id": _uuid("Service ID.")}, ("branch_id", "service_id"), False, "read", _booking_staff),
+        ToolSpec("get_available_slots", "Read exact server-computed appointment slots. Dates use YYYY-MM-DD.", {"branch_id": _uuid("Branch ID."), "service_id": _uuid("Service ID."), "date_from": _string("First local date in YYYY-MM-DD.", 10), "date_to": _string("Last local date in YYYY-MM-DD.", 10)}, ("branch_id", "service_id", "date_from", "date_to"), False, "read", _booking_availability),
+        ToolSpec("get_appointment", "Read one appointment belonging to the current customer.", {"public_reference": _string("Customer-visible booking reference.", 40)}, ("public_reference",), False, "read", _booking_status),
+        ToolSpec("list_customer_appointments", "List recent appointments belonging to the current customer only.", {}, (), False, "read", _booking_customer_appointments),
+        ToolSpec("get_booking_policy", "Read public cancellation, notice, and reschedule policy for a service and branch.", {"branch_id": _uuid("Branch ID."), "service_id": _uuid("Service ID.")}, ("branch_id", "service_id"), False, "read", _booking_policy),
+        ToolSpec("create_appointment_hold", "Temporarily hold one exact slot returned by get_available_slots.", {"branch_id": _uuid("Confirmed branch ID."), "service_id": _uuid("Confirmed service ID."), "staff_profile_id": _uuid("Staff profile ID returned by availability."), "starts_at": _string("Timezone-aware ISO 8601 start instant from availability.", 64)}, ("branch_id", "service_id", "staff_profile_id", "starts_at"), True, "manage_crm", _booking_hold),
+        ToolSpec("confirm_appointment", "Confirm a pending customer appointment using its opaque one-time confirmation token.", {"public_reference": _string("Customer-visible booking reference.", 40), "confirmation_token": _string("Opaque confirmation token supplied by the customer.", 200)}, ("public_reference", "confirmation_token"), True, "manage_crm", _booking_confirm),
+        ToolSpec("create_appointment", "Convert an exact live hold into an appointment only after explicit confirmation of service, branch, local date/time, timezone, and customer identity.", {"hold_id": _uuid("Live hold ID."), "customer_timezone": _string("Confirmed IANA customer timezone.", 64), "customer_identity": _string("Exact customer name, phone, or email explicitly confirmed in the conversation.", 320), "confirmation_summary": _string("Short explicit confirmation including service, branch, local date, local time, and timezone.", 500)}, ("hold_id", "customer_timezone", "customer_identity", "confirmation_summary"), True, "manage_crm", _booking_create_from_hold),
+        ToolSpec("reschedule_appointment", "Reschedule the current customer's appointment to an exact server-returned slot.", {"public_reference": _string("Customer-visible booking reference.", 40), "starts_at": _string("Confirmed timezone-aware ISO 8601 start instant.", 64)}, ("public_reference", "starts_at"), True, "manage_crm", _booking_reschedule),
+        ToolSpec("cancel_appointment", "Cancel the current customer's appointment subject to policy.", {"public_reference": _string("Customer-visible booking reference.", 40), "reason": _string("Customer-provided cancellation reason.", 1000)}, ("public_reference", "reason"), True, "manage_crm", _booking_cancel),
+        ToolSpec("join_waitlist", "Join the current customer to the booking waitlist without auto-booking.", {"branch_id": _uuid("Branch ID."), "service_id": _uuid("Service ID."), "earliest_date": _string("Earliest local date in YYYY-MM-DD.", 10), "latest_date": _string("Latest local date in YYYY-MM-DD.", 10)}, ("branch_id", "service_id", "earliest_date", "latest_date"), True, "manage_crm", _booking_join_waitlist),
+        ToolSpec("request_booking_handoff", "Pause automation and request a human for a clinical, urgent, unsupported, or policy-blocked booking request.", {"safe_summary": _string("Short factual booking summary without diagnosis or hidden reasoning.", 1000)}, ("safe_summary",), True, "read", _booking_handoff, True),
     )
 }
 

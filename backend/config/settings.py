@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     'sms',
     'voice',
     'billing',
+    'booking',
     'control_plane',
 ]
 
@@ -108,6 +109,7 @@ CORS_ALLOW_METHODS = ['DELETE', 'GET', 'OPTIONS', 'PATCH', 'POST', 'PUT']
 CORS_ALLOW_HEADERS = (
     *default_headers,
     'idempotency-key',
+    'x-booking-session',
     'x-organization-id',
     'x-internal-reason',
     'x-request-id',
@@ -716,6 +718,36 @@ BILLING_MANUAL_PROVIDER_ENABLE = os.environ.get('BILLING_MANUAL_PROVIDER_ENABLE'
 BILLING_FAKE_PROVIDER = os.environ.get('BILLING_FAKE_PROVIDER', 'true' if TESTING else 'false').lower() in ('true', '1', 'yes')
 BILLING_FAKE_SIGNING_KEY = os.environ.get('BILLING_FAKE_SIGNING_KEY', 'deterministic-ci-only')
 
+# Tenant-scoped Booking is provider-independent. Reminders use existing
+# consent-aware channel adapters; tests use a deterministic no-network fake.
+BOOKING_ENABLE = os.environ.get('BOOKING_ENABLE', 'true').lower() in ('true', '1', 'yes')
+BOOKING_PUBLIC_PAGE_ENABLE = os.environ.get(
+    'BOOKING_PUBLIC_PAGE_ENABLE', 'true' if TESTING else 'false'
+).lower() in ('true', '1', 'yes')
+BOOKING_REMINDERS_ENABLE = os.environ.get(
+    'BOOKING_REMINDERS_ENABLE', 'true' if TESTING else 'false'
+).lower() in ('true', '1', 'yes')
+BOOKING_FAKE_NOTIFICATIONS = os.environ.get(
+    'BOOKING_FAKE_NOTIFICATIONS', 'true' if TESTING else 'false'
+).lower() in ('true', '1', 'yes')
+BOOKING_REMINDER_PROVIDER = os.environ.get(
+    'BOOKING_REMINDER_PROVIDER', 'fake' if BOOKING_FAKE_NOTIFICATIONS else 'channels'
+).strip().lower()
+BOOKING_DEFAULT_SLOT_INTERVAL_MINUTES = int(os.environ.get('BOOKING_DEFAULT_SLOT_INTERVAL_MINUTES', '30'))
+BOOKING_HOLD_TTL_SECONDS = int(os.environ.get(
+    'BOOKING_DEFAULT_HOLD_TTL_SECONDS', os.environ.get('BOOKING_HOLD_TTL_SECONDS', '300')
+))
+BOOKING_MAX_AVAILABILITY_DAYS = int(os.environ.get('BOOKING_MAX_AVAILABILITY_DAYS', '31'))
+BOOKING_DEFAULT_REMINDER_MINUTES = [
+    int(value) for value in os.environ.get('BOOKING_DEFAULT_REMINDER_MINUTES', '1440,120').split(',') if value.strip()
+]
+BOOKING_MAX_PUBLIC_REQUESTS_PER_MINUTE = int(os.environ.get('BOOKING_MAX_PUBLIC_REQUESTS_PER_MINUTE', '60'))
+
+if BOOKING_REMINDER_PROVIDER not in {'fake', 'channels'}:
+    raise RuntimeError('BOOKING_REMINDER_PROVIDER must be fake or channels')
+if BOOKING_REMINDER_PROVIDER == 'fake' and BOOKING_ENABLE and not (DEBUG or TESTING):
+    raise RuntimeError('The fake Booking reminder provider cannot be enabled in production')
+
 if BILLING_PROVIDER not in {'fake', 'manual'}:
     raise RuntimeError('Only fake and manual Billing providers are supported in this stage')
 if len(BILLING_DEFAULT_CURRENCY) != 3 or not BILLING_DEFAULT_CURRENCY.isalpha():
@@ -735,6 +767,17 @@ CELERY_BEAT_SCHEDULE.update({
     'instagram-subscription-health-hourly': {
         'task': 'instagram.tasks.verify_instagram_subscriptions',
         'schedule': 3600.0,
+    },
+})
+
+CELERY_BEAT_SCHEDULE.update({
+    'booking-reminders-every-minute': {
+        'task': 'booking.tasks.deliver_booking_reminders',
+        'schedule': 60.0,
+    },
+    'booking-expire-holds-every-minute': {
+        'task': 'booking.tasks.expire_booking_holds',
+        'schedule': 60.0,
     },
 })
 

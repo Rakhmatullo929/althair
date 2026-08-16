@@ -15,6 +15,16 @@ import type {
   BillingPlan,
   BillingSubscription,
   BillingUsage,
+  BookingDashboard,
+  BookingResource,
+  BookingScheduleException,
+  BookingScheduleRule,
+  BookingService,
+  BookingSlot,
+  BookingStaff,
+  Appointment,
+  PublicBookingPage,
+  PublicBookingProfile,
   Branch,
   ChannelConnection,
   Contact,
@@ -1239,6 +1249,226 @@ export class ApiClient {
     }>("/billing/checkout/", {
       method: "POST",
       body: { invoice_id: invoiceId },
+    });
+
+  bookingDashboard = () =>
+    this.request<BookingDashboard>("/booking/dashboard/");
+  bookingServices = () =>
+    this.request<Paginated<BookingService>>("/booking/services/");
+  createBookingService = (body: Partial<BookingService>) =>
+    this.request<BookingService>("/booking/services/", {
+      method: "POST",
+      body,
+    });
+  updateBookingService = (id: string, body: Partial<BookingService>) =>
+    this.request<BookingService>(`/booking/services/${id}/`, {
+      method: "PATCH",
+      body,
+    });
+  bookingStaff = () => this.request<Paginated<BookingStaff>>("/booking/staff/");
+  createBookingStaff = (body: Partial<BookingStaff>) =>
+    this.request<BookingStaff>("/booking/staff/", { method: "POST", body });
+  createBookingStaffBranch = (body: {
+    staff_profile: string;
+    branch: string;
+  }) =>
+    this.request<{ id: string }>("/booking/staff-branches/", {
+      method: "POST",
+      body,
+    });
+  createBookingStaffService = (body: {
+    staff_profile: string;
+    service: string;
+    active: true;
+  }) =>
+    this.request<{ id: string }>("/booking/staff-services/", {
+      method: "POST",
+      body,
+    });
+  bookingResources = () =>
+    this.request<Paginated<BookingResource>>("/booking/resources/");
+  createBookingResource = (body: Partial<BookingResource>) =>
+    this.request<BookingResource>("/booking/resources/", {
+      method: "POST",
+      body,
+    });
+  bookingScheduleRules = () =>
+    this.request<Paginated<BookingScheduleRule>>("/booking/schedule-rules/");
+  createBookingScheduleRule = (body: Omit<BookingScheduleRule, "id">) =>
+    this.request<BookingScheduleRule>("/booking/schedule-rules/", {
+      method: "POST",
+      body,
+    });
+  bookingScheduleExceptions = () =>
+    this.request<Paginated<BookingScheduleException>>(
+      "/booking/schedule-exceptions/",
+    );
+  createBookingScheduleException = (
+    body: Omit<BookingScheduleException, "id" | "created_at">,
+  ) =>
+    this.request<BookingScheduleException>("/booking/schedule-exceptions/", {
+      method: "POST",
+      body,
+    });
+  bookingAvailability = (params: {
+    branch_id: string;
+    service_id: string;
+    date_from: string;
+    date_to: string;
+    staff_profile_id?: string;
+  }) =>
+    this.request<{ results: BookingSlot[] }>(
+      `/booking/availability/${queryString(params)}`,
+    );
+  bookingAppointments = (params?: {
+    starts_at__gte?: string;
+    starts_at__lt?: string;
+    status?: string;
+  }) =>
+    this.request<{ results: Appointment[] }>(
+      `/booking/appointments/${queryString(params)}`,
+    );
+  createBookingHold = (body: {
+    branch_id: string;
+    service_id: string;
+    contact_id: string;
+    staff_profile_id?: string;
+    starts_at: string;
+  }) =>
+    this.request<{
+      id: string;
+      starts_at: string;
+      ends_at: string;
+      expires_at: string;
+    }>("/booking/holds/", {
+      method: "POST",
+      body,
+      headers: { "Idempotency-Key": crypto.randomUUID() },
+    });
+  createBookingAppointment = (body: {
+    hold_id: string;
+    customer_timezone: string;
+    customer_notes?: string;
+    source_conversation_id?: string;
+  }) =>
+    this.request<Appointment & { confirmation_token?: string }>(
+      "/booking/appointments/",
+      {
+        method: "POST",
+        body,
+        headers: { "Idempotency-Key": crypto.randomUUID() },
+      },
+    );
+  bookingAppointment = (id: string) =>
+    this.request<Appointment>(`/booking/appointments/${id}/`);
+  bookingAppointmentAction = (
+    id: string,
+    action: "confirm" | "cancel" | "reschedule" | "status",
+    body: { starts_at?: string; reason?: string; status?: string } = {},
+  ) =>
+    this.request<Appointment>(`/booking/appointments/${id}/${action}/`, {
+      method: "POST",
+      body,
+      headers: { "Idempotency-Key": crypto.randomUUID() },
+    });
+  bookingProfile = () =>
+    this.request<PublicBookingProfile>("/booking/public-profile/");
+  updateBookingProfile = (body: Partial<PublicBookingProfile>) =>
+    this.request<PublicBookingProfile>("/booking/public-profile/", {
+      method: "PATCH",
+      body,
+    });
+  bookingPolicies = () =>
+    this.request<Paginated<Record<string, unknown>>>("/booking/policies/");
+  bookingWaitlist = () =>
+    this.request<Paginated<Record<string, unknown>>>("/booking/waitlist/");
+  bookingReminders = () =>
+    this.request<{ results: Array<Record<string, unknown>> }>(
+      "/booking/reminders/",
+    );
+  publicBookingPage = (publicKey: string) =>
+    this.request<PublicBookingPage>(`/public/booking/${publicKey}/`, {
+      scope: "public",
+      retryAuth: false,
+    });
+  publicBookingSession = (
+    publicKey: string,
+    body: {
+      display_name: string;
+      email?: string;
+      phone?: string;
+      timezone: string;
+      language: Locale;
+      consent: true;
+    },
+  ) =>
+    this.request<{ session_token: string; expires_at: string }>(
+      `/public/booking/${publicKey}/sessions/`,
+      { method: "POST", body, scope: "public", retryAuth: false },
+    );
+  publicBookingAvailability = (
+    publicKey: string,
+    params: {
+      branch_id: string;
+      service_id: string;
+      date_from: string;
+      date_to: string;
+    },
+  ) =>
+    this.request<{ results: BookingSlot[] }>(
+      `/public/booking/${publicKey}/availability/${queryString(params)}`,
+      { scope: "public", retryAuth: false },
+    );
+  publicBookingHold = (
+    publicKey: string,
+    sessionToken: string,
+    body: {
+      branch_id: string;
+      service_id: string;
+      staff_profile_id: string;
+      starts_at: string;
+    },
+  ) =>
+    this.request<{
+      id: string;
+      starts_at: string;
+      ends_at: string;
+      expires_at: string;
+    }>(`/public/booking/${publicKey}/holds/`, {
+      method: "POST",
+      body,
+      scope: "public",
+      retryAuth: false,
+      headers: {
+        "X-Booking-Session": sessionToken,
+        "Idempotency-Key": crypto.randomUUID(),
+      },
+    });
+  publicBookingCreate = (
+    publicKey: string,
+    sessionToken: string,
+    body: {
+      hold_id: string;
+      customer_timezone: string;
+      customer_notes?: string;
+    },
+  ) =>
+    this.request<{
+      public_reference: string;
+      starts_at: string;
+      ends_at: string;
+      status: Appointment["status"];
+      confirmation_status: Appointment["confirmation_status"];
+      confirmation_token?: string;
+    }>(`/public/booking/${publicKey}/appointments/`, {
+      method: "POST",
+      body,
+      scope: "public",
+      retryAuth: false,
+      headers: {
+        "X-Booking-Session": sessionToken,
+        "Idempotency-Key": crypto.randomUUID(),
+      },
     });
 
   webChatInstallations = () =>

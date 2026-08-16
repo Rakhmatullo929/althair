@@ -49,6 +49,9 @@ unless `DEBUG=true` and `CLIENT_PORTAL_SEED_PASSWORD` is set.
 | `BILLING_DEFAULT_PLAN_KEY`, `BILLING_DEFAULT_CURRENCY` | Versioned default plan and explicit ISO currency |
 | `BILLING_TRIAL_DAYS`, `BILLING_GRACE_DAYS`, `BILLING_INVOICE_PREFIX` | Trial, dunning, and invoice-number policy |
 | `BILLING_MANUAL_PROVIDER_ENABLE` | Enables reviewed manual pilot operations; never online checkout |
+| `BOOKING_ENABLE`, `BOOKING_REMINDER_PROVIDER` | Enables Booking and selects deterministic fake or existing consent-aware channel reminders |
+| `BOOKING_DEFAULT_SLOT_INTERVAL_MINUTES`, `BOOKING_HOLD_TTL_SECONDS` | Default slot granularity and short-lived reservation policy |
+| `BOOKING_DEFAULT_REMINDER_MINUTES`, `BOOKING_MAX_PUBLIC_REQUESTS_PER_MINUTE` | Reminder offsets and public booking rate limit |
 | `META_APP_ID`, `META_APP_SECRET`, `META_INSTAGRAM_VERIFY_TOKEN` | Server-only Instagram Business Login and signed webhook configuration |
 | `META_INSTAGRAM_GRAPH_API_VERSION`, `META_INSTAGRAM_REDIRECT_URI` | Explicit current Graph version and exact OAuth callback |
 | `META_INSTAGRAM_ENABLE_LIVE`, `META_INSTAGRAM_ENABLE_HUMAN_AGENT` | Fail-closed live-provider and separately approved human-only extension gates |

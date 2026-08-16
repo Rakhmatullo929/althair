@@ -686,8 +686,26 @@ def _complete_text(*, run, text, context):
     supported = snapshot.get("supported_languages") or [run.organization.default_language]
     default = snapshot.get("default_language") or run.organization.default_language
     language = select_language(context.latest_message, supported, default)
+    booking_tool_names = {
+        "get_appointment",
+        "list_customer_appointments",
+        "create_appointment",
+        "confirm_appointment",
+        "reschedule_appointment",
+    }
+    allow_booking_confirmation = any(
+        name in booking_tool_names and isinstance(output, dict) and output.get("status") == "confirmed"
+        for name, output in run.tool_calls.filter(status=AIToolCallStatus.SUCCEEDED).values_list(
+            "tool_name", "output_redacted"
+        )
+    )
     try:
-        safe_text = validate_generated_text(text, language=language, supported_languages=supported)
+        safe_text = validate_generated_text(
+            text,
+            language=language,
+            supported_languages=supported,
+            allow_booking_confirmation=allow_booking_confirmation,
+        )
     except ValueError as exc:
         create_handoff(
             conversation=run.conversation,

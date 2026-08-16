@@ -40,6 +40,7 @@
     "dataRequests": "Data requests",
     "entitlements": "Entitlements",
     "billing": "Billing",
+    "booking": "Booking",
     "audit": "Audit",
     "staff": "Platform staff",
     "settings": "Settings"
@@ -55,6 +56,7 @@
     "dataRequests": "Data request approvals",
     "entitlements": "Non-billing entitlements",
     "billing": "Billing operations",
+    "booking": "Booking operations",
     "audit": "Immutable platform audit",
     "staff": "Platform staff access",
     "settings": "Internal security settings"
@@ -68,6 +70,21 @@
     "createIncident": "Create incident",
     "approve": "Approve request",
     "saveEntitlement": "Save entitlement"
+  },
+  "booking": {
+    "eyebrow": "Safe aggregate visibility",
+    "title": "Booking operations",
+    "description": "Tenant-level booking volume and reminder health without customer content.",
+    "refresh": "Refresh",
+    "assurance": "Separate internal authentication and tenant-safe aggregates",
+    "noContent": "No customer notes, identities, or appointment content",
+    "loading": "Loading Booking health…",
+    "organizations": "Organizations",
+    "stored": "{count} organizations",
+    "appointments": "Appointments",
+    "failed": "Failed reminders",
+    "empty": "No Booking usage is stored.",
+    "error": "Booking health is unavailable"
   },
   "billing": {
     "internal": "Internal Billing",

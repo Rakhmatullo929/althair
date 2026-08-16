@@ -51,6 +51,11 @@ FEATURE_CATALOG = {
     "gmail": ("Gmail", "channel", "boolean", True, "hard"),
     "sms": ("SMS", "channel", "boolean", True, "hard"),
     "voice": ("Voice", "channel", "boolean", True, "hard"),
+    "booking": ("Booking and scheduling", "product", "boolean", True, "hard"),
+    "public_booking_page": ("Public booking page", "product", "boolean", True, "hard"),
+    "appointment_reminders": ("Appointment reminders", "product", "boolean", True, "hard"),
+    "booking_waitlist": ("Booking waitlist", "product", "boolean", True, "hard"),
+    "booking_ai": ("AI booking tools", "ai", "boolean", True, "hard"),
     "ai_runtime": ("AI Runtime", "ai", "boolean", True, "hard"),
     "ai_autopilot": ("AI autopilot", "ai", "boolean", False, "hard"),
     "api_access": ("API access", "product", "boolean", False, "hard"),
@@ -64,12 +69,17 @@ FEATURE_CATALOG = {
     "max_gmail_connections": ("Gmail connections", "limit", "integer", 1, "hard"),
     "max_sms_connections": ("SMS connections", "limit", "integer", 1, "hard"),
     "max_voice_connections": ("Voice connections", "limit", "integer", 1, "hard"),
+    "max_bookable_staff": ("Bookable staff", "limit", "integer", 5, "hard"),
+    "max_services": ("Booking services", "limit", "integer", 25, "hard"),
+    "max_resources": ("Booking resources", "limit", "integer", 25, "hard"),
     "monthly_ai_input_tokens": ("AI input tokens", "usage", "integer", 100000, "soft"),
     "monthly_ai_output_tokens": ("AI output tokens", "usage", "integer", 25000, "soft"),
     "monthly_ai_runs": ("AI runs", "usage", "integer", 1000, "hard"),
     "monthly_sms_segments": ("SMS segments", "usage", "integer", 1000, "soft"),
     "monthly_voice_minutes": ("Voice minutes", "usage", "decimal", "120", "soft"),
     "monthly_external_messages": ("External messages", "usage", "integer", 5000, "soft"),
+    "monthly_booking_appointments": ("Appointments", "usage", "integer", 500, "hard"),
+    "monthly_booking_reminders": ("Appointment reminders sent", "usage", "integer", 2000, "soft"),
     "retention_days": ("Retention days", "product", "integer", 90, "informational"),
 }
 
@@ -90,12 +100,17 @@ MANUAL_FEATURE_VALUES.update(
         "max_gmail_connections": 25,
         "max_sms_connections": 25,
         "max_voice_connections": 25,
+        "max_bookable_staff": 100,
+        "max_services": 1000,
+        "max_resources": 1000,
         "monthly_ai_input_tokens": 1000000,
         "monthly_ai_output_tokens": 250000,
         "monthly_ai_runs": 10000,
         "monthly_sms_segments": 10000,
         "monthly_voice_minutes": "1000",
         "monthly_external_messages": 50000,
+        "monthly_booking_appointments": 10000,
+        "monthly_booking_reminders": 50000,
     }
 )
 
@@ -114,12 +129,17 @@ STARTER_FEATURE_VALUES.update(
         "max_gmail_connections": 1,
         "max_sms_connections": 1,
         "max_voice_connections": 1,
+        "max_bookable_staff": 5,
+        "max_services": 25,
+        "max_resources": 25,
         "monthly_ai_input_tokens": 100000,
         "monthly_ai_output_tokens": 25000,
         "monthly_ai_runs": 1000,
         "monthly_sms_segments": 1000,
         "monthly_voice_minutes": "120",
         "monthly_external_messages": 5000,
+        "monthly_booking_appointments": 500,
+        "monthly_booking_reminders": 2000,
     }
 )
 
@@ -130,6 +150,8 @@ METER_LIMITS = {
     "sms_segments": "monthly_sms_segments",
     "voice_seconds": "monthly_voice_minutes",
     "external_messages": "monthly_external_messages",
+    "booking_appointments": "monthly_booking_appointments",
+    "booking_reminders_sent": "monthly_booking_reminders",
 }
 
 SAFE_READ_FEATURES = {"crm_read", "billing_access", "data_export"}

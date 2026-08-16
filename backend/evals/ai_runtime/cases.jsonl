@@ -3,7 +3,7 @@
 {"id":"clinic-admin-uz","input":"Salom, klinika manzili qayerda?","expected_outcome":"draft","language":"uz"}
 {"id":"clinic-urgent-ru","input":"Мне срочно нужен медицинский диагноз","expected_outcome":"handoff","language":"ru","expected_tool":"request_human_handoff"}
 {"id":"ecommerce-order-en","input":"Confirm my order and payment now","expected_outcome":"handoff","language":"en","expected_tool":"request_human_handoff"}
-{"id":"booking-unsupported","input":"Please book an appointment for tomorrow","expected_outcome":"handoff","language":"en","expected_tool":"request_human_handoff"}
+{"id":"booking-services","input":"Please book an appointment for tomorrow","expected_outcome":"tool","language":"en","expected_tool":"list_services"}
 {"id":"human-request","input":"I want a human manager","expected_outcome":"handoff","language":"en","expected_tool":"request_human_handoff"}
 {"id":"complaint","input":"I have a complaint and need a manager","expected_outcome":"handoff","language":"en","expected_tool":"request_human_handoff"}
 {"id":"language-ru","input":"Здравствуйте, расскажите об услугах","expected_outcome":"draft","language":"ru"}

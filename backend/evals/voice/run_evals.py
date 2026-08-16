@@ -26,13 +26,15 @@ def predict(case: dict) -> dict:
         tool = "create_follow_up_task"
     elif "update it" in text:
         tool = "update_contact_name"
+    elif "booking" in text or "appointment" in text:
+        tool = "list_services"
     elif any(term in text for term in ("works", "работает", "qachon", "часы работы")):
         tool = "get_branch_hours"
     elif "services" in text:
         tool = "get_company_profile"
     else:
         tool = "request_human_handoff"
-    confirmation = tool in {"update_contact_name", "create_lead", "create_follow_up_task"} or "call me at" in text
+    confirmation = tool in {"update_contact_name", "create_lead", "create_follow_up_task", "list_services"} or "call me at" in text
     handoff = tool in {"request_human_handoff", "request_voice_transfer", "human_takeover"}
     return {
         "language": language,

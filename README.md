@@ -2,6 +2,7 @@
 
 This repository contains the preserved public Landing, the localized customer portal with a real
 CRM workflow, tenant-owned Web Chat, Instagram, Telegram, Gmail and SMS messaging, inbound Voice AI,
+tenant-safe Booking and scheduling,
 and a tenant-safe, approval-controlled AI conversation runtime, separate Internal Super Admin, and
 provider-independent Billing/subscriptions. The legacy MMC
 vertical is still isolated in the backend and remains covered by its regression tests.

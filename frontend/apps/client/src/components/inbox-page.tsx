@@ -37,6 +37,7 @@ import { estimateSMSSegments } from "@/lib/sms";
 import { useWorkspace } from "./workspace-provider";
 import { CrmDialog, formatDateTime, PlainText } from "./crm-shared";
 import { ConversationAIPanel } from "./conversation-ai-panel";
+import { InboxBookingPanel } from "./inbox-booking-panel";
 import {
   EmptyState,
   ErrorState,
@@ -708,6 +709,12 @@ export function InboxPage() {
                 readOnly={readOnly}
                 onRefresh={refresh}
               />
+              {canOperateCrm(membership.role) ? (
+                <InboxBookingPanel
+                  conversation={selected}
+                  readOnly={readOnly}
+                />
+              ) : null}
               <div className="timeline-scroll">
                 {selected.channel_type === "voice" && selectedVoiceCall ? (
                   <article className="voice-inbox-call-card">

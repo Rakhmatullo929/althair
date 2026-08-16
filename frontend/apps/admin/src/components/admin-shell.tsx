@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   Users,
   X,
+  CalendarDays,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
@@ -34,6 +35,7 @@ const nav = [
   ["dataRequests", "/app/data-requests", FileClock],
   ["entitlements", "/app/entitlements", KeyRound],
   ["billing", "/app/billing/plans", CreditCard],
+  ["booking", "/app/booking", CalendarDays],
   ["audit", "/app/audit", Activity],
   ["staff", "/app/platform-staff", Users],
   ["settings", "/app/settings", Settings],

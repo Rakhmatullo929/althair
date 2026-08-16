@@ -1470,3 +1470,179 @@ export type BillingChangePreview = {
   change_type: "upgrade" | "downgrade" | "interval_change";
   proration: "not_applied";
 };
+
+export type BookingService = {
+  id: string;
+  category: string | null;
+  name: string;
+  public_description: string;
+  internal_description: string;
+  duration_minutes: number;
+  buffer_before_minutes: number;
+  buffer_after_minutes: number;
+  price_minor: number | null;
+  currency: string;
+  booking_mode: "instant" | "require_confirmation" | "manual_only";
+  customer_can_choose_staff: boolean;
+  minimum_notice_minutes: number;
+  maximum_advance_days: number;
+  cancellation_notice_minutes: number;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type BookingStaff = {
+  id: string;
+  membership: string;
+  membership_name: string;
+  display_name: string;
+  timezone_override: string;
+  active: boolean;
+  accepts_online_booking: boolean;
+  maximum_concurrent_appointments: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type BookingResource = {
+  id: string;
+  branch: string;
+  name: string;
+  resource_type: string;
+  capacity: number;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type BookingScheduleRule = {
+  id: string;
+  owner_type: "branch" | "staff" | "resource";
+  owner_id: string;
+  weekday: number;
+  start_local_time: string;
+  end_local_time: string;
+  effective_from: string | null;
+  effective_to: string | null;
+  active: boolean;
+};
+
+export type BookingScheduleException = {
+  id: string;
+  owner_type: "branch" | "staff" | "resource";
+  owner_id: string;
+  starts_at: string;
+  ends_at: string;
+  exception_type: "unavailable" | "available_override" | "holiday" | "time_off";
+  reason: string;
+  created_at: string;
+};
+
+export type BookingSlot = {
+  starts_at: string;
+  ends_at: string;
+  local_start: string;
+  local_end: string;
+  timezone: string;
+  fold: number;
+  staff_profile_id: string;
+  resources: Array<{ resource_id: string; quantity: number }>;
+};
+
+export type AppointmentEvent = {
+  id: string;
+  event_type: string;
+  actor_type: string;
+  summary: string;
+  metadata: Record<string, unknown>;
+  created_at: string;
+};
+
+export type Appointment = {
+  id: string;
+  public_reference: string;
+  branch: string;
+  branch_name: string;
+  service: string;
+  service_name: string;
+  service_name_snapshot: string;
+  duration_snapshot_minutes: number;
+  price_snapshot_minor: number | null;
+  currency_snapshot: string;
+  contact: string;
+  contact_name: string;
+  primary_identity: string | null;
+  staff_profile: string | null;
+  staff_name: string | null;
+  resource_ids: string[];
+  source_channel_type: string;
+  starts_at: string;
+  ends_at: string;
+  customer_timezone: string;
+  status:
+    | "pending_confirmation"
+    | "confirmed"
+    | "checked_in"
+    | "in_progress"
+    | "completed"
+    | "cancelled"
+    | "no_show"
+    | "rejected";
+  confirmation_status: "not_required" | "pending" | "confirmed" | "expired";
+  cancellation_reason: string;
+  internal_notes: string;
+  customer_notes: string;
+  created_by_type: string;
+  confirmed_at: string | null;
+  cancelled_at: string | null;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+  events: AppointmentEvent[];
+};
+
+export type BookingDashboard = {
+  today: number;
+  next_seven_days: number;
+  pending_confirmation: number;
+  waitlist: number;
+  by_status: Array<{ status: string; count: number }>;
+};
+
+export type PublicBookingProfile = {
+  id: string;
+  public_key: string;
+  enabled: boolean;
+  title: string;
+  intro_text: string;
+  privacy_url: string;
+  terms_url: string;
+  allowed_origins: string[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type PublicBookingPage = {
+  public_key: string;
+  title: string;
+  intro_text: string;
+  privacy_url: string;
+  terms_url: string;
+  language: Locale;
+  services: Array<
+    Pick<
+      BookingService,
+      | "id"
+      | "category"
+      | "name"
+      | "public_description"
+      | "duration_minutes"
+      | "price_minor"
+      | "currency"
+      | "booking_mode"
+      | "customer_can_choose_staff"
+    >
+  >;
+  branches: Array<Pick<Branch, "id" | "name" | "address" | "timezone">>;
+};

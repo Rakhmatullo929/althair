@@ -996,6 +996,55 @@ button:disabled {
 .billing-admin-actions {
   justify-content: flex-end;
 }
+
+.booking-admin-grid {
+  display: grid;
+  gap: 10px;
+}
+.booking-admin-grid article {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+}
+.booking-admin-grid article > span {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 11px;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+.booking-admin-grid article > div {
+  display: grid;
+  gap: 3px;
+}
+.booking-admin-grid article small {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.booking-admin-grid dl {
+  display: flex;
+  gap: 18px;
+  margin: 0;
+}
+.booking-admin-grid dl div {
+  display: grid;
+  gap: 2px;
+  text-align: right;
+}
+.booking-admin-grid dt {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+.booking-admin-grid dd {
+  margin: 0;
+  font-weight: 800;
+}
 .billing-admin-actions button {
   border: 1px solid var(--line);
   border-radius: 8px;

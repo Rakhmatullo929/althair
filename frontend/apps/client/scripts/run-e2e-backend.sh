@@ -64,6 +64,11 @@ export BILLING_GRACE_DAYS=7
 export BILLING_INVOICE_PREFIX=E2E
 export BILLING_FAKE_PROVIDER=True
 export BILLING_MANUAL_PROVIDER_ENABLE=True
+export BOOKING_ENABLE=True
+export BOOKING_PUBLIC_PAGE_ENABLE=True
+export BOOKING_REMINDERS_ENABLE=True
+export BOOKING_FAKE_NOTIFICATIONS=True
+export BOOKING_REMINDER_PROVIDER=fake
 FIELD_ENCRYPTION_KEY="$(../../../backend/.venv/bin/python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')"
 export FIELD_ENCRYPTION_KEY
 export CLIENT_PORTAL_SEED_PASSWORD="client-portal-development-only-password"
@@ -74,4 +79,5 @@ cd ../../../backend
 .venv/bin/python manage.py seed_crm
 .venv/bin/python manage.py seed_web_chat_demo
 .venv/bin/python manage.py seed_billing_demo
+.venv/bin/python manage.py seed_booking_demo
 exec .venv/bin/python manage.py runserver 127.0.0.1:8011 --noreload

@@ -11,6 +11,7 @@
     "contacts": "Contacts",
     "leads": "Leads",
     "tasks": "Tasks",
+    "booking": "Booking",
     "company": "Company",
     "branches": "Branches",
     "team": "Team",
@@ -1608,5 +1609,225 @@
     "taxNotCalculated": "Tax (not calculated)",
     "financialRecordNotice": "Financial records follow the configured retention policy; no universal legal claim is made.",
     "print": "Print / save PDF"
+  },
+  "booking": {
+    "title": "Booking & scheduling",
+    "description": "Manage real availability, appointments, reminders, and customer booking policies.",
+    "navigationLabel": "Booking navigation",
+    "tabs": {
+      "calendar": "Calendar",
+      "appointments": "Appointments",
+      "appointment": "Appointment",
+      "services": "Services",
+      "staff": "Staff",
+      "resources": "Resources",
+      "schedules": "Schedules",
+      "waitlist": "Waitlist",
+      "reminders": "Reminders",
+      "settings": "Settings"
+    },
+    "summaryLabel": "Booking summary",
+    "select": "Select",
+    "stats": {
+      "today": "Today",
+      "week": "Next 7 days",
+      "pending": "Awaiting confirmation",
+      "waitlist": "Waitlist"
+    },
+    "calendar": {
+      "eyebrow": "Live schedule",
+      "title": "Upcoming appointments",
+      "openList": "Open list"
+    },
+    "appointments": {
+      "eyebrow": "Operations",
+      "title": "Appointments",
+      "filter": "Status",
+      "all": "All statuses",
+      "emptyTitle": "No appointments here",
+      "emptyDescription": "Appointments will appear when customers or your team make a booking.",
+      "anyStaff": "Any available staff"
+    },
+    "statuses": {
+      "pending_confirmation": "Pending confirmation",
+      "confirmed": "Confirmed",
+      "checked_in": "Checked in",
+      "in_progress": "In progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "no_show": "No show",
+      "rejected": "Rejected"
+    },
+    "detail": {
+      "when": "Date and time",
+      "customer": "Customer",
+      "staff": "Staff",
+      "branch": "Branch",
+      "source": "Source",
+      "timezone": "Customer timezone",
+      "timeline": "Audit timeline"
+    },
+    "actions": {
+      "confirm": "Confirm",
+      "cancel": "Cancel appointment",
+      "checkIn": "Check in",
+      "noShow": "Mark no-show",
+      "start": "Start service",
+      "complete": "Complete",
+      "reschedule": "Reschedule",
+      "newDate": "New date",
+      "findSlots": "Find real availability",
+      "manualCancellation": "Cancelled by team"
+    },
+    "services": {
+      "eyebrow": "Catalog",
+      "title": "Bookable services",
+      "add": "Add service",
+      "name": "Service name",
+      "duration": "Duration",
+      "price": "Price in minor units",
+      "mode": "Booking mode",
+      "notSet": "Not set",
+      "noDescription": "No public description yet."
+    },
+    "staff": {
+      "eyebrow": "Capacity",
+      "title": "Bookable staff",
+      "empty": "No staff are bookable yet.",
+      "add": "Make staff bookable",
+      "member": "Team member",
+      "name": "Public display name",
+      "branch": "Branch",
+      "service": "Supported service"
+    },
+    "resources": {
+      "eyebrow": "Capacity",
+      "title": "Rooms & resources",
+      "empty": "No resources are configured.",
+      "capacity": "Capacity {count}",
+      "add": "Add resource",
+      "branch": "Branch",
+      "name": "Resource name",
+      "type": "Resource type",
+      "capacityLabel": "Capacity"
+    },
+    "schedules": {
+      "eyebrow": "Availability rules",
+      "title": "Schedule coverage",
+      "branchHours": "Branch hours",
+      "staffHours": "Staff hours",
+      "branchCount": "{count} branches",
+      "staffCount": "{count} bookable staff",
+      "dst": "Timezone safe",
+      "dstDescription": "DST gaps are rejected; repeated times remain explicit.",
+      "weeklyRule": "Add weekly hours",
+      "ownerType": "Schedule type",
+      "owner": "Branch, staff, or resource",
+      "branch": "Branch",
+      "staff": "Staff",
+      "resource": "Resource",
+      "weekday": "Weekday",
+      "start": "Start time",
+      "end": "End time",
+      "addRule": "Add weekly rule",
+      "timeOff": "Add holiday or time off",
+      "startsAt": "Starts",
+      "endsAt": "Ends",
+      "addTimeOff": "Add exception",
+      "timeOffReason": "Configured by the booking team",
+      "timezone": "Local times use {timezone}. DST gaps are rejected.",
+      "weekdays": {
+        "0": "Monday",
+        "1": "Tuesday",
+        "2": "Wednesday",
+        "3": "Thursday",
+        "4": "Friday",
+        "5": "Saturday",
+        "6": "Sunday"
+      },
+      "exceptions": {
+        "unavailable": "Unavailable",
+        "available_override": "Available override",
+        "holiday": "Holiday",
+        "time_off": "Time off"
+      },
+      "help": "Detailed rules, breaks, time off, holidays, and overrides are stored per tenant and applied before any slot is offered."
+    },
+    "waitlist": {
+      "eyebrow": "Demand",
+      "title": "Waitlist",
+      "empty": "The waitlist is empty."
+    },
+    "reminders": {
+      "eyebrow": "Delivery",
+      "title": "Appointment reminders",
+      "empty": "No reminders are scheduled."
+    },
+    "settings": {
+      "eyebrow": "Public booking",
+      "title": "Booking page",
+      "preview": "Preview",
+      "publicTitle": "Public title",
+      "intro": "Introduction",
+      "enabled": "Public booking page is enabled",
+      "publicKey": "Opaque public key"
+    },
+    "active": "Active",
+    "inactive": "Inactive",
+    "save": "Save",
+    "errors": {
+      "load": "Booking data is unavailable",
+      "notFound": "Appointment not found"
+    },
+    "inbox": {
+      "title": "Create appointment",
+      "description": "Use the same real availability as every channel",
+      "service": "Service",
+      "branch": "Branch",
+      "date": "Date",
+      "select": "Select",
+      "find": "Find slots",
+      "available": "Available appointment slots",
+      "none": "No valid slots for this date.",
+      "chooseSlot": "Choose an available slot.",
+      "confirmTitle": "Confirm exact slot",
+      "create": "Create appointment",
+      "created": "Appointment {reference} created and linked to this conversation."
+    }
+  },
+  "publicBooking": {
+    "eyebrow": "Online booking",
+    "intro": "Choose a service and a real available time.",
+    "unavailable": "Booking is unavailable",
+    "stepsLabel": "Booking progress",
+    "steps": {
+      "service": "Service",
+      "time": "Time",
+      "details": "Details",
+      "complete": "Complete"
+    },
+    "choose": "Choose a service and location",
+    "branch": "Location",
+    "selectBranch": "Select a branch",
+    "date": "Date",
+    "findTimes": "Find available times",
+    "chooseTime": "Choose an exact time",
+    "back": "Back",
+    "noSlots": "No available times",
+    "noSlotsHelp": "Try another date, service, or location.",
+    "details": "Your details",
+    "name": "Full name",
+    "email": "Email",
+    "phone": "Phone",
+    "contactRequired": "Enter an email address or phone number.",
+    "notes": "Notes for the team",
+    "consent": "I agree to use these details to manage this appointment and receive operational updates.",
+    "reserving": "Reserving…",
+    "confirm": "Reserve appointment",
+    "completeTitle": "Your request is saved",
+    "completeDescription": "Reference: {reference}",
+    "confirmationTruth": "The status shown above is authoritative. Pending requests are not presented as confirmed.",
+    "privacy": "Your session is short-lived and tenant-scoped.",
+    "privacyLink": "Privacy policy"
   }
 }

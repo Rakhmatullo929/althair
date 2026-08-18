@@ -227,6 +227,33 @@ test.describe.serial("Internal Super Admin Billing", () => {
     ).toBeVisible();
   });
 
+  test("platform owner tops up a tenant wallet with MFA and immutable audit", async ({
+    page,
+  }) => {
+    await loginInternal(page);
+    await page.goto("/en/app/billing/wallets");
+    await expect(
+      page.getByRole("heading", { name: "Company balances", level: 1 }),
+    ).toBeVisible();
+    const wallet = page.locator(".billing-admin-card", {
+      hasText: "Mehr Clinic",
+    });
+    await wallet.getByRole("button", { name: "Top up" }).click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByLabel("Amount in minor units").fill("100000");
+    await dialog
+      .getByLabel("Review reason")
+      .fill("Synthetic E2E company balance top up");
+    await dialog
+      .getByRole("button", { name: "Confirm reviewed action" })
+      .click();
+    await expect(
+      page.getByText("Reviewed Billing action completed and audited."),
+    ).toBeVisible();
+    await wallet.getByText("Recent immutable ledger entries").click();
+    await expect(wallet.getByText("top up", { exact: true })).toBeVisible();
+  });
+
   test("internal Billing works in EN/RU and on mobile without overflow", async ({
     page,
   }) => {

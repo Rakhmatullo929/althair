@@ -177,12 +177,41 @@ class ManualBillingProvider:
         raise BillingProviderError("refund_not_supported", "Manual refunds require an offline review.", supported=False)
 
 
+class WalletBillingProvider(ManualBillingProvider):
+    """Internal ledger provider. It never handles card data or external webhooks."""
+
+    key = "wallet"
+    online_checkout = False
+
+    def create_customer(self, *, organization_id: str) -> ProviderResult:
+        return ProviderResult("ready", safe_state={"mode": "organization_wallet"})
+
+    def create_subscription(self, *, subscription_id: str) -> ProviderResult:
+        return ProviderResult("ready", safe_state={"mode": "organization_wallet"})
+
+    def create_payment_attempt(self, *, invoice_id: str, amount_minor: int, currency: str) -> ProviderResult:
+        return ProviderResult(
+            "internal",
+            provider_id=f"wallet:{invoice_id}",
+            safe_state={"mode": "organization_wallet"},
+        )
+
+    def parse_verified_webhook(self, *, payload: bytes, signature: str) -> VerifiedBillingEvent:
+        raise BillingProviderError(
+            "webhook_not_supported",
+            "Organization wallet payments do not accept webhooks.",
+            supported=False,
+        )
+
+
 def get_billing_provider(key: str | None = None) -> BillingProvider:
     provider = str(key or settings.BILLING_PROVIDER).lower()
     if provider == "fake":
         return FakeBillingProvider()
     if provider == "manual":
         return ManualBillingProvider()
+    if provider == "wallet":
+        return WalletBillingProvider()
     raise BillingProviderError(
         "payment_provider_not_connected",
         "Online payment is not connected yet.",

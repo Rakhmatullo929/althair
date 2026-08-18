@@ -4,7 +4,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { BillingPlan, BillingPrice } from "@workspace/api-client";
 import {
   AlertTriangle,
+  ArrowDownLeft,
   ArrowRight,
+  ArrowUpRight,
   CalendarClock,
   Check,
   CreditCard,
@@ -15,6 +17,7 @@ import {
   RotateCcw,
   ShieldCheck,
   Sparkles,
+  WalletCards,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
@@ -30,7 +33,13 @@ import {
 import { ErrorState, PageHeading, PageSkeleton } from "./ui";
 import { useWorkspace } from "./workspace-provider";
 
-type BillingView = "overview" | "plans" | "usage" | "invoices" | "invoice";
+type BillingView =
+  | "overview"
+  | "plans"
+  | "usage"
+  | "invoices"
+  | "invoice"
+  | "wallet";
 
 function mutationKey(prefix: string) {
   return `${prefix}:${crypto.randomUUID()}`;
@@ -91,6 +100,16 @@ export function BillingPage({
     queryKey: [...queryPrefix, "invoice", invoiceId],
     queryFn: () => workspace.api.billingInvoice(invoiceId!),
     enabled: view === "invoice" && Boolean(invoiceId),
+  });
+  const wallet = useQuery({
+    queryKey: [...queryPrefix, "wallet"],
+    queryFn: () => workspace.api.billingWallet(),
+    enabled: view === "wallet" || view === "overview",
+  });
+  const walletTransactions = useQuery({
+    queryKey: [...queryPrefix, "wallet-transactions"],
+    queryFn: () => workspace.api.billingWalletTransactions(),
+    enabled: view === "wallet",
   });
 
   const refresh = async () => {
@@ -162,6 +181,8 @@ export function BillingPage({
     usage,
     invoices,
     invoice,
+    wallet,
+    walletTransactions,
   ].filter((query) => query.fetchStatus !== "idle");
   if (relevant.some((query) => query.isLoading)) return <PageSkeleton />;
   const error = relevant.find((query) => query.error)?.error;
@@ -189,19 +210,21 @@ export function BillingPage({
     <section className="billing-page">
       <PageHeading title={t(`views.${view}`)} description={t("description")} />
       <nav className="billing-tabs" aria-label={t("navigation")}>
-        {(["overview", "plans", "usage", "invoices"] as const).map((key) => (
-          <Link
-            key={key}
-            href={key === "overview" ? "/app/billing" : `/app/billing/${key}`}
-            aria-current={
-              view === key || (view === "invoice" && key === "invoices")
-                ? "page"
-                : undefined
-            }
-          >
-            {t(`tabs.${key}`)}
-          </Link>
-        ))}
+        {(["overview", "plans", "usage", "invoices", "wallet"] as const).map(
+          (key) => (
+            <Link
+              key={key}
+              href={key === "overview" ? "/app/billing" : `/app/billing/${key}`}
+              aria-current={
+                view === key || (view === "invoice" && key === "invoices")
+                  ? "page"
+                  : undefined
+              }
+            >
+              {t(`tabs.${key}`)}
+            </Link>
+          ),
+        )}
       </nav>
       {banner ? (
         <div className={`billing-lifecycle billing-${banner}`} role="status">
@@ -224,6 +247,7 @@ export function BillingPage({
           entitlements={entitlements.data?.results ?? []}
           usageCount={usage.data?.results.length ?? 0}
           invoiceCount={invoices.data?.count ?? 0}
+          wallet={wallet.data?.wallet}
           manageable={manageable}
           profile={
             profile ?? {
@@ -276,6 +300,14 @@ export function BillingPage({
       {view === "invoice" && invoice.data ? (
         <InvoiceDetail row={invoice.data} date={date} money={money} />
       ) : null}
+      {view === "wallet" && wallet.data ? (
+        <WalletPanel
+          overview={wallet.data}
+          transactions={walletTransactions.data?.results ?? []}
+          date={date}
+          money={money}
+        />
+      ) : null}
     </section>
   );
 }
@@ -292,6 +324,11 @@ type OverviewProps = {
   >["results"];
   usageCount: number;
   invoiceCount: number;
+  wallet:
+    | Awaited<
+        ReturnType<ReturnType<typeof useWorkspace>["api"]["billingWallet"]>
+      >["wallet"]
+    | undefined;
   manageable: boolean;
   profile: {
     legal_name: string;
@@ -374,15 +411,22 @@ function BillingOverview(props: OverviewProps) {
           )}
         </article>
         <article className="billing-provider-card">
-          <ShieldCheck />
+          <WalletCards />
           <div>
-            <span>{t("paymentProvider")}</span>
-            <h2>{t("onlineNotConnected")}</h2>
-            <p>{t("manualProviderHelp")}</p>
+            <span>{t("wallet.balance")}</span>
+            <h2>
+              {props.wallet
+                ? props.money(
+                    props.wallet.available_balance_minor,
+                    props.wallet.currency,
+                  )
+                : t("notAvailable")}
+            </h2>
+            <p>{t("wallet.customerReadOnly")}</p>
           </div>
-          <span className="status-badge status-manual">
-            {props.account.provider}
-          </span>
+          <Link href="/app/billing/wallet" className="button secondary">
+            {t("wallet.viewLedger")}
+          </Link>
         </article>
         <Link href="/app/billing/usage" className="billing-stat-card">
           <Gauge />
@@ -450,6 +494,107 @@ function BillingOverview(props: OverviewProps) {
             {t("saveProfile")}
           </button>
         ) : null}
+      </section>
+    </>
+  );
+}
+
+type WalletPanelProps = {
+  overview: Awaited<
+    ReturnType<ReturnType<typeof useWorkspace>["api"]["billingWallet"]>
+  >;
+  transactions: Awaited<
+    ReturnType<
+      ReturnType<typeof useWorkspace>["api"]["billingWalletTransactions"]
+    >
+  >["results"];
+  date: (value: string | null) => string;
+  money: (amount: number, currency?: string) => string;
+};
+
+function WalletPanel({
+  overview,
+  transactions,
+  date,
+  money,
+}: WalletPanelProps) {
+  const t = useTranslations("billing");
+  const wallet = overview.wallet;
+  return (
+    <>
+      <div className="wallet-summary-grid">
+        <article className="wallet-balance-card">
+          <WalletCards aria-hidden="true" />
+          <span>{t("wallet.balance")}</span>
+          <strong>
+            {money(wallet.available_balance_minor, wallet.currency)}
+          </strong>
+          <span className={`status-badge status-${wallet.status}`}>
+            {t(`wallet.statuses.${wallet.status}`)}
+          </span>
+          {wallet.low_balance ? (
+            <p className="wallet-low-balance" role="status">
+              <AlertTriangle aria-hidden="true" /> {t("wallet.lowBalance")}
+            </p>
+          ) : null}
+        </article>
+        <article className="panel wallet-policy-card">
+          <ShieldCheck aria-hidden="true" />
+          <div>
+            <h2>{t("wallet.topUpTitle")}</h2>
+            <p>{t("wallet.customerReadOnly")}</p>
+          </div>
+        </article>
+        <article className="panel wallet-open-card">
+          <ReceiptText aria-hidden="true" />
+          <strong>{overview.open_invoices.length}</strong>
+          <span>{t("wallet.openInvoices")}</span>
+        </article>
+      </div>
+      <section className="panel wallet-ledger">
+        <div className="panel-heading">
+          <div>
+            <h2>{t("wallet.ledger")}</h2>
+            <p>{t("wallet.ledgerHelp")}</p>
+          </div>
+        </div>
+        {transactions.length ? (
+          <div className="wallet-transaction-list">
+            {transactions.map((entry) => (
+              <article key={entry.id}>
+                <span
+                  className={`wallet-direction wallet-${entry.direction}`}
+                  aria-hidden="true"
+                >
+                  {entry.direction === "credit" ? (
+                    <ArrowDownLeft />
+                  ) : (
+                    <ArrowUpRight />
+                  )}
+                </span>
+                <div>
+                  <strong>
+                    {t(`wallet.transactionTypes.${entry.transaction_type}`)}
+                  </strong>
+                  <small>{date(entry.created_at)}</small>
+                </div>
+                <div className="wallet-transaction-amount">
+                  <strong>
+                    {entry.direction === "credit" ? "+" : "−"}
+                    {money(entry.amount_minor, entry.currency)}
+                  </strong>
+                  <small>
+                    {t("wallet.balanceAfter", {
+                      value: money(entry.balance_after_minor, entry.currency),
+                    })}
+                  </small>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p className="billing-empty">{t("wallet.noTransactions")}</p>
+        )}
       </section>
     </>
   );

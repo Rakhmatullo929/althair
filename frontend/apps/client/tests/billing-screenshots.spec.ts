@@ -34,8 +34,11 @@ test("@screenshots customer Billing evidence", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await login(page);
   await page.goto("/en/app/billing");
-  await expect(page.getByText("Trial is active")).toBeVisible();
-  await shot(page, "01-customer-overview-trial.png");
+  const currentPlan = page.locator("article", {
+    has: page.getByRole("heading", { name: "Starter", exact: true }),
+  });
+  await expect(currentPlan.getByText("Active", { exact: true })).toBeVisible();
+  await shot(page, "01-customer-overview-wallet-active.png");
   await page.goto("/en/app/billing/plans");
   await shot(page, "02-plans.png");
   await page
@@ -44,11 +47,46 @@ test("@screenshots customer Billing evidence", async ({ page }) => {
     .click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await shot(page, "03-plan-change-preview.png");
+  const usageResponse = page.waitForResponse((response) =>
+    response.url().includes("/api/v1/billing/usage/"),
+  );
   await page.goto("/en/app/billing/usage");
+  const seededUsage = (await (await usageResponse).json()) as {
+    results: Array<Record<string, unknown>>;
+    [key: string]: unknown;
+  };
   await shot(page, "04-usage.png");
   await page.goto("/en/app/billing/invoices");
-  await page.getByRole("link", { name: "View" }).first().click();
-  await shot(page, "05-invoice.png");
+  await shot(page, "05-paid-and-open-invoices.png");
+  await page
+    .locator("tr", { hasText: /paid/i })
+    .getByRole("link", { name: "View" })
+    .click();
+  await shot(page, "06-paid-invoice-from-wallet.png");
+  await page.goto("/en/app/billing/wallet");
+  await expect(
+    page.getByText("Balance history", { exact: true }),
+  ).toBeVisible();
+  await shot(page, "07-company-balance-and-ledger.png");
+  await page.route("**/api/v1/billing/wallet/", async (route) => {
+    const response = await route.fetch();
+    const overview = await response.json();
+    await route.fulfill({
+      response,
+      json: {
+        ...overview,
+        wallet: {
+          ...overview.wallet,
+          available_balance_minor: 0,
+          low_balance: true,
+        },
+      },
+    });
+  });
+  await page.goto("/en/app/billing/wallet?evidence=low-balance");
+  await expect(page.getByText("Balance is low")).toBeVisible();
+  await shot(page, "08-low-balance.png");
+  await page.unroute("**/api/v1/billing/wallet/");
   await page.route("**/api/v1/billing/subscription/", async (route) => {
     const response = await route.fetch();
     const subscription = await response.json();
@@ -63,37 +101,36 @@ test("@screenshots customer Billing evidence", async ({ page }) => {
   });
   await page.goto("/en/app/billing");
   await expect(page.getByText("Account is in a grace period")).toBeVisible();
-  await shot(page, "06-grace-state.png");
+  await shot(page, "09-grace-state.png");
   await page.unroute("**/api/v1/billing/subscription/");
   await page.route("**/api/v1/billing/usage/", async (route) => {
-    const response = await route.fetch();
-    const usage = await response.json();
     await route.fulfill({
-      response,
+      status: 200,
+      contentType: "application/json",
       json: {
-        ...usage,
+        ...seededUsage,
         results: [
           {
-            ...usage.results[0],
+            ...seededUsage.results[0],
             quantity: "1000",
             included: 1000,
             remaining: "0",
           },
-          ...usage.results.slice(1),
+          ...seededUsage.results.slice(1),
         ],
       },
     });
   });
   await page.goto("/en/app/billing/usage");
-  await shot(page, "07-limit-reached.png");
+  await shot(page, "10-limit-reached.png");
   await page.unroute("**/api/v1/billing/usage/");
   await page.setViewportSize({ width: 390, height: 844 });
   for (const [locale, name] of [
-    ["en", "08-mobile-en.png"],
-    ["ru", "09-mobile-ru.png"],
-    ["uz", "10-mobile-uz.png"],
+    ["en", "11-mobile-en.png"],
+    ["ru", "12-mobile-ru.png"],
+    ["uz", "13-mobile-uz.png"],
   ] as const) {
-    await page.goto(`/${locale}/app/billing`);
+    await page.goto(`/${locale}/app/billing/wallet`);
     await shot(page, name);
   }
 });

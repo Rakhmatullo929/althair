@@ -5496,12 +5496,119 @@ td {
   opacity: 0.65;
   pointer-events: none;
 }
+.wallet-summary-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 0.55fr;
+  gap: 15px;
+}
+.wallet-balance-card,
+.wallet-policy-card,
+.wallet-open-card {
+  min-width: 0;
+}
+.wallet-balance-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px 12px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  padding: 20px;
+}
+.wallet-balance-card > svg {
+  grid-row: 1 / 3;
+  width: 30px;
+  color: var(--primary);
+}
+.wallet-balance-card > strong {
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+}
+.wallet-low-balance {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  margin: 5px 0 0;
+  color: #875313;
+}
+.wallet-low-balance svg {
+  width: 17px;
+}
+.wallet-policy-card,
+.wallet-open-card {
+  display: flex;
+  gap: 13px;
+  align-items: center;
+}
+.wallet-policy-card h2,
+.wallet-policy-card p {
+  margin: 2px 0;
+}
+.wallet-policy-card > svg,
+.wallet-open-card > svg {
+  color: var(--primary);
+}
+.wallet-open-card {
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+.wallet-open-card strong {
+  font-size: 2rem;
+}
+.wallet-transaction-list {
+  display: grid;
+  margin-top: 12px;
+}
+.wallet-transaction-list article {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  padding: 13px 0;
+}
+.wallet-transaction-list article:last-child {
+  border-bottom: 0;
+}
+.wallet-transaction-list article > div {
+  display: grid;
+  gap: 3px;
+}
+.wallet-transaction-list small {
+  color: var(--muted);
+}
+.wallet-direction {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 11px;
+}
+.wallet-direction svg {
+  width: 18px;
+}
+.wallet-credit {
+  background: #e7f7ef;
+  color: #1d7650;
+}
+.wallet-debit {
+  background: #fff2e3;
+  color: #9b5e12;
+}
+.wallet-transaction-amount {
+  text-align: right;
+}
 
 @media (max-width: 1100px) {
   .billing-summary-grid {
     grid-template-columns: 1fr 1fr;
   }
   .billing-plan-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .wallet-summary-grid {
     grid-template-columns: 1fr 1fr;
   }
 }
@@ -5567,6 +5674,7 @@ td {
 @media (max-width: 640px) {
   .billing-summary-grid,
   .billing-plan-grid,
+  .wallet-summary-grid,
   .billing-preview {
     grid-template-columns: 1fr;
   }
@@ -5578,6 +5686,13 @@ td {
   .billing-stat-card,
   .billing-plan {
     padding: 16px;
+  }
+  .wallet-transaction-list article {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .wallet-transaction-amount {
+    grid-column: 2;
+    text-align: left;
   }
   .page-action-row {
     width: 100%;

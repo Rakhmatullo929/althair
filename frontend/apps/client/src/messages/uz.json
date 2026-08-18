@@ -1509,13 +1509,15 @@
       "plans": "Tariflar",
       "usage": "Foydalanish",
       "invoices": "Hisob-fakturalar",
-      "invoice": "Hisob tafsilotlari"
+      "invoice": "Hisob tafsilotlari",
+      "wallet": "Kompaniya balansi"
     },
     "tabs": {
       "overview": "Umumiy",
       "plans": "Tariflar",
       "usage": "Foydalanish",
-      "invoices": "Hisoblar"
+      "invoices": "Hisoblar",
+      "wallet": "Balans"
     },
     "description": "Ushbu tashkilotning tarifi, foydalanishi, hisoblari va obuna holati.",
     "navigation": "Billing navigatsiyasi",
@@ -1608,7 +1610,32 @@
     "discount": "Chegirma",
     "taxNotCalculated": "Soliq (hisoblanmagan)",
     "financialRecordNotice": "Moliyaviy yozuvlar sozlangan siyosat bo'yicha saqlanadi; universal huquqiy da'vo qilinmaydi.",
-    "print": "Chop etish / PDF saqlash"
+    "print": "Chop etish / PDF saqlash",
+    "wallet": {
+      "balance": "Kompaniya balansi",
+      "viewLedger": "Balans tarixini ko‘rish",
+      "customerReadOnly": "Kompaniya balansni ko‘ra oladi. Uni faqat yaqinda MFA tasdiqlagan vakolatli platforma xodimi o‘zgartiradi.",
+      "topUpTitle": "Balansni platforma xodimi to‘ldiradi",
+      "lowBalance": "Balans kam. Mablag‘ yetmasa ochiq hisoblar imtiyozli davrga o‘tishi mumkin.",
+      "openInvoices": "ochiq hisob",
+      "ledger": "Balans tarixi",
+      "ledgerHelp": "Ushbu tashkilotning o‘zgarmas kirim va chiqimlari. Tuzatish faqat yangi qaytarish amali bilan bajariladi.",
+      "noTransactions": "Balans amallari hali qayd etilmagan.",
+      "balanceAfter": "Amaldan keyingi balans: {value}",
+      "statuses": {
+        "active": "Faol",
+        "frozen": "Muzlatilgan",
+        "closed": "Yopilgan"
+      },
+      "transactionTypes": {
+        "top_up": "Platforma to‘ldirishi",
+        "subscription_payment": "Obuna hisobi",
+        "adjustment": "Tekshirilgan tuzatish",
+        "reversal": "Qaytarish amali",
+        "refund": "Pulni qaytarish",
+        "migration_credit": "Boshlang‘ich balans"
+      }
+    }
   },
   "booking": {
     "title": "Band qilish va jadval",

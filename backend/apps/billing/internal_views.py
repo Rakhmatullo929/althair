@@ -1,17 +1,28 @@
 from __future__ import annotations
 
+import csv
 from datetime import timedelta
+from io import StringIO
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Sum
+from django.db.models import Count, Sum
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from billing.models import BillingProviderEvent, Invoice, PlanPrice, Subscription, UsageAggregate
+from billing.models import (
+    BillingProviderEvent,
+    Invoice,
+    OrganizationWallet,
+    PlanPrice,
+    Subscription,
+    UsageAggregate,
+    WalletTransaction,
+)
 from billing.pagination import BillingPagination
 from billing.serializers import (
     BillingProviderEventSerializer,
@@ -24,6 +35,11 @@ from billing.serializers import (
     ReasonSerializer,
     SubscriptionSerializer,
     UsageAggregateSerializer,
+    InternalWalletTransactionSerializer,
+    WalletCreditSerializer,
+    WalletDebitSerializer,
+    WalletReconciliationSerializer,
+    WalletSerializer,
 )
 from billing.services import (
     BillingError,
@@ -35,6 +51,14 @@ from billing.services import (
     reconcile_usage,
     sync_entitlement,
     void_invoice,
+)
+from billing.wallet import (
+    credit_wallet,
+    debit_adjustment,
+    reconcile_wallet,
+    retry_due_invoices,
+    reverse_transaction,
+    set_wallet_frozen,
 )
 from control_plane.authentication import PlatformSessionAuthentication
 from control_plane.models import PlanCatalog
@@ -306,3 +330,199 @@ class InternalProviderEventListView(InternalBillingBaseView):
         if value := request.query_params.get("status"):
             rows = rows.filter(status=value)
         return Response({"results": BillingProviderEventSerializer(rows[:100], many=True).data})
+
+
+class InternalWalletListView(InternalBillingBaseView):
+    def get(self, request):
+        rows = OrganizationWallet.objects.select_related("organization").annotate(
+            transaction_count=Count("transactions")
+        ).order_by("organization__name", "currency", "id")
+        if query := request.query_params.get("query"):
+            rows = rows.filter(organization__name__icontains=query)
+        if value := request.query_params.get("status"):
+            rows = rows.filter(status=value)
+        if value := request.query_params.get("currency"):
+            rows = rows.filter(currency=value.upper())
+        paginator = BillingPagination()
+        page = paginator.paginate_queryset(rows, request, view=self)
+        payload = []
+        for wallet in page:
+            item = WalletSerializer(wallet).data
+            item["organization_name"] = wallet.organization.name
+            item["transaction_count"] = wallet.transaction_count
+            item["recent_transactions"] = InternalWalletTransactionSerializer(
+                wallet.transactions.all()[:5], many=True
+            ).data
+            item["open_invoice_count"] = Invoice.objects.filter(
+                organization=wallet.organization,
+                currency=wallet.currency,
+                status=Invoice.Status.OPEN,
+            ).count()
+            payload.append(item)
+        return paginator.get_paginated_response(payload)
+
+
+class InternalWalletDetailView(InternalBillingBaseView):
+    def get(self, request, wallet_id):
+        wallet = get_object_or_404(
+            OrganizationWallet.objects.select_related("organization"), pk=wallet_id
+        )
+        payload = WalletSerializer(wallet).data
+        payload["organization_name"] = wallet.organization.name
+        payload["transactions"] = InternalWalletTransactionSerializer(
+            wallet.transactions.select_related("invoice", "performed_by_platform_staff")[:100],
+            many=True,
+        ).data
+        payload["reconciliations"] = WalletReconciliationSerializer(
+            wallet.reconciliation_runs.all()[:20], many=True
+        ).data
+        payload["open_invoices"] = InvoiceSerializer(
+            Invoice.objects.filter(
+                organization=wallet.organization,
+                currency=wallet.currency,
+                status=Invoice.Status.OPEN,
+            ).order_by("due_at")[:50],
+            many=True,
+        ).data
+        return Response(payload)
+
+
+class InternalWalletActionView(InternalBillingBaseView):
+    @transaction.atomic
+    def post(self, request, wallet_id, action):
+        wallet = get_object_or_404(
+            OrganizationWallet.objects.select_related("organization"), pk=wallet_id
+        )
+        try:
+            if action == "top-up":
+                self.require_write(request, "billing.financial")
+                serializer = WalletCreditSerializer(data=request.data)
+                serializer.is_valid(raise_exception=True)
+                entry = credit_wallet(
+                    wallet,
+                    amount_minor=serializer.validated_data["amount_minor"],
+                    idempotency_key=request.headers.get("Idempotency-Key", ""),
+                    platform_staff=request.platform_access,
+                    reason=serializer.validated_data["reason"],
+                    request=request,
+                    payment_method=serializer.validated_data["payment_method"],
+                    external_reference=serializer.validated_data.get("external_reference", ""),
+                    safe_metadata=serializer.validated_data.get("safe_metadata"),
+                )
+                return Response(InternalWalletTransactionSerializer(entry).data, status=status.HTTP_201_CREATED)
+            if action == "debit-adjustment":
+                self.require_write(request, "billing.financial")
+                serializer = WalletDebitSerializer(data=request.data)
+                serializer.is_valid(raise_exception=True)
+                entry = debit_adjustment(
+                    wallet,
+                    amount_minor=serializer.validated_data["amount_minor"],
+                    idempotency_key=request.headers.get("Idempotency-Key", ""),
+                    platform_staff=request.platform_access,
+                    reason=serializer.validated_data["reason"],
+                    request=request,
+                    safe_metadata=serializer.validated_data.get("safe_metadata"),
+                )
+                return Response(InternalWalletTransactionSerializer(entry).data, status=status.HTTP_201_CREATED)
+            if action == "reverse":
+                self.require_write(request, "billing.financial")
+                serializer = ReasonSerializer(data=request.data)
+                serializer.is_valid(raise_exception=True)
+                entry = get_object_or_404(
+                    WalletTransaction,
+                    pk=request.data.get("transaction_id"),
+                    wallet=wallet,
+                )
+                reversal = reverse_transaction(
+                    entry,
+                    idempotency_key=request.headers.get("Idempotency-Key", ""),
+                    platform_staff=request.platform_access,
+                    reason=serializer.validated_data["reason"],
+                    request=request,
+                )
+                return Response(InternalWalletTransactionSerializer(reversal).data, status=status.HTTP_201_CREATED)
+            if action in {"freeze", "unfreeze"}:
+                self.require_write(request, "billing.financial")
+                serializer = ReasonSerializer(data=request.data)
+                serializer.is_valid(raise_exception=True)
+                updated = set_wallet_frozen(
+                    wallet,
+                    frozen=action == "freeze",
+                    platform_staff=request.platform_access,
+                    reason=serializer.validated_data["reason"],
+                    request=request,
+                )
+                return Response(WalletSerializer(updated).data)
+            if action == "retry-due-invoices":
+                self.require_write(request, "billing.financial")
+                serializer = ReasonSerializer(data=request.data)
+                serializer.is_valid(raise_exception=True)
+                results = retry_due_invoices(wallet.organization_id, currency=wallet.currency)
+                record_audit(
+                    request,
+                    action="wallet.retry_due_invoices",
+                    target_type="organization_wallet",
+                    target_id=wallet.id,
+                    organization=wallet.organization,
+                    reason=serializer.validated_data["reason"],
+                    after={"attempted": len(results), "paid": sum(int(item.paid) for item in results)},
+                )
+                return Response(
+                    {
+                        "attempted": len(results),
+                        "paid": sum(int(item.paid) for item in results),
+                        "results": [
+                            {
+                                "invoice_id": str(item.invoice.id),
+                                "paid": item.paid,
+                                "required_minor": item.required_minor,
+                                "available_minor": item.available_minor,
+                            }
+                            for item in results
+                        ],
+                    }
+                )
+            if action == "reconcile":
+                self.require_write(request, "billing.reconcile")
+                serializer = ReasonSerializer(data=request.data)
+                serializer.is_valid(raise_exception=True)
+                run = reconcile_wallet(wallet, platform_staff=request.platform_access)
+                record_audit(
+                    request,
+                    action="wallet.reconcile",
+                    target_type="organization_wallet",
+                    target_id=wallet.id,
+                    organization=wallet.organization,
+                    reason=serializer.validated_data["reason"],
+                    after={"status": run.status, "difference_minor": run.difference_minor},
+                )
+                return Response(WalletReconciliationSerializer(run).data)
+            return Response({"detail": "Unsupported wallet action."}, status=404)
+        except BillingError as exc:
+            return error_response(exc)
+
+
+class InternalWalletExportView(InternalBillingBaseView):
+    def get(self, request, wallet_id):
+        wallet = get_object_or_404(OrganizationWallet, pk=wallet_id)
+        output = StringIO()
+        writer = csv.writer(output)
+        writer.writerow(
+            ["transaction_id", "created_at", "direction", "type", "amount_minor", "currency", "status", "invoice_id"]
+        )
+        for entry in wallet.transactions.all()[:10000]:
+            writer.writerow(
+                [
+                    entry.id,
+                    entry.created_at.isoformat(),
+                    entry.direction,
+                    entry.transaction_type,
+                    entry.amount_minor,
+                    entry.currency,
+                    entry.status,
+                    entry.invoice_id or "",
+                ]
+            )
+        response = HttpResponse(output.getvalue(), content_type="text/csv; charset=utf-8")
+        response["Content-Disposition"] = f'attachment; filename="wallet-{wallet.id}-ledger.csv"'
+        return response

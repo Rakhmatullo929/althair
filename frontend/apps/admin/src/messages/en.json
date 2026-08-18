@@ -92,7 +92,8 @@
       "plans": "Plan catalog",
       "subscriptions": "Subscriptions",
       "invoices": "Invoices",
-      "usage": "Usage & events"
+      "usage": "Usage & events",
+      "wallets": "Company balances"
     },
     "description": "Provider-independent financial operations with separate authorization, recent MFA, and immutable audit.",
     "navigation": "Internal Billing navigation",
@@ -118,6 +119,14 @@
     "void": "Void",
     "markPaid": "Reviewed mark paid",
     "reconcile": "Reconcile usage",
+    "recentLedger": "Recent immutable ledger entries",
+    "topUp": "Top up",
+    "adjust": "Debit adjustment",
+    "reverse": "Reverse entry",
+    "retryDue": "Retry due invoices",
+    "freeze": "Freeze",
+    "unfreeze": "Unfreeze",
+    "reconcileWallet": "Reconcile balance",
     "draftPlanHelp": "Publication makes plan and price values immutable. Create a new version for future changes.",
     "createDraft": "Create draft",
     "close": "Close",
@@ -133,7 +142,8 @@
       "reason": "Review reason",
       "audience": "Audience",
       "price_id": "Price UUID",
-      "days": "Days"
+      "days": "Days",
+      "transaction_id": "Ledger transaction UUID"
     },
     "actions": {
       "publish": "Publish immutable plan version",
@@ -142,7 +152,14 @@
       "issue": "Issue invoice",
       "void": "Void invoice",
       "mark-paid": "Record reviewed manual payment",
-      "reconcile": "Reconcile immutable usage events"
+      "reconcile": "Reconcile immutable usage events",
+      "top-up": "Credit company balance",
+      "debit-adjustment": "Apply reviewed debit adjustment",
+      "reverse": "Append a ledger reversal",
+      "retry-due-invoices": "Retry eligible due invoices",
+      "freeze": "Freeze company balance",
+      "unfreeze": "Unfreeze company balance",
+      "wallet-reconcile": "Reconcile immutable wallet ledger"
     }
   }
 }

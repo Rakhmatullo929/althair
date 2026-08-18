@@ -28,7 +28,7 @@ async function tenant(request: APIRequestContext, name: string) {
 }
 
 test.describe.serial("provider-independent customer Billing", () => {
-  test("new seeded organization receives a visible trial and safe default plan", async ({
+  test("seeded organization receives an active wallet-backed safe default plan", async ({
     page,
   }) => {
     await login(page);
@@ -36,8 +36,15 @@ test.describe.serial("provider-independent customer Billing", () => {
     await expect(
       page.getByRole("heading", { name: "Billing", level: 1 }),
     ).toBeVisible();
-    await expect(page.getByText("Trial is active")).toBeVisible();
-    await expect(page.getByText("Starter", { exact: true })).toBeVisible();
+    const currentPlan = page.locator("article", {
+      has: page.getByRole("heading", { name: "Starter", exact: true }),
+    });
+    await expect(
+      currentPlan.getByText("Active", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      currentPlan.getByText("Starter", { exact: true }),
+    ).toBeVisible();
     await expect(page.getByText("v1", { exact: true })).toBeVisible();
   });
 
@@ -106,7 +113,7 @@ test.describe.serial("provider-independent customer Billing", () => {
   }) => {
     await login(page);
     await page.goto("/en/app/billing/invoices");
-    await expect(page.getByText(/^E2E-/)).toBeVisible();
+    await expect(page.getByText(/^E2E-/).first()).toBeVisible();
     await page.getByRole("link", { name: "View", exact: true }).first().click();
     await expect(page.getByText("Starter v1")).toBeVisible();
     await expect(page.getByText("Tax (not calculated)")).toBeVisible();
@@ -115,6 +122,38 @@ test.describe.serial("provider-independent customer Billing", () => {
     ).toBeVisible();
     await expect(page.getByLabel(/card/i)).toHaveCount(0);
     await expect(page.getByLabel(/cvv/i)).toHaveCount(0);
+  });
+
+  test("company balance and immutable ledger are customer read-only", async ({
+    page,
+  }) => {
+    await login(page);
+    await page.goto("/en/app/billing/wallet");
+    await expect(
+      page.getByRole("heading", { name: "Company balance", level: 1 }),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Balance history", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Opening balance", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Subscription invoice", { exact: true }),
+    ).toBeVisible();
+    await expect(page.getByRole("button", { name: /top up/i })).toHaveCount(0);
+    const organizationId = await tenant(page.request, "Mehr Clinic");
+    const csrf = (await (
+      await page.request.get(`${api}/users/auth/csrf/`)
+    ).json()) as { csrftoken: string };
+    const mutation = await page.request.post(`${api}/billing/wallet/`, {
+      headers: {
+        "X-Organization-ID": organizationId,
+        "X-CSRFToken": csrf.csrftoken,
+      },
+      data: { available_balance_minor: 999999999 },
+    });
+    expect(mutation.status()).toBe(405);
   });
 
   test("organization switch invalidates Billing cache", async ({ page }) => {

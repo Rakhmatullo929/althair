@@ -102,6 +102,10 @@ export const internalApi = {
   me: () => internalRequest<InternalMe>("/me/"),
   get: <T = unknown>(path: string, reason?: string) =>
     internalRequest<T>(path, { reason }),
-  mutate: <T = unknown>(path: string, body: JsonRecord, method = "POST") =>
-    internalRequest<T>(path, { method, body }),
+  mutate: <T = unknown>(
+    path: string,
+    body: JsonRecord,
+    method = "POST",
+    headers?: HeadersInit,
+  ) => internalRequest<T>(path, { method, body, headers }),
 };

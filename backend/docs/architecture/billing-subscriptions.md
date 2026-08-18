@@ -81,6 +81,27 @@ Notification records use an idempotent provider-independent interface. Debug/tes
 `development_console`; other environments say `not_configured` until an actual adapter succeeds.
 No production delivery is claimed.
 
+## Organization wallet
+
+`OrganizationWallet` is tenant-owned and currency-specific. Its cached balance has a database
+non-negative constraint and changes only while the wallet row is locked. Every credit or debit
+appends an immutable `WalletTransaction` with a per-wallet idempotency key, ledger version, and
+resulting balance. Completed entries cannot be edited or deleted; a reviewed reversal is a new
+opposite entry. `WalletReconciliationRun` recomputes credits minus debits without silently repairing
+data.
+
+Customers can read their balance, open invoices, and redacted ledger history, but no customer route
+accepts wallet mutations. Only a separately authenticated platform owner or platform administrator
+with recent MFA can top up, adjust, reverse, freeze, or retry. These actions and their reasons enter
+the immutable control-plane audit in the durable workflow.
+
+Subscriptions select an explicit `payment_source`; existing rows migrate as `manual` and switch to
+`wallet` only through the reviewed bootstrap migration option. Wallet invoice payment locks the
+invoice and wallet, requires the exact full amount, and creates one completed debit per invoice. An
+insufficient balance writes no debit and enters the existing grace lifecycle. A later top-up retries
+only eligible due invoices after commit. No external gateway, card storage, FX, or partial debit is
+involved.
+
 ## Known limitations
 
 No live Payme/Paycom, Click, Paddle, Dodo, Stripe, card collection, tax/VAT, fiscalization, coupons,

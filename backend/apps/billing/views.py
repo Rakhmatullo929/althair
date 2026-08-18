@@ -7,7 +7,7 @@ from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from billing.models import Invoice, PlanPrice, Subscription, UsageAggregate
+from billing.models import Invoice, PlanPrice, Subscription, UsageAggregate, WalletTransaction
 from billing.pagination import BillingPagination
 from billing.providers import BillingProviderError, get_billing_provider
 from billing.serializers import (
@@ -18,6 +18,8 @@ from billing.serializers import (
     PlanSerializer,
     SubscriptionSerializer,
     UsageAggregateSerializer,
+    WalletSerializer,
+    WalletTransactionSerializer,
 )
 from billing.services import (
     BillingError,
@@ -224,6 +226,37 @@ class BillingCheckoutView(BillingBaseView):
 class BillingEntitlementsView(BillingBaseView):
     def get(self, request):
         return Response({"results": EntitlementService(request.organization).all()})
+
+
+class BillingWalletView(BillingBaseView):
+    """Tenant-scoped and deliberately read-only for every customer role."""
+
+    def get(self, request):
+        account, _, _ = self.billing(request)
+        wallet = request.organization.wallets.get(currency=account.default_currency)
+        open_invoices = Invoice.objects.filter(
+            organization=request.organization,
+            status=Invoice.Status.OPEN,
+        ).order_by("due_at")
+        return Response(
+            {
+                "wallet": WalletSerializer(wallet).data,
+                "open_invoices": InvoiceSerializer(open_invoices[:20], many=True).data,
+                "top_up_policy": "platform_admin_only",
+            }
+        )
+
+
+class BillingWalletTransactionListView(BillingBaseView):
+    def get(self, request):
+        account, _, _ = self.billing(request)
+        rows = WalletTransaction.objects.filter(
+            organization=request.organization,
+            wallet__currency=account.default_currency,
+        )
+        paginator = BillingPagination()
+        page = paginator.paginate_queryset(rows, request, view=self)
+        return paginator.get_paginated_response(WalletTransactionSerializer(page, many=True).data)
 
 
 class BillingWebhookView(APIView):

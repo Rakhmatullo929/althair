@@ -13,6 +13,8 @@ from billing.views import (
     BillingResumeView,
     BillingSubscriptionView,
     BillingUsageView,
+    BillingWalletTransactionListView,
+    BillingWalletView,
 )
 
 
@@ -29,4 +31,6 @@ urlpatterns = [
     path("invoices/", BillingInvoiceListView.as_view(), name="invoices"),
     path("invoices/<uuid:invoice_id>/", BillingInvoiceDetailView.as_view(), name="invoice-detail"),
     path("checkout/", BillingCheckoutView.as_view(), name="checkout"),
+    path("wallet/", BillingWalletView.as_view(), name="wallet"),
+    path("wallet/transactions/", BillingWalletTransactionListView.as_view(), name="wallet-transactions"),
 ]

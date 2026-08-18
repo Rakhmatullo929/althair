@@ -7,11 +7,14 @@ from billing.models import (
     BillingProviderEvent,
     Invoice,
     InvoiceLine,
+    OrganizationWallet,
     PaymentAttempt,
     PlanPrice,
     ScheduledSubscriptionChange,
     Subscription,
     UsageAggregate,
+    WalletReconciliationRun,
+    WalletTransaction,
 )
 from control_plane.models import PlanCatalog
 
@@ -78,7 +81,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subscription
         fields = [
-            "id", "organization", "provider", "plan", "price", "status", "trial_started_at", "trial_ends_at",
+            "id", "organization", "provider", "payment_source", "plan", "price", "status", "trial_started_at", "trial_ends_at",
             "current_period_start", "current_period_end", "cancel_at_period_end", "cancelled_at",
             "grace_ends_at", "ended_at", "scheduled_change", "online_payment_connected", "created_at", "updated_at",
         ]
@@ -196,3 +199,67 @@ class GrantSubscriptionSerializer(ReasonSerializer):
 
 class ExtendGraceSerializer(ReasonSerializer):
     days = serializers.IntegerField(min_value=1, max_value=90)
+
+
+class WalletSerializer(serializers.ModelSerializer):
+    organization = serializers.UUIDField(source="organization_id", read_only=True)
+    low_balance = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrganizationWallet
+        fields = [
+            "id", "organization", "currency", "status", "available_balance_minor",
+            "ledger_version", "low_balance", "last_reconciled_at", "created_at", "updated_at",
+        ]
+
+    def get_low_balance(self, obj):
+        from django.conf import settings
+
+        return obj.available_balance_minor <= getattr(settings, "WALLET_LOW_BALANCE_THRESHOLD_MINOR", 100000)
+
+
+class WalletTransactionSerializer(serializers.ModelSerializer):
+    invoice = serializers.UUIDField(source="invoice_id", read_only=True, allow_null=True)
+    reverses_transaction = serializers.UUIDField(
+        source="reverses_transaction_id", read_only=True, allow_null=True
+    )
+
+    class Meta:
+        model = WalletTransaction
+        fields = [
+            "id", "direction", "transaction_type", "amount_minor", "currency", "status",
+            "invoice", "reverses_transaction", "payment_method", "balance_after_minor",
+            "ledger_version", "created_at",
+        ]
+
+
+class InternalWalletTransactionSerializer(WalletTransactionSerializer):
+    performed_by_platform_staff = serializers.UUIDField(
+        source="performed_by_platform_staff_id", read_only=True, allow_null=True
+    )
+
+    class Meta(WalletTransactionSerializer.Meta):
+        fields = WalletTransactionSerializer.Meta.fields + [
+            "external_reference", "reason", "safe_metadata", "performed_by_platform_staff",
+        ]
+
+
+class WalletReconciliationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WalletReconciliationRun
+        fields = [
+            "id", "expected_balance_minor", "cached_balance_minor", "difference_minor",
+            "ledger_entries", "status", "safe_report", "created_at",
+        ]
+
+
+class WalletCreditSerializer(ReasonSerializer):
+    amount_minor = serializers.IntegerField(min_value=1)
+    payment_method = serializers.CharField(max_length=40, required=False, default="manual")
+    external_reference = serializers.CharField(max_length=160, required=False, allow_blank=True)
+    safe_metadata = serializers.DictField(required=False, default=dict)
+
+
+class WalletDebitSerializer(ReasonSerializer):
+    amount_minor = serializers.IntegerField(min_value=1)
+    safe_metadata = serializers.DictField(required=False, default=dict)

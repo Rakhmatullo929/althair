@@ -1345,6 +1345,7 @@ export type BillingSubscription = {
   id: string;
   organization: string;
   provider: "fake" | "manual" | string;
+  payment_source: "wallet" | "manual" | "fake" | "future_external";
   plan: BillingPlan;
   price: BillingPrice;
   status:
@@ -1469,6 +1470,46 @@ export type BillingChangePreview = {
   effective_at: string;
   change_type: "upgrade" | "downgrade" | "interval_change";
   proration: "not_applied";
+};
+
+export type BillingWallet = {
+  id: string;
+  organization: string;
+  currency: string;
+  status: "active" | "frozen" | "closed";
+  available_balance_minor: number;
+  ledger_version: number;
+  low_balance: boolean;
+  last_reconciled_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type BillingWalletTransaction = {
+  id: string;
+  direction: "credit" | "debit";
+  transaction_type:
+    | "top_up"
+    | "subscription_payment"
+    | "adjustment"
+    | "reversal"
+    | "refund"
+    | "migration_credit";
+  amount_minor: number;
+  currency: string;
+  status: "completed" | "failed";
+  invoice: string | null;
+  reverses_transaction: string | null;
+  payment_method: string;
+  balance_after_minor: number;
+  ledger_version: number;
+  created_at: string;
+};
+
+export type BillingWalletOverview = {
+  wallet: BillingWallet;
+  open_invoices: BillingInvoice[];
+  top_up_policy: "platform_admin_only";
 };
 
 export type BookingService = {

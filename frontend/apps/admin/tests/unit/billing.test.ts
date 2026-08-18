@@ -27,6 +27,12 @@ describe("internal billing controls", () => {
       "/billing/invoices/invoice-1/mark-paid/",
     );
     expect(billingActionPath("reconcile")).toBe("/billing/usage/reconcile/");
+    expect(billingActionPath("top-up", "wallet-1")).toBe(
+      "/billing/wallets/wallet-1/top-up/",
+    );
+    expect(billingActionPath("wallet-reconcile", "wallet-1")).toBe(
+      "/billing/wallets/wallet-1/reconcile/",
+    );
   });
 
   it("requires a meaningful reviewed reason before an action", () => {

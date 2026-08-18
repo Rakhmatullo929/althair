@@ -15,6 +15,8 @@ import type {
   BillingPlan,
   BillingSubscription,
   BillingUsage,
+  BillingWalletOverview,
+  BillingWalletTransaction,
   BookingDashboard,
   BookingResource,
   BookingScheduleException,
@@ -1250,6 +1252,11 @@ export class ApiClient {
       method: "POST",
       body: { invoice_id: invoiceId },
     });
+  billingWallet = () => this.request<BillingWalletOverview>("/billing/wallet/");
+  billingWalletTransactions = () =>
+    this.request<Paginated<BillingWalletTransaction>>(
+      "/billing/wallet/transactions/",
+    );
 
   bookingDashboard = () =>
     this.request<BookingDashboard>("/booking/dashboard/");

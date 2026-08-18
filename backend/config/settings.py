@@ -33,6 +33,10 @@ ALLOWED_HOSTS = [
 
 E2E_TESTING = os.environ.get('E2E_TESTING', '').lower() in ('true', '1', 'yes')
 TESTING = 'test' in sys.argv or E2E_TESTING
+DEPLOYMENT_ENVIRONMENT = os.environ.get(
+    'DEPLOYMENT_ENVIRONMENT',
+    'test' if TESTING else 'development' if DEBUG else 'production',
+).strip().lower()
 
 # Append module dir
 sys.path.append(os.path.join(BASE_DIR, 'apps'))
@@ -709,6 +713,7 @@ if CONTROL_PLANE_FAKE_MFA and not (DEBUG or TESTING):
 # Provider-independent Billing. Only deterministic fake/manual adapters exist in this stage.
 BILLING_ENABLE = os.environ.get('BILLING_ENABLE', '').lower() in ('true', '1', 'yes')
 BILLING_PROVIDER = os.environ.get('BILLING_PROVIDER', 'fake' if TESTING else 'manual').lower()
+BILLING_DEFAULT_PAYMENT_SOURCE = os.environ.get('BILLING_DEFAULT_PAYMENT_SOURCE', 'wallet').lower()
 BILLING_DEFAULT_PLAN_KEY = os.environ.get('BILLING_DEFAULT_PLAN_KEY', 'starter')
 BILLING_DEFAULT_CURRENCY = os.environ.get('BILLING_DEFAULT_CURRENCY', 'UZS').upper()
 BILLING_TRIAL_DAYS = int(os.environ.get('BILLING_TRIAL_DAYS', '14' if BILLING_ENABLE else '0'))
@@ -717,6 +722,21 @@ BILLING_INVOICE_PREFIX = os.environ.get('BILLING_INVOICE_PREFIX', 'ALTHAIR')
 BILLING_MANUAL_PROVIDER_ENABLE = os.environ.get('BILLING_MANUAL_PROVIDER_ENABLE', '').lower() in ('true', '1', 'yes')
 BILLING_FAKE_PROVIDER = os.environ.get('BILLING_FAKE_PROVIDER', 'true' if TESTING else 'false').lower() in ('true', '1', 'yes')
 BILLING_FAKE_SIGNING_KEY = os.environ.get('BILLING_FAKE_SIGNING_KEY', 'deterministic-ci-only')
+WALLET_LOW_BALANCE_THRESHOLD_MINOR = int(os.environ.get('WALLET_LOW_BALANCE_THRESHOLD_MINOR', '100000'))
+WALLET_AUTO_APPLY_DUE_INVOICES = os.environ.get(
+    'WALLET_AUTO_APPLY_DUE_INVOICES', 'true'
+).lower() in ('true', '1', 'yes')
+WALLET_ALLOW_NEGATIVE = os.environ.get('WALLET_ALLOW_NEGATIVE', 'false').lower() in ('true', '1', 'yes')
+WALLET_RECONCILIATION_ENABLE = os.environ.get(
+    'WALLET_RECONCILIATION_ENABLE', 'true'
+).lower() in ('true', '1', 'yes')
+WALLET_TOP_UP_TWO_PERSON_THRESHOLD_MINOR = os.environ.get(
+    'WALLET_TOP_UP_TWO_PERSON_THRESHOLD_MINOR', ''
+).strip()
+if WALLET_ALLOW_NEGATIVE:
+    raise RuntimeError('Negative organization wallet balances are not supported')
+if WALLET_TOP_UP_TWO_PERSON_THRESHOLD_MINOR and not WALLET_TOP_UP_TWO_PERSON_THRESHOLD_MINOR.isdigit():
+    raise RuntimeError('WALLET_TOP_UP_TWO_PERSON_THRESHOLD_MINOR must be a positive integer or empty')
 
 # Tenant-scoped Booking is provider-independent. Reminders use existing
 # consent-aware channel adapters; tests use a deterministic no-network fake.
@@ -748,8 +768,10 @@ if BOOKING_REMINDER_PROVIDER not in {'fake', 'channels'}:
 if BOOKING_REMINDER_PROVIDER == 'fake' and BOOKING_ENABLE and not (DEBUG or TESTING):
     raise RuntimeError('The fake Booking reminder provider cannot be enabled in production')
 
-if BILLING_PROVIDER not in {'fake', 'manual'}:
-    raise RuntimeError('Only fake and manual Billing providers are supported in this stage')
+if BILLING_PROVIDER not in {'fake', 'manual', 'wallet'}:
+    raise RuntimeError('Only fake, manual and wallet Billing providers are supported in this stage')
+if BILLING_DEFAULT_PAYMENT_SOURCE not in {'wallet', 'manual', 'fake', 'future_external'}:
+    raise RuntimeError('BILLING_DEFAULT_PAYMENT_SOURCE is invalid')
 if len(BILLING_DEFAULT_CURRENCY) != 3 or not BILLING_DEFAULT_CURRENCY.isalpha():
     raise RuntimeError('BILLING_DEFAULT_CURRENCY must be an ISO 4217 code')
 if BILLING_PROVIDER == 'fake' and BILLING_ENABLE and not (DEBUG or TESTING):

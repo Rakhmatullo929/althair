@@ -334,6 +334,7 @@ def ensure_billing_for_organization(organization: Organization) -> tuple[Billing
             organization=organization,
             billing_account=account,
             provider=account.provider,
+            payment_source=getattr(settings, "BILLING_DEFAULT_PAYMENT_SOURCE", "wallet"),
             plan=plan,
             price=price,
             status=status,
@@ -343,6 +344,9 @@ def ensure_billing_for_organization(organization: Organization) -> tuple[Billing
             current_period_end=period_end,
             provider_state={"mode": account.provider, "online_checkout": False},
         )
+    from billing.wallet import ensure_wallet
+
+    ensure_wallet(organization, account.default_currency)
     return account, subscription, sync_entitlement(subscription)
 
 

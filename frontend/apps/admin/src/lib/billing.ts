@@ -5,7 +5,14 @@ export type BillingAdminAction =
   | "issue"
   | "void"
   | "mark-paid"
-  | "reconcile";
+  | "reconcile"
+  | "top-up"
+  | "debit-adjustment"
+  | "reverse"
+  | "retry-due-invoices"
+  | "freeze"
+  | "unfreeze"
+  | "wallet-reconcile";
 
 export function canManageBilling(role: string) {
   return role === "platform_owner" || role === "platform_admin";
@@ -16,6 +23,20 @@ export function canReconcileBilling(role: string) {
 }
 
 export function billingActionPath(action: BillingAdminAction, id?: string) {
+  if (
+    [
+      "top-up",
+      "debit-adjustment",
+      "reverse",
+      "retry-due-invoices",
+      "freeze",
+      "unfreeze",
+      "wallet-reconcile",
+    ].includes(action)
+  ) {
+    const endpoint = action === "wallet-reconcile" ? "reconcile" : action;
+    return `/billing/wallets/${id}/${endpoint}/`;
+  }
   if (action === "publish") return `/billing/plans/${id}/publish/`;
   if (["issue", "void", "mark-paid"].includes(action))
     return `/billing/invoices/${id}/${action}/`;

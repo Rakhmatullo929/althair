@@ -8,6 +8,7 @@ import {
   RefreshCw,
   Search,
   ShieldCheck,
+  WalletCards,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
@@ -21,7 +22,7 @@ import {
 } from "@/lib/billing";
 import { useInternalSession } from "./admin-shell";
 
-type Section = "plans" | "subscriptions" | "invoices" | "usage";
+type Section = "plans" | "subscriptions" | "invoices" | "usage" | "wallets";
 type Action = { kind: string; id?: string; organization?: string };
 
 const endpoints: Record<Section, string> = {
@@ -29,6 +30,7 @@ const endpoints: Record<Section, string> = {
   subscriptions: "/billing/subscriptions/",
   invoices: "/billing/invoices/",
   usage: "/billing/usage/",
+  wallets: "/billing/wallets/",
 };
 
 function rowsFrom(payload: unknown): JsonRecord[] {
@@ -135,17 +137,17 @@ export function BillingAdminPage({ section }: { section: Section }) {
         </div>
       </header>
       <nav className="internal-billing-tabs" aria-label={t("navigation")}>
-        {(["plans", "subscriptions", "invoices", "usage"] as const).map(
-          (key) => (
-            <Link
-              key={key}
-              href={`/app/billing/${key}`}
-              aria-current={key === section ? "page" : undefined}
-            >
-              {t(`sections.${key}`)}
-            </Link>
-          ),
-        )}
+        {(
+          ["plans", "subscriptions", "invoices", "usage", "wallets"] as const
+        ).map((key) => (
+          <Link
+            key={key}
+            href={`/app/billing/${key}`}
+            aria-current={key === section ? "page" : undefined}
+          >
+            {t(`sections.${key}`)}
+          </Link>
+        ))}
       </nav>
       <div className="assurance-strip">
         <ShieldCheck /> {t("assurance")} <i />{" "}
@@ -280,6 +282,7 @@ function BillingRecord({
           "payment_attempts",
           "prices",
           "plan",
+          "recent_transactions",
         ].includes(key),
     )
     .slice(0, 9);
@@ -290,6 +293,7 @@ function BillingRecord({
         <strong>
           {String(
             row.display_name ??
+              row.organization_name ??
               row.invoice_number ??
               row.meter_key ??
               row.id ??
@@ -310,6 +314,24 @@ function BillingRecord({
           </div>
         ))}
       </dl>
+      {section === "wallets" && Array.isArray(row.recent_transactions) ? (
+        <details className="wallet-admin-ledger">
+          <summary>{t("recentLedger")}</summary>
+          <ul>
+            {(row.recent_transactions as JsonRecord[]).map((entry) => (
+              <li key={String(entry.id)}>
+                <span>
+                  {String(entry.transaction_type).replaceAll("_", " ")}
+                </span>
+                <strong>
+                  {entry.direction === "credit" ? "+" : "−"}
+                  {String(entry.amount_minor)} {String(entry.currency)}
+                </strong>
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
       <div className="billing-admin-actions">
         {section === "plans" && canManage && status === "draft" ? (
           <button onClick={() => act({ kind: "publish", id })}>
@@ -344,6 +366,34 @@ function BillingRecord({
         {section === "usage" && canReconcile && organization ? (
           <button onClick={() => act({ kind: "reconcile", organization })}>
             {t("reconcile")}
+          </button>
+        ) : null}
+        {section === "wallets" && canManage ? (
+          <>
+            <button onClick={() => act({ kind: "top-up", id })}>
+              {t("topUp")}
+            </button>
+            <button onClick={() => act({ kind: "debit-adjustment", id })}>
+              {t("adjust")}
+            </button>
+            <button onClick={() => act({ kind: "reverse", id })}>
+              {t("reverse")}
+            </button>
+            <button onClick={() => act({ kind: "retry-due-invoices", id })}>
+              {t("retryDue")}
+            </button>
+            <button
+              onClick={() =>
+                act({ kind: status === "frozen" ? "unfreeze" : "freeze", id })
+              }
+            >
+              {status === "frozen" ? t("unfreeze") : t("freeze")}
+            </button>
+          </>
+        ) : null}
+        {section === "wallets" && canReconcile ? (
+          <button onClick={() => act({ kind: "wallet-reconcile", id })}>
+            {t("reconcileWallet")}
           </button>
         ) : null}
       </div>
@@ -468,6 +518,8 @@ function BillingActionDialog({
   const [reason, setReason] = useState("");
   const [days, setDays] = useState("7");
   const [priceId, setPriceId] = useState("");
+  const [amountMinor, setAmountMinor] = useState("");
+  const [transactionId, setTransactionId] = useState("");
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
   const submit = async () => {
@@ -489,6 +541,24 @@ function BillingActionDialog({
           reason,
           organization_id: action.organization,
         });
+      else if (["top-up", "debit-adjustment"].includes(action.kind))
+        await internalApi.mutate(
+          path,
+          {
+            reason,
+            amount_minor: Number(amountMinor),
+            payment_method: "manual",
+          },
+          "POST",
+          { "Idempotency-Key": `wallet-admin:${crypto.randomUUID()}` },
+        );
+      else if (action.kind === "reverse")
+        await internalApi.mutate(
+          path,
+          { reason, transaction_id: transactionId },
+          "POST",
+          { "Idempotency-Key": `wallet-admin:${crypto.randomUUID()}` },
+        );
       else await internalApi.mutate(path, { reason });
       await complete();
     } catch (caught) {
@@ -507,7 +577,19 @@ function BillingActionDialog({
         aria-modal="true"
         aria-labelledby="billing-action-title"
       >
-        <CreditCard />
+        {action.kind.includes("wallet") ||
+        [
+          "top-up",
+          "debit-adjustment",
+          "reverse",
+          "retry-due-invoices",
+          "freeze",
+          "unfreeze",
+        ].includes(action.kind) ? (
+          <WalletCards />
+        ) : (
+          <CreditCard />
+        )}
         <h2 id="billing-action-title">{t(`actions.${action.kind}`)}</h2>
         <p>{t("mfaActionHelp")}</p>
         {action.kind === "grant" ? (
@@ -516,6 +598,26 @@ function BillingActionDialog({
             <input
               value={priceId}
               onChange={(event) => setPriceId(event.target.value)}
+            />
+          </label>
+        ) : null}
+        {["top-up", "debit-adjustment"].includes(action.kind) ? (
+          <label>
+            <span>{t("fields.amount_minor")}</span>
+            <input
+              type="number"
+              min="1"
+              value={amountMinor}
+              onChange={(event) => setAmountMinor(event.target.value)}
+            />
+          </label>
+        ) : null}
+        {action.kind === "reverse" ? (
+          <label>
+            <span>{t("fields.transaction_id")}</span>
+            <input
+              value={transactionId}
+              onChange={(event) => setTransactionId(event.target.value)}
             />
           </label>
         ) : null}
@@ -547,7 +649,10 @@ function BillingActionDialog({
             disabled={
               pending ||
               !validReviewedReason(reason) ||
-              (action.kind === "grant" && !priceId)
+              (action.kind === "grant" && !priceId) ||
+              (["top-up", "debit-adjustment"].includes(action.kind) &&
+                Number(amountMinor) < 1) ||
+              (action.kind === "reverse" && !transactionId)
             }
             onClick={() => void submit()}
           >

@@ -42,6 +42,45 @@ expires grace once, and restricts billable capabilities through `EntitlementServ
 read-only CRM/history, Billing, support, and export remain. Payment recovery restores the active
 state idempotently. No workflow deletes data, disconnects channels, or retries forever.
 
+## Platform bootstrap and wallet operations
+
+Run the one-off bootstrap from a single release job. Supply the first owner password through a
+restricted file or standard input; it is never printed and must not be placed in shell history:
+
+```bash
+python manage.py bootstrap_platform --non-interactive --owner-email owner@example.test \
+  --password-file /run/secrets/platform-owner-password --create-wallets --safe-json-report
+python manage.py bootstrap_platform --check --owner-email owner@example.test
+```
+
+The command takes a PostgreSQL advisory lock, applies the stable catalog version idempotently,
+creates a normal user with `is_staff=false`, `is_superuser=false`, `must_change_password=true`, and
+creates only `PlatformStaffAccess(platform_owner, active, mfa_required)`. It never creates or prints
+a TOTP secret. Use `--migrate-subscriptions-to-wallet` only as a separately reviewed rollout;
+existing subscriptions remain manual by default. Password rotation requires the explicit
+`--rotate-owner-password` switch. Adoption of an existing user requires
+`--adopt-existing-owner` after identity review.
+
+For wallet incidents, freeze first if further debits must stop, export the safe ledger, reconcile,
+and retain the mismatch report. Never repair the cached balance directly. Apply a reviewed debit,
+credit, or reversal with a unique idempotency key. A low-balance failure must remain a zero-debit
+failure; after a verified top-up, retry only due open invoices. Escalate any reconciliation mismatch
+before unfreezing.
+
+`seed_full_demo` is deterministic and idempotent but restricted to development, staging, and the
+isolated test environment. A complete safe report can be generated without printing passwords:
+
+```bash
+python manage.py seed_full_demo --organization-slug mehr-clinic \
+  --with-admin --with-wallet --non-interactive --safe-json-report
+```
+
+The command reads `FULL_DEMO_SEED_PASSWORD` from the process environment (deployment tooling should
+inject it from a restricted secret source) and never returns that value. A reset is allowed only
+in development/staging, deletes only the exact `--organization-slug`, and requires typing that slug;
+non-interactive reset additionally requires `FULL_DEMO_SEED_RESET_CONFIRMATION` to equal the slug.
+Production rejects both demo seed and reset requests before reading credentials or changing data.
+
 ## Future live adapter contract
 
 A live adapter must implement the `BillingProvider` protocol, verify signatures using its official

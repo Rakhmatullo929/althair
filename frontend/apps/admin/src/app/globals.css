@@ -996,6 +996,30 @@ button:disabled {
 .billing-admin-actions {
   justify-content: flex-end;
 }
+.wallet-admin-ledger {
+  grid-column: 2;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+.wallet-admin-ledger summary {
+  cursor: pointer;
+  font-weight: 750;
+}
+.wallet-admin-ledger ul {
+  display: grid;
+  gap: 5px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.wallet-admin-ledger li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid var(--line);
+  padding-top: 5px;
+}
 
 .booking-admin-grid {
   display: grid;

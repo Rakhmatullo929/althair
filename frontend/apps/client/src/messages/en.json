@@ -1509,13 +1509,15 @@
       "plans": "Plans",
       "usage": "Usage",
       "invoices": "Invoices",
-      "invoice": "Invoice details"
+      "invoice": "Invoice details",
+      "wallet": "Company balance"
     },
     "tabs": {
       "overview": "Overview",
       "plans": "Plans",
       "usage": "Usage",
-      "invoices": "Invoices"
+      "invoices": "Invoices",
+      "wallet": "Balance"
     },
     "description": "Plans, usage, invoices, and subscription lifecycle for this organization.",
     "navigation": "Billing navigation",
@@ -1608,7 +1610,32 @@
     "discount": "Discount",
     "taxNotCalculated": "Tax (not calculated)",
     "financialRecordNotice": "Financial records follow the configured retention policy; no universal legal claim is made.",
-    "print": "Print / save PDF"
+    "print": "Print / save PDF",
+    "wallet": {
+      "balance": "Company balance",
+      "viewLedger": "View balance history",
+      "customerReadOnly": "Your company can review this balance. Only authorized platform staff with recent MFA can change it.",
+      "topUpTitle": "Top-ups are handled by platform staff",
+      "lowBalance": "Balance is low. Open invoices may enter the grace lifecycle if funds are insufficient.",
+      "openInvoices": "open invoices",
+      "ledger": "Balance history",
+      "ledgerHelp": "Immutable credits and debits for this organization. Completed entries are corrected only by a new reversal.",
+      "noTransactions": "No balance activity has been recorded yet.",
+      "balanceAfter": "Balance after: {value}",
+      "statuses": {
+        "active": "Active",
+        "frozen": "Frozen",
+        "closed": "Closed"
+      },
+      "transactionTypes": {
+        "top_up": "Platform top-up",
+        "subscription_payment": "Subscription invoice",
+        "adjustment": "Reviewed adjustment",
+        "reversal": "Reversal",
+        "refund": "Refund",
+        "migration_credit": "Opening balance"
+      }
+    }
   },
   "booking": {
     "title": "Booking & scheduling",

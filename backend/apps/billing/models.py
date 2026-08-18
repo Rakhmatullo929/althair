@@ -137,6 +137,12 @@ class BillingAccount(models.Model):
 
 
 class Subscription(models.Model):
+    class PaymentSource(models.TextChoices):
+        WALLET = "wallet", "Organization wallet"
+        MANUAL = "manual", "Manual"
+        FAKE = "fake", "Deterministic fake"
+        FUTURE_EXTERNAL = "future_external", "Future external provider"
+
     class Status(models.TextChoices):
         TRIALING = "trialing", "Trialing"
         ACTIVE = "active", "Active"
@@ -160,6 +166,12 @@ class Subscription(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.PROTECT, related_name="subscriptions")
     billing_account = models.ForeignKey(BillingAccount, on_delete=models.PROTECT, related_name="subscriptions")
     provider = models.CharField(max_length=24, default="manual")
+    payment_source = models.CharField(
+        max_length=24,
+        choices=PaymentSource.choices,
+        default=PaymentSource.MANUAL,
+        db_index=True,
+    )
     provider_subscription_id = models.CharField(max_length=160, blank=True)
     plan = models.ForeignKey("control_plane.PlanCatalog", on_delete=models.PROTECT, related_name="subscriptions")
     price = models.ForeignKey(PlanPrice, on_delete=models.PROTECT, related_name="subscriptions")
@@ -415,6 +427,245 @@ class PaymentAttempt(models.Model):
     attempted_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class OrganizationWallet(models.Model):
+    class Status(models.TextChoices):
+        ACTIVE = "active", "Active"
+        FROZEN = "frozen", "Frozen"
+        CLOSED = "closed", "Closed"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.PROTECT,
+        related_name="wallets",
+    )
+    currency = models.CharField(max_length=3)
+    status = models.CharField(
+        max_length=12,
+        choices=Status.choices,
+        default=Status.ACTIVE,
+        db_index=True,
+    )
+    available_balance_minor = models.BigIntegerField(default=0)
+    ledger_version = models.PositiveBigIntegerField(default=0)
+    last_reconciled_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["organization_id", "currency"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["organization", "currency"],
+                name="unique_organization_wallet_currency",
+            ),
+            models.CheckConstraint(
+                condition=Q(available_balance_minor__gte=0),
+                name="wallet_balance_nonnegative",
+            ),
+        ]
+
+    def clean(self):
+        super().clean()
+        self.currency = str(self.currency or "").upper()
+        if len(self.currency) != 3 or not self.currency.isalpha():
+            raise ValidationError({"currency": "Use a three-letter ISO 4217 currency code."})
+        if self.pk:
+            previous = type(self).objects.filter(pk=self.pk).values(
+                "organization_id", "currency"
+            ).first()
+            if previous and (
+                previous["organization_id"] != self.organization_id
+                or previous["currency"] != self.currency
+            ):
+                raise ValidationError("Wallet organization and currency are immutable.")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
+
+
+class WalletTransactionQuerySet(models.QuerySet):
+    def update(self, **kwargs):
+        raise ValidationError("Wallet ledger entries are immutable.")
+
+    def delete(self):
+        raise ValidationError("Wallet ledger entries are immutable.")
+
+
+class WalletTransaction(models.Model):
+    class Direction(models.TextChoices):
+        CREDIT = "credit", "Credit"
+        DEBIT = "debit", "Debit"
+
+    class TransactionType(models.TextChoices):
+        TOP_UP = "top_up", "Top up"
+        SUBSCRIPTION_PAYMENT = "subscription_payment", "Subscription payment"
+        ADJUSTMENT = "adjustment", "Adjustment"
+        REVERSAL = "reversal", "Reversal"
+        REFUND = "refund", "Refund"
+        MIGRATION_CREDIT = "migration_credit", "Migration credit"
+
+    class Status(models.TextChoices):
+        COMPLETED = "completed", "Completed"
+        FAILED = "failed", "Failed"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.PROTECT,
+        related_name="wallet_transactions",
+    )
+    wallet = models.ForeignKey(
+        OrganizationWallet,
+        on_delete=models.PROTECT,
+        related_name="transactions",
+    )
+    direction = models.CharField(max_length=8, choices=Direction.choices)
+    transaction_type = models.CharField(max_length=24, choices=TransactionType.choices)
+    amount_minor = models.PositiveBigIntegerField()
+    currency = models.CharField(max_length=3)
+    status = models.CharField(
+        max_length=12,
+        choices=Status.choices,
+        default=Status.COMPLETED,
+        db_index=True,
+    )
+    idempotency_key = models.CharField(max_length=200)
+    invoice = models.ForeignKey(
+        Invoice,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="wallet_transactions",
+    )
+    payment_attempt = models.OneToOneField(
+        PaymentAttempt,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="wallet_transaction",
+    )
+    reverses_transaction = models.OneToOneField(
+        "self",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="reversal_transaction",
+    )
+    payment_method = models.CharField(max_length=40, blank=True)
+    external_reference = models.CharField(max_length=160, blank=True)
+    reason = models.CharField(max_length=500, blank=True)
+    safe_metadata = models.JSONField(
+        default=dict,
+        blank=True,
+        validators=[validate_json_object],
+    )
+    performed_by_platform_staff = models.ForeignKey(
+        "control_plane.PlatformStaffAccess",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="wallet_transactions_performed",
+    )
+    balance_after_minor = models.BigIntegerField()
+    ledger_version = models.PositiveBigIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    objects = WalletTransactionQuerySet.as_manager()
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["wallet", "idempotency_key"],
+                name="unique_wallet_transaction_idempotency",
+            ),
+            models.UniqueConstraint(
+                fields=["invoice"],
+                condition=Q(
+                    invoice__isnull=False,
+                    transaction_type="subscription_payment",
+                    status="completed",
+                ),
+                name="one_completed_wallet_debit_per_invoice",
+            ),
+            models.CheckConstraint(
+                condition=Q(amount_minor__gt=0),
+                name="wallet_transaction_amount_positive",
+            ),
+            models.CheckConstraint(
+                condition=Q(balance_after_minor__gte=0),
+                name="wallet_transaction_balance_nonnegative",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["organization", "created_at"]),
+            models.Index(fields=["wallet", "ledger_version"]),
+        ]
+
+    def clean(self):
+        super().clean()
+        self.currency = str(self.currency or "").upper()
+        if self.wallet_id and self.wallet.organization_id != self.organization_id:
+            raise ValidationError("Wallet transaction organization does not match its wallet.")
+        if self.wallet_id and self.wallet.currency != self.currency:
+            raise ValidationError("Wallet transaction currency does not match its wallet.")
+        if self.invoice_id and self.invoice.organization_id != self.organization_id:
+            raise ValidationError("Wallet transaction invoice belongs to another organization.")
+        if self.invoice_id and self.invoice.currency != self.currency:
+            raise ValidationError("Wallet transaction invoice currency does not match its wallet.")
+        if self.reverses_transaction_id:
+            original = self.reverses_transaction
+            if original.wallet_id != self.wallet_id or original.organization_id != self.organization_id:
+                raise ValidationError("A reversal must remain in the original wallet.")
+
+    def save(self, *args, **kwargs):
+        if self.pk and type(self).objects.filter(pk=self.pk).exists():
+            raise ValidationError("Wallet ledger entries are immutable; append a reversal.")
+        self.full_clean()
+        return super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise ValidationError("Wallet ledger entries are immutable.")
+
+
+class WalletReconciliationRun(models.Model):
+    class Status(models.TextChoices):
+        MATCHED = "matched", "Matched"
+        MISMATCH = "mismatch", "Mismatch"
+        FAILED = "failed", "Failed"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    wallet = models.ForeignKey(
+        OrganizationWallet,
+        on_delete=models.PROTECT,
+        related_name="reconciliation_runs",
+    )
+    expected_balance_minor = models.BigIntegerField()
+    cached_balance_minor = models.BigIntegerField()
+    difference_minor = models.BigIntegerField()
+    ledger_entries = models.PositiveBigIntegerField(default=0)
+    status = models.CharField(max_length=12, choices=Status.choices, db_index=True)
+    safe_report = models.JSONField(default=dict, validators=[validate_json_object])
+    performed_by_platform_staff = models.ForeignKey(
+        "control_plane.PlatformStaffAccess",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="wallet_reconciliations_performed",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+
+class PlatformCatalogState(models.Model):
+    key = models.SlugField(max_length=80, primary_key=True)
+    version = models.PositiveIntegerField()
+    applied_at = models.DateTimeField(auto_now=True)
 
 
 class BillingProviderEvent(models.Model):

@@ -18,6 +18,8 @@ GET       /api/v1/billing/entitlements/
 GET       /api/v1/billing/invoices/
 GET       /api/v1/billing/invoices/{invoice_id}/
 POST      /api/v1/billing/checkout/
+GET       /api/v1/billing/wallet/
+GET       /api/v1/billing/wallet/transactions/
 ```
 
 Change/cancel/resume requests require an `Idempotency-Key` of at least eight characters. A replay
@@ -43,6 +45,16 @@ POST      /api/v1/internal/billing/invoices/{invoice_id}/mark-paid/
 GET       /api/v1/internal/billing/usage/
 POST      /api/v1/internal/billing/usage/reconcile/
 GET       /api/v1/internal/billing/provider-events/
+GET       /api/v1/internal/billing/wallets/
+GET       /api/v1/internal/billing/wallets/{wallet_id}/
+GET       /api/v1/internal/billing/wallets/{wallet_id}/export/
+POST      /api/v1/internal/billing/wallets/{wallet_id}/top-up/
+POST      /api/v1/internal/billing/wallets/{wallet_id}/debit-adjustment/
+POST      /api/v1/internal/billing/wallets/{wallet_id}/reverse/
+POST      /api/v1/internal/billing/wallets/{wallet_id}/retry-due-invoices/
+POST      /api/v1/internal/billing/wallets/{wallet_id}/freeze/
+POST      /api/v1/internal/billing/wallets/{wallet_id}/unfreeze/
+POST      /api/v1/internal/billing/wallets/{wallet_id}/reconcile/
 ```
 
 Platform owner/admin manage the catalog and reviewed financial actions. Operations may inspect and

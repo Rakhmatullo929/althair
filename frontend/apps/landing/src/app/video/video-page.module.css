@@ -1,0 +1,173 @@
+.page {
+  min-height: 100svh;
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      rgb(223 247 158 / 0.24),
+      transparent 34rem
+    ),
+    var(--paper);
+}
+
+.header {
+  display: flex;
+  width: min(100% - 2rem, 78rem);
+  min-height: 5rem;
+  margin-inline: auto;
+  align-items: center;
+}
+
+.logoLink {
+  display: inline-flex;
+  border-radius: 0.75rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.logoLink:focus-visible,
+.directLink:focus-visible,
+.retryButton:focus-visible {
+  outline: 3px solid rgb(8 123 80 / 0.3);
+  outline-offset: 3px;
+}
+
+.content {
+  width: min(100% - 2rem, 70rem);
+  margin-inline: auto;
+  padding: clamp(2rem, 5vw, 4.75rem) 0 clamp(3.5rem, 8vw, 7rem);
+}
+
+.intro {
+  max-width: 52rem;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.eyebrow {
+  margin: 0 0 1rem;
+  color: var(--primary);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.intro h1 {
+  margin: 0;
+  font-family: var(--font-geologica), var(--font-manrope), sans-serif;
+  font-size: clamp(2rem, 6vw, 4.25rem);
+  font-weight: 620;
+  letter-spacing: -0.055em;
+  line-height: 1.04;
+}
+
+.subtitle {
+  max-width: 44rem;
+  margin: 1.25rem auto 0;
+  color: var(--secondary);
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  line-height: 1.65;
+}
+
+.playerGroup {
+  margin-top: clamp(2rem, 5vw, 3.5rem);
+}
+
+.playerFrame {
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  border: 1px solid rgb(20 35 28 / 0.12);
+  border-radius: clamp(1rem, 2vw, 1.5rem);
+  background: #071a13;
+  box-shadow:
+    0 2.5rem 6rem rgb(20 35 28 / 0.12),
+    0 0.4rem 1.2rem rgb(20 35 28 / 0.08);
+}
+
+.video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #071a13;
+  object-fit: contain;
+}
+
+.directLink {
+  display: block;
+  width: fit-content;
+  margin: 1.15rem auto 0;
+  border-radius: 0.4rem;
+  color: var(--primary);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.error {
+  display: flex;
+  margin-top: 1rem;
+  padding: 1rem 1.1rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 1px solid rgb(217 45 32 / 0.22);
+  border-radius: 0.9rem;
+  background: rgb(217 45 32 / 0.055);
+  color: var(--ink);
+}
+
+.error p {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.errorActions {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.errorActions a {
+  border-radius: 0.35rem;
+  color: var(--primary);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.retryButton {
+  min-height: 2.5rem;
+  border: 0;
+  border-radius: 0.7rem;
+  background: var(--primary);
+  padding: 0.55rem 0.9rem;
+  color: white;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.retryButton:hover {
+  background: var(--primary-hover);
+}
+
+@media (max-width: 42rem) {
+  .content,
+  .header {
+    width: min(100% - 1.25rem, 70rem);
+  }
+
+  .content {
+    padding-top: 1.5rem;
+  }
+
+  .playerFrame {
+    border-radius: 0.8rem;
+  }
+
+  .error {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

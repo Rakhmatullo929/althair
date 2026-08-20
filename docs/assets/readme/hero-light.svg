@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="520" viewBox="0 0 1600 520" role="img" aria-labelledby="title desc">
+  <title id="title">Althair AI — AI Front Office and CRM</title>
+  <desc id="desc">A light green product banner connecting customer conversations, AI, booking, and billing.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#fbfefc"/>
+      <stop offset="1" stop-color="#e7f8ef"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#24c27a"/>
+      <stop offset="1" stop-color="#08784a"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#123f2e" flood-opacity=".12"/>
+    </filter>
+  </defs>
+  <rect width="1600" height="520" rx="34" fill="url(#bg)"/>
+  <circle cx="1480" cy="55" r="190" fill="#bcf0d5" opacity=".34"/>
+  <circle cx="56" cy="488" r="150" fill="#d5f5e4" opacity=".65"/>
+  <path d="M1280 40c80 88 115 207 94 319" fill="none" stroke="#159660" stroke-opacity=".13" stroke-width="2"/>
+  <path d="M1340 26c75 91 105 202 84 320" fill="none" stroke="#159660" stroke-opacity=".09" stroke-width="2"/>
+
+  <g transform="translate(128 105)">
+    <rect width="58" height="58" rx="18" fill="url(#accent)"/>
+    <path d="M18 29a11 11 0 0 1 22 0v8a11 11 0 0 1-22 0z" fill="none" stroke="#fff" stroke-width="3"/>
+    <path d="M13 29v10M45 29v10M24 35h2M32 35h2M25 42c3 2 5 2 8 0" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="3"/>
+  </g>
+  <text x="208" y="146" fill="#0b2b20" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="31" font-weight="750">ALTHAIR AI</text>
+  <text x="128" y="235" fill="#09271d" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="55" font-weight="760">AI Front Office &amp; CRM</text>
+  <text x="128" y="291" fill="#0d5f40" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="31" font-weight="620">for modern businesses</text>
+  <text x="128" y="354" fill="#4b675d" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="22">One workspace for conversations, AI, CRM,</text>
+  <text x="128" y="388" fill="#4b675d" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="22">bookings, teams, and billing.</text>
+  <g transform="translate(128 432)">
+    <circle cx="7" cy="7" r="7" fill="#20b874"/>
+    <text x="27" y="14" fill="#356255" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="17" font-weight="600">Tenant-isolated · Human-governed · Provider-ready</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="885" y="72" width="560" height="376" rx="28" fill="#fff" stroke="#d7ebe0"/>
+    <rect x="915" y="102" width="500" height="57" rx="15" fill="#eff9f3"/>
+    <circle cx="946" cy="130" r="10" fill="#1db874"/>
+    <text x="970" y="137" fill="#123f2e" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="18" font-weight="700">One customer timeline</text>
+    <text x="1280" y="137" fill="#688178" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="14">verified connection</text>
+
+    <g transform="translate(925 188)">
+      <rect width="205" height="94" rx="18" fill="#f8fbf9" stroke="#dcebe3"/>
+      <circle cx="32" cy="32" r="17" fill="#d8f6e7"/>
+      <path d="M24 29h16v10H30l-5 4v-4h-1z" fill="none" stroke="#0b8d56" stroke-linejoin="round" stroke-width="2"/>
+      <text x="60" y="31" fill="#173d2f" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="16" font-weight="700">Unified Inbox</text>
+      <text x="60" y="55" fill="#657a72" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="13">human + AI drafts</text>
+      <rect x="20" y="71" width="165" height="7" rx="3.5" fill="#dcebe3"/>
+      <rect x="20" y="71" width="112" height="7" rx="3.5" fill="#48c58a"/>
+    </g>
+    <g transform="translate(1170 188)">
+      <rect width="215" height="94" rx="18" fill="#f8fbf9" stroke="#dcebe3"/>
+      <circle cx="32" cy="32" r="17" fill="#d8f6e7"/>
+      <path d="M25 24v16h15V24zm0 5h15M29 21v6M36 21v6" fill="none" stroke="#0b8d56" stroke-linecap="round" stroke-width="2"/>
+      <text x="60" y="31" fill="#173d2f" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="16" font-weight="700">Booking</text>
+      <text x="60" y="55" fill="#657a72" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="13">real availability</text>
+      <rect x="20" y="71" width="79" height="7" rx="3.5" fill="#22b875"/>
+      <rect x="107" y="71" width="82" height="7" rx="3.5" fill="#dcebe3"/>
+    </g>
+    <path d="M1130 235h40M1150 235v92" stroke="#78cba2" stroke-width="2" stroke-dasharray="5 7"/>
+    <circle cx="1150" cy="235" r="5" fill="#20b874"/>
+
+    <g transform="translate(925 322)">
+      <rect width="205" height="94" rx="18" fill="#0d6846"/>
+      <circle cx="32" cy="32" r="17" fill="#38c98c" opacity=".25"/>
+      <path d="m32 21 3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="none" stroke="#d8ffeb" stroke-linejoin="round" stroke-width="2"/>
+      <text x="60" y="31" fill="#fff" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="16" font-weight="700">Safe AI Runtime</text>
+      <text x="60" y="55" fill="#ccebdd" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="13">policy + approval</text>
+      <text x="20" y="79" fill="#aee5cc" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="12">propose → validate → act</text>
+    </g>
+    <g transform="translate(1170 322)">
+      <rect width="215" height="94" rx="18" fill="#f8fbf9" stroke="#dcebe3"/>
+      <circle cx="32" cy="32" r="17" fill="#d8f6e7"/>
+      <path d="M25 26h15v13H25zM29 31h7M29 35h5" fill="none" stroke="#0b8d56" stroke-linecap="round" stroke-width="2"/>
+      <text x="60" y="31" fill="#173d2f" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="16" font-weight="700">Billing &amp; Wallet</text>
+      <text x="60" y="55" fill="#657a72" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="13">immutable ledger</text>
+      <rect x="20" y="70" width="168" height="9" rx="4.5" fill="#dcebe3"/>
+      <rect x="20" y="70" width="126" height="9" rx="4.5" fill="#23b875"/>
+    </g>
+  </g>
+</svg>
